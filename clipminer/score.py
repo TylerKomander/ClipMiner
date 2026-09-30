@@ -4,7 +4,10 @@ from pathlib import Path
 
 import anthropic
 
+from . import review
+
 ROOT = Path(__file__).resolve().parent.parent
+MODEL = "claude-sonnet-5-5"
 LINE_SECONDS = 15
 CHUNK_SECONDS = 20 * 60
 OVERLAP_SECONDS = 60
@@ -26,6 +29,7 @@ CLIP_SCHEMA = _object({
         "shape": {"type": "string"},
         "score": {"type": "integer", "description": "1-10 per the rubric"},
         "reason": {"type": "string", "description": "one line: why this score"},
+        "description": {"type": "string", "description": "the post text, following the rulebook's 'Post description' section"},
     })},
     "rejected": {"type": "array", "items": _object({"approx_start": {"type": "string"}, "why": {"type": "string"}})},
 })
@@ -133,14 +137,21 @@ def locate(clip: dict, words: list[dict], norm: list[str]) -> str | None:
     j = snap(words, norm, seconds(clip["approx_end"]), last, 90)
     if i is None or j is None:
         return "first or last words not found in the transcript"
-    clip["start"], clip["end"] = words[i]["start"], words[j + len(last) - 1]["end"]
+    clip["first"], clip["last"] = i, j + len(last) - 1
+    clip["start"], clip["end"] = words[i]["start"], words[clip["last"]]["end"]
     length = clip["end"] - clip["start"]
     if not MIN_LEN <= length <= MAX_LEN:
         return f"{length:.0f}s long, outside {MIN_LEN}-{MAX_LEN}s"
     return None
 
 
-def score(work: Path, model: str, examples: list[str], span: tuple[float, float] | None = None) -> Path:
+def recent_runs(count: int = 3) -> list[str]:
+    return [p.name for p in sorted((ROOT / "clip_log").glob("run-*.md"))[-count:]]
+
+
+def score(work: Path, model: str = MODEL, examples: list[str] | None = None,
+          span: tuple[float, float] | None = None) -> Path:
+    examples = examples or recent_runs()
     info = json.loads((work / "info.json").read_text(encoding="utf-8"))
     transcript = json.loads((work / "transcript.json").read_text(encoding="utf-8"))
     words = [w for s in transcript["segments"] for w in s["words"]]
@@ -196,4 +207,10 @@ def score(work: Path, model: str, examples: list[str], span: tuple[float, float]
     out = work / f"picks-{model}.json"
     out.write_text(json.dumps({"model": model, "span": span, "usage": usage, "clips": kept,
                                "dropped": dropped, "rejected": rejected}, indent=2, ensure_ascii=False), encoding="utf-8")
+    # Never overwrite a review in progress: GURT or Tko may already have edited it.
+    if not (work / "review.json").exists():
+        review.save(work, {"status": "awaiting", "model": model, "clips": [
+            review.entry(words, c["name"], c["score"], c["first"], c["last"], model, c["payoff"], c["reason"],
+                         description=c["description"])
+            for c in kept]})
     return out
