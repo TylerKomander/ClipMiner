@@ -2,15 +2,18 @@ import argparse
 import time
 from pathlib import Path
 
+from . import review
 from .download import fetch
+from .score import score
 from .signals import loudness
 from .transcribe import transcribe
 
 ROOT = Path(__file__).resolve().parent.parent
 QUEUE = ROOT / "queue.txt"
+FINISHED = ROOT / "Finished_Clips"
 
 
-def prepare(source: str, model: str) -> None:
+def prepare(source: str, model: str) -> Path:
     t0 = time.perf_counter()
     work, video = fetch(source, ROOT / "work")
     print(f"[download]   {video}  ({time.perf_counter() - t0:.1f}s)")
@@ -21,6 +24,19 @@ def prepare(source: str, model: str) -> None:
 
     t0 = time.perf_counter()
     print(f"[loudness]   {loudness(video, work)}  ({time.perf_counter() - t0:.1f}s)")
+
+    t0 = time.perf_counter()
+    score(work)
+    print(f"[score]      {work / 'review.json'} awaiting review  ({time.perf_counter() - t0:.1f}s)")
+    return work
+
+
+def finish(work: Path) -> list[Path]:
+    """Render the approved picks, then drop the source: Tko's rule is no full videos kept."""
+    video = work / "source.mp4"
+    clips = review.render_approved(work, video, FINISHED)
+    video.unlink()
+    return clips
 
 
 def run_queue(model: str) -> None:
@@ -50,9 +66,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(prog="clipminer")
     parser.add_argument("source", nargs="?", help="YouTube URL or local media file; omit to work through queue.txt")
     parser.add_argument("--model", default="large-v3", help="Whisper model size")
+    parser.add_argument("--render", metavar="SLUG", help="render the approved picks in work/SLUG/review.json")
     args = parser.parse_args()
 
-    if args.source:
+    if args.render:
+        finish(ROOT / "work" / args.render)
+    elif args.source:
         prepare(args.source, args.model)
     else:
         run_queue(args.model)
