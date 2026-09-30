@@ -1,7 +1,7 @@
 # ClipMiner GUI — Build Spec (handoff)
 
 **Project:** `D:\ClaudeHub\Projects\ClipMiner\`. Read its `CONTEXT.md` first.
-**Status:** DO NOT START until `score` is automated (Claude API) and `python -m clipminer <url>` runs end to end: download → transcribe → signals → score → render, with no human in the loop.
+**Status:** Built 2026-09-30 (`clipminer\gui.py`). Changed from this spec by Tko's decision: the pipeline stops at a **review** stage before render. Sonnet's picks land in `work/<slug>/review.json`; Tko approves in the GUI's Review window, or GURT edits and approves the same file from chat. The worker renders anything approved, from either side.
 
 ---
 
