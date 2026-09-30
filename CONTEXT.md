@@ -57,11 +57,16 @@ All commands from `Projects\ClipMiner`, with `PYTHONPATH` = project dir and the 
 [Environment]::GetEnvironmentVariable('Path','User')`), since old shells don't see ffmpeg.
 1. `.\.venv\Scripts\python.exe -m clipminer <url>` (background it; ~5 min download +
    ~7 min/hr transcribe) → `work\<id>\{source.mp4, info.json, transcript.json}`.
-2. `clipminer.signals.loudness(video, work)` → `loudness.json` (~10s).
+   **Or leave out the URL** to work through `queue.txt` (one URL per line, gitignored).
+   Tko fills it; done lines are removed, failures stay commented with the error.
+2. Loudness → `loudness.json` (~10s). Done by step 1 now.
 3. Transcript health check: identical-start word runs (only 15+ = hallucination), lowercase
    stretches. Print the heatmap as text bars.
 4. Write a reading file: transcript merged into ~15s lines as `h:mm:ss text <L+n> <H0.xx>`
    (loudness ≥ 6 LU over median, heatmap ≥ 0.3). Read ALL of it in chunks.
+   **GURT picks blind first.** Then run `clipminer.score.score(work, 'claude-sonnet-5-5', [example runs])`
+   and diff (`picks-<model>.json`). Log every disagreement in the run file's "Scorer vs GURT"
+   section. GURT stays the answer key until the model matches it (Tko's rule).
 5. Shortlist → print word-level `word@start` for each window → choose first/last word starts.
 6. **Dry run:** select words with `a-0.05 <= start <= b+0.05`, print first 5 / last 5 words
    and length for every clip. Fix before rendering.
@@ -85,14 +90,17 @@ Next clip number: **29**.
 - [x] `skill.md` split into theme profile (A) + universal rules (B); log patterns tagged
 - [ ] Tko posts variants; performance per layout/platform goes into each run file's "Posted" line
 - [x] Run 3: JRE #2187 Sandler (2h17m) → 18 clips (11–28), BLUR + TRACK; SPLIT n/a
-      (multi-camera). TRACK now shot-aware (ffmpeg scdet). Verdict pending.
+      (multi-camera). TRACK now shot-aware (ffmpeg scdet). Tko: spot-checked, all good.
+- [x] `queue.txt`: batch download + transcribe + loudness, so episodes are ready to judge
 - [ ] Try `condition_on_previous_text=False` in `transcribe.py` (Whisper went lowercase
       mid-episode in runs 2 and 3)
 - [ ] Jump cuts: splice out a rambling middle so 37–38s stories fit ~30s
 - [ ] Transcribe speed: run 2 took 634s for 76 min (goal ~5 min). Degraded output (no
       punctuation, a hallucinated repeat) may be related. Investigate before automating.
 - [ ] `signals` ad detection + heatmap ad-skip filter in code
-- [ ] `score` automated from `skill.md` rules (Claude API)
+- [x] `score.py` (Claude API): 20-min pieces, structured output, length/dedupe in code. Run 3:
+      Haiku 4.5 found 9/18 (too small); Sonnet 5.5 found 16/18. Sonnet is the scorer.
+- [ ] Sonnet matches GURT's blind picks on new shows (GURT keeps logging the diffs)
 - [ ] One local file (no heatmap) end-to-end
 
 **Later (not v1):** face-tracked crop · gameplay/visual signals · local model · app/agent wrapper.
@@ -106,10 +114,9 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
 - `av` pinned to 18.1.0: av 19 removed `metadata_errors`, which faster-whisper 1.2.1 still passes.
 - yt-dlp warns it has no JS runtime (deno). Downloads work; install deno only if formats go missing.
 - Heatmap peaks after ad reads are skip landings, not replays (see `skill.md`).
-- Run: `.\.venv\Scripts\python.exe -m clipminer <url-or-file>` (download + transcribe only so far;
+- Run: `.\.venv\Scripts\python.exe -m clipminer [<url-or-file>]` (download + transcribe + loudness;
   the rest is the manual recipe above)
 
 ## Next step
-Tko reviews clips 11–28 (keep/reject, and does the score order match his taste?). Then:
-code the ad filter + automate `score` via the API, using `skill.md` + matching `clip_log\` examples as
-the prompt, and compare its picks on run 3 against the hand-picked 18.
+Run 4 on a new show: GURT picks blind, Sonnet picks, diff and log in "Scorer vs GURT", render
+the agreed clips + any model find GURT accepts. GUI (`GUI_SPEC.md`) waits until Sonnet matches.
