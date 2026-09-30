@@ -17,7 +17,8 @@ each, almost never both in frame. One host-read ad (ZipRecruiter, 8:33–9:57).
   recovered. ~100 short same-timestamp runs were timing collapse, not hallucination.
 - Transcribe 925s for 137 min (~6.7 min per hour). Download 544s.
 
-**Tko's verdict:** _(pending)_
+**Tko's verdict:** spot-checked a handful, all good; the score order matched his taste. No rejections.
+That makes 3 of 3 runs with no clip rejected, so the rubric is the answer key for `score`.
 
 **Clips** (all: Shape = universal structure, Here = comedian-podcast form)
 - **11 · 8 · Class clown, stick with that** (5:23, 38.9s). Opens "I did a Boston club, Comedy
@@ -122,3 +123,24 @@ on the right face, and cuts line up with who's talking.
    breaks). Dedupe by story type: they'll tell five "I bombed" stories.
 8. `[theme]` The guest roasting his younger self (15, 25, 27) was the richest vein; each has a
    clean "then vs. now" payoff.
+
+**Scorer vs GURT** (Tko's rule: GURT picks blind first, then diffs the model's picks and logs
+why. The disagreements are the teaching material.)
+- **Haiku 4.5, whole episode in one call:** 9/18 found. Rejected for scoring: attention faded
+  after 1:39 (7 of 9 misses), ignored length (5 picks at 43–63s, one 9s cut before its payoff),
+  picked warm talk with no turn (praise of Kevin Meaney, daughter's gym advice), picked the MTV
+  deal story twice. Lesson: small models need the episode in pieces and the rules enforced in code.
+- **Sonnet 5.5, 20-min pieces:** 16/18 found (11 was found but dropped by the old 36s cap).
+  Scores within ±1 of GURT's, usually 1 lower.
+  - *Missed:* 14 and 16 (both GURT 7s), and 22: took the JFK-book bomb instead. Same story type,
+    so the dedupe tiebreak went the other way. Clip 22 has the bigger payoff (fires before a set);
+    the model doesn't weigh "which version of this story is funnier" yet.
+  - *Model found, GURT missed:* 1:00:40 **pleather pants** (self-roast of the past self, the
+    top shape; GURT skipped it). 0:58:55 **no-shirt overalls**: GURT called it funny and dropped
+    it only for sitting 11s before clip 18. That spacing rule was wrong; see skill.md.
+  - *Good 7s the model added:* paid in cash or coke (1:51:21), "we met?" (1:59:12), watch my reel
+    (2:01:57), Jagger's gym trailers (0:51:41).
+  - *Weak picks, correctly scored 6:* premise factory (explainer, no joke), workout set
+    (rambling), "words mean nothing" (a take with no capper), David Lee Roth's handler (cut before
+    any payoff). The model gives no-payoff talk a 6 instead of dropping it.
+  - Cost: 7 calls, ~75k output tokens (mostly reasoning), ~5 min.
