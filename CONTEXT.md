@@ -15,7 +15,7 @@ one-line reason per clip. Scoring moves from GURT-by-hand → Claude API → sma
 - Inputs / outputs: YouTube URL or local file → `Finished_Clips\NN_<name>.mp4`
 - Failure mode — each stage caches to `work/<slug>/`; a crash resumes, not restarts
 - **Delete `work/<slug>/source.mp4` once the clips are rendered.** Tko's rule: no full videos kept.
-  Keep the small text files (transcript, info, loudness); `clip_log.md` refers to them.
+  Keep the small text files (transcript, info, loudness); the `clip_log\` run files refer to them.
   Re-cutting a clip later means re-downloading.
 - v1 scope: **comedian podcasts** (active theme `comedian-podcast` in `skill.md` Part A).
   Themes will be swappable later; no implementation yet, but rules and log are split into
@@ -32,9 +32,12 @@ one-line reason per clip. Scoring moves from GURT-by-hand → Claude API → sma
   platforms; performance decides. No layout rule until the numbers say so.
 - **No automatic judgment database.** GURT keeps the guidance by hand, and owns both files:
   `skill.md` = the rulebook, read in full every run (keep it tight).
-  `clip_log.md` = worked examples per run (kept + rejected, with why). Grows; code will pull
-  a few relevant entries into prompts. This is what lets the API model, and later a small local
-  model, pick like GURT does.
+  `clip_log\` = worked examples, one file per run (kept + rejected, with why), plus
+  `clip_log\INDEX.md`: one line per run and every shape/lesson with a tally (`[...]`, one
+  period per sighting; 3+ gets promoted into `skill.md`). Sessions read the index, never the
+  whole log; code will pull 3–5 matching examples into prompts. **Commit after every run**:
+  GitHub is the backup, the files stay where models can read them. This is what lets the API
+  model, and later a small local model, pick like GURT does.
 - Scorer roadmap: GURT by hand (now, building context) → Claude API → small local model.
 
 ## Pipeline
@@ -67,18 +70,20 @@ All commands from `Projects\ClipMiner`, with `PYTHONPATH` = project dir and the 
    `render(..., track_filter(segs, W, H), CAPTIONS_LOW)` → `_track`; if `split`:
    `render(..., split_filter(split, W, H), CAPTIONS_SEAM)` → `_split`. ~2 min per clip.
 8. Spot-check frames from a few outputs (contact sheet), then delete `source.mp4`.
-9. Log the run in `clip_log.md` (same format as run 3) and fold lessons into `skill.md`.
+9. Log the run as `clip_log\run-NN-<show>.md` (same format as run 3). Update `INDEX.md`:
+   add the run row, add a period to every shape and lesson seen again, add new ones as
+   `[.]`, re-sort, and promote 3+ into `skill.md`. Then commit and push.
 Next clip number: **29**.
 
 ## Status
 - [x] ffmpeg installed, `download` + `transcribe` produce a word-timed transcript
 - [x] Run 1 end-to-end on Wild Ride #222 (73.5 min): 5 clips in `Finished_Clips\`
 - [x] `render` 1080x1920 clips with captions
-- [x] Tko reviewed run 1: all 5 kept. Reasoning written up in `clip_log.md`
+- [x] Tko reviewed run 1: all 5 kept. Reasoning in `clip_log\run-01-wild-ride-222.md`
 - [x] 3 hand-judged runs on different shows (Wild Ride, Matt & Shane, JRE). Runs 1–2 all kept.
 - [x] SPLIT + TRACK layouts ported from openshorts; 06–10 rendered in all three layouts
 - [x] `skill.md` split into theme profile (A) + universal rules (B); log patterns tagged
-- [ ] Tko posts variants; performance per layout/platform goes into `clip_log.md` "Posted"
+- [ ] Tko posts variants; performance per layout/platform goes into each run file's "Posted" line
 - [x] Run 3: JRE #2187 Sandler (2h17m) → 18 clips (11–28), BLUR + TRACK; SPLIT n/a
       (multi-camera). TRACK now shot-aware (ffmpeg scdet). Verdict pending.
 - [ ] Try `condition_on_previous_text=False` in `transcribe.py` (Whisper went lowercase
@@ -106,5 +111,5 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
 
 ## Next step
 Tko reviews clips 11–28 (keep/reject, and does the score order match his taste?). Then:
-code the ad filter + automate `score` via the API, using `skill.md` + `clip_log.md` as the
-prompt, and compare its picks on run 3 against the hand-picked 18.
+code the ad filter + automate `score` via the API, using `skill.md` + matching `clip_log\` examples as
+the prompt, and compare its picks on run 3 against the hand-picked 18.
