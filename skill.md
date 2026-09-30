@@ -33,6 +33,8 @@ Funny is the priority for this theme; whacky and interesting fill the mix.
 - Hosts riffing on a serious topic until someone lands a sarcastic capper. Run 1 clip 01.
 - The guest's strangest true fact from their job or past. Run 1 clip 02, run 2 clip 08.
 - Hot takes on everyday things (malls, drugs, the internet). Run 1 clip 04, run 2 clips 09, 10.
+- A guest from outside comedy the hosts can poke at (a rancher, an NBA player, an internet-famous
+  Alabama fan). Every question to them is a setup. Runs 2, 4, 5.
 
 **Off-theme here:** sincere/earnest segments (charity, gratitude), technical explainers
 without a joke, business talk, tour-date plugs.
@@ -75,6 +77,22 @@ conversation" is not a clip. Ask: *would I send this to a friend?*
   one word early (run 3: "I got to stop," / "crush" / "murder why"). All were caught by the
   dry run, none by eye.
 
+## Proven shapes (seen 3+ times, from `clip_log\INDEX.md`)
+Structures that keep producing 8s and 9s. Not a checklist: a clip needs a payoff whatever its
+shape. But when a candidate fits one of these, build it to land the turn.
+- **Self-roast of the past self:** delusion then, blunt truth now.
+- **Scene → twist → reaction:** the reaction is the payoff.
+- **Plan meets reality:** a naive expectation, then the obvious question or the bad trade.
+- **Observational take with a quotable capper:** scores 7 unless the capper is quotable.
+- **Strange true fact, explained in one breath:** "people kept stealing our balcony."
+- **Shameless confession, told proudly:** the teller is proud of the thing they should hide
+  ("I didn't turn down one ID... their Westchester Rams card, I'd be like, that works").
+- **Friend exposes the other's habit:** duo shows. One host outs the other; the defence makes it worse.
+
+**Build backwards from the payoff.** Find the payoff line, then start at the *latest* line that
+still makes sense cold. A story told over 45s often has a 20s clip inside it (run 4: "I spent
+three, four hundred thousand coming into the draft. And my check was three hundred thousand").
+
 ## The three tests (run all three on every candidate)
 1. **Cold read:** read only the clip's text, nothing before it. Does it make sense? Does it land?
 2. **Retell:** can you say what happens in one sentence? If not, it's too muddy.
@@ -93,6 +111,9 @@ Post Malone doesn't work if the name is never said in the window. (Later: a titl
   stay there. Run 2 was like that throughout; run 3 switched at 1:28:52 and recovered at
   1:47:42. Judge sentence boundaries by meaning there. Fix to try: `condition_on_previous_text
   =False` in `transcribe.py` so one bad stretch can't carry forward **(guess)**.
+- **Hallucinated loops and word salad** can sit right beside a good clip (run 6: "he's in the
+  neighborhood" x40 at 1:11:34, clip 61 starts 20s later). Read the clip's own captions.
+- **Misheard names:** fix the caption when you're sure (Cat → Katt Williams); otherwise cut around it.
 - **Misheard payoff words:** if Whisper gets a key word wrong ("we have a *shot* in an hour"),
   move the boundary to avoid captioning it rather than posting a wrong caption.
 
@@ -121,6 +142,8 @@ as off-limits for clips, heatmap peaks and loudness spikes.
   10–20s are the useful hint (run 1 clip 01).
 - Ad reads run hot; ignore spikes inside them.
 - Some shows are mixed flat (run 2: 5 spikes in 76 min). If spikes are that rare, ignore it.
+- Group shows never go quiet (run 4, six people: 21% of seconds spiked). Ignore it there too.
+- Compressed studio mixes can show zero spikes (run 6, Flagrant). Ignore it there too.
 - Loudness alone never selects a clip.
 
 ## Signal 3 — Transcript (the decider)
@@ -128,7 +151,7 @@ Signals point you to places; the transcript decides. A strong moment with no sig
 peak with no payoff. Run 1: 2 of 5 kept clips had no signal. Run 2: all 5. **Always read the
 whole transcript.**
 
-Drop on sight (any theme): ads, intros/outros, "subscribe", housekeeping, rapid-fire Q&A lists,
+Drop on sight (any theme): ads, cold-open teasers (the full moment is later), intros/outros, "subscribe", housekeeping, rapid-fire Q&A lists,
 cross-talk captions can't follow, gestures the viewer can't see ("they were like *this*"),
 setups whose payoff is outside the length limit.
 
@@ -168,6 +191,9 @@ Write the score and a one-line reason in the run's `clip_log\` file. The score g
 ## Risk flags (mention, don't auto-reject; Tko decides)
 - Rumors or accusations about named real people. Drug-use rumors about named celebrities →
   skip; there's usually a safer clip on the same topic nearby.
+- **N-word, race, religion or trans bits: judge them like any other clip.** Tko's ruling after
+  run 5: "if the clip is good I don't care if it has the N-word." Score on the payoff, then add a
+  risk flag so Tko knows. The caption shows `****`, never the word (see Render).
 
 ## Render — every clip in all three layouts
 Tko posts all three variants across platforms and lets performance decide. **No layout
@@ -178,6 +204,8 @@ NN keeps counting up across runs.
 - **SPLIT:** two faces stacked (1080x960 each), captions on the seam. Top = left person.
   Needs both people *in the same shot for the whole clip*. Multi-camera shows that cut
   between single close-ups (run 3, JRE) can't do SPLIT. Skip it and say so; don't fake it.
+  Faces must also be big enough: a wide couch shot with ~40px faces would be a 4x upscale
+  (run 4). `reframe.plan` skips SPLIT when a face is under ~H/13.
 - **TRACK:** 9:16 full-height crop. The clip is split into camera shots first (ffmpeg `scdet`,
   threshold 10; real cuts score ~22–24). Per shot: 1 face → center on it; 2+ faces → follow
   the talker by mediapipe `jawOpen` (switch only if clearly higher, hold ≥ 1.5s); 0 faces →
@@ -187,4 +215,6 @@ NN keeps counting up across runs.
   (boxed hands, a plant pot, a belt buckle). **Draw boxes on one frame per show and look
   before rendering.**
 - Captions: burned in, up to 3 words per line, word-timed. BLUR/TRACK low third; SPLIT on the seam.
+- **No curse word readable on screen** (Tko's rule). `render.mask_curses` turns it into `****`;
+  the audio stays as spoken. Includes slurs. Add words to `render.CURSE` if one slips through.
 - Delete `work\<slug>\source.mp4` after rendering.
