@@ -1,0 +1,7 @@
+yt-dlp==2026.8.19
+faster-whisper==1.2.1
+av==18.1.0
+mediapipe==1.0.1
+opencv-contrib-python==5.0.0.93
+nvidia-cublas-cu12==12.9.2.10
+nvidia-cudnn-cu12==9.27.0.42
