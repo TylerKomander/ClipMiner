@@ -4,6 +4,8 @@ Worked examples for future models. Rules live in `../skill.md`; the run files sh
 **Read this index, not the run files.** Open a run file only when its clips are relevant, and
 pull 3–5 matching clips as examples, never the whole log. Kept clips show what good looks
 like; rejected ones show what to avoid.
+`[scorer]` lessons come from each run's **Scorer vs GURT** section: where the API model and GURT
+disagreed and who was right. They're the fastest way to make the model pick like GURT.
 
 Conventions used in the run files:
 - Heat = heatmap bucket value(s) the clip overlaps (0–1, relative). Loud = seconds ≥ 6 LU over
@@ -59,6 +61,10 @@ sightings but every clip scored 7. Stories with a clear turn score higher than t
 - `[..]` `[universal]` Whisper drops to lowercase with no punctuation (run 2 throughout, run 3 mid-episode). (in skill.md)
 - `[..]` `[universal]` A story fails the cold read when its subject is never named in the window (run 2 Post Malone, run 3 clip 16).
 - `[..]` `[universal]` The first try at framing was wrong (center crop in run 1, mediapipe detector in run 2). Always look at frames before rendering. (in skill.md)
+- `[.]` `[scorer]` Model gives no-payoff talk a 6 instead of rejecting it (run 3, Haiku and Sonnet). (in skill.md)
+- `[.]` `[scorer]` Model picks the weaker version of a repeated story type (run 3: JFK book over Malibu fires). (in skill.md)
+- `[.]` `[scorer]` Small model loses the second half of a long episode; send it in pieces (run 3, Haiku).
+- `[.]` `[universal]` GURT missed a top-shape clip the model found (run 3: pleather pants). Blind-pick then diff catches both sides.
 - `[.]` `[universal]` Evenly spaced heatmap peaks may be YouTube mid-roll breaks (run 3, guess).
 - `[.]` `[theme]` A non-comedian guest is gold when the hosts poke at their world (run 2).
 - `[.]` `[theme]` Two comedians ≈ 8 clips/hour; dedupe by story type (run 3).
