@@ -188,6 +188,16 @@ all five are great, all five are 9–10. If none are, none are.
 - **≤5:** don't render. Log it as rejected with the reason.
 Write the score and a one-line reason in the run's `clip_log\` file. The score goes in the filename.
 
+## Post description (one per clip, written with the pick)
+Saved next to the clip as `NN_s<score>_<name>.txt`; Tko copies it into the post. Three parts, each on
+its own line:
+1. **Hook** (under ~70 characters): the premise that makes someone stop, in plain words. Never
+   the punchline; the clip delivers that. "He paid for his first rookie year before he got paid."
+2. **Credit:** show and guest, always. "From <show> <episode> with <guest>." Clips are someone
+   else's work; the credit stays.
+3. **Hashtags:** 3–5. The show, the guest or host, and one or two broad ones (#comedy #podcast).
+No emoji walls, no "wait for it", no "you won't believe". Curse words are masked in the file.
+
 ## Risk flags (mention, don't auto-reject; Tko decides)
 - Rumors or accusations about named real people. Drug-use rumors about named celebrities →
   skip; there's usually a safer clip on the same topic nearby.
