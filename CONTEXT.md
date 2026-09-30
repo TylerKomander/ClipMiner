@@ -53,33 +53,17 @@ one-line reason per clip. Scoring moves from GURT-by-hand → Claude API → sma
 
 `skill.md` is the source of truth for how clips get picked. Update it after every run.
 
-## How a run is done today (manual; the helper scripts were throwaway, this is the recipe)
-All commands from `Projects\ClipMiner`, with `PYTHONPATH` = project dir and the PATH refreshed
-(`$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' +
-[Environment]::GetEnvironmentVariable('Path','User')`), since old shells don't see ffmpeg.
-1. `.\.venv\Scripts\python.exe -m clipminer <url>` (background it; ~5 min download +
-   ~7 min/hr transcribe) → `work\<id>\{source.mp4, info.json, transcript.json}`.
-   **Or leave out the URL** to work through `queue.txt` (one URL per line, gitignored).
-   Tko fills it; done lines are removed, failures stay commented with the error.
-2. Loudness → `loudness.json` (~10s). Done by step 1 now.
-3. Transcript health check: identical-start word runs (only 15+ = hallucination), lowercase
-   stretches. Print the heatmap as text bars.
-4. Write a reading file: transcript merged into ~15s lines as `h:mm:ss text <L+n> <H0.xx>`
-   (loudness ≥ 6 LU over median, heatmap ≥ 0.3). Read ALL of it in chunks.
-   **GURT picks blind first.** Then run `clipminer.score.score(work, 'claude-sonnet-5-5', [example runs])`
-   and diff (`picks-<model>.json`). Log every disagreement in the run file's "Scorer vs GURT"
-   section. GURT stays the answer key until the model matches it (Tko's rule).
-5. Shortlist → print word-level `word@start` for each window → choose first/last word starts.
-6. **Dry run:** select words with `a-0.05 <= start <= b+0.05`, print first 5 / last 5 words
-   and length for every clip. Fix before rendering.
-7. Render per clip: `start = first.start - 0.15`, `end = last.end + 0.3`;
-   `segs, split = reframe.plan(video, start, end)`; `render(... _blur)`;
-   `render(..., track_filter(segs, W, H), CAPTIONS_LOW)` → `_track`; if `split`:
-   `render(..., split_filter(split, W, H), CAPTIONS_SEAM)` → `_split`. ~2 min per clip.
-8. Spot-check frames from a few outputs (contact sheet), then delete `source.mp4`.
-9. Log the run as `clip_log\run-NN-<show>.md` (same format as run 3). Update `INDEX.md`:
-   add the run row, add a period to every shape and lesson seen again, add new ones as
-   `[.]`, re-sort, and promote 3+ into `skill.md`. Then commit and push.
+## How a run is done now
+**GUI:** `.\.venv\Scripts\python.exe -m clipminer.gui` (from `Projects\ClipMiner`). Paste URLs → the worker runs
+download → transcribe → signals → score (Sonnet) one job at a time → stage **review**. Approve in the Review
+window (double-click a row to drop it), or from chat. Approved jobs render, write the `.txt` post
+descriptions, and delete `source.mp4`. `queue.json` / `profiles.json` are local (gitignored).
+**CLI:** `python -m clipminer <url>` (or no URL = `queue.txt`) stops at review; `python -m clipminer --render <slug>`.
+**GURT's part (teaching loop, Tko's rule):** before approving, GURT reads the transcript and picks blind, then
+diffs against `review.json` (`by: sonnet` vs `by: gurt`), adds/edits clips with `review.entry(words, name, score,
+first, last, "gurt", payoff, reason, fixes, description)` (word indices; `fixes` corrects misheard caption words),
+sets `keep`, saves, sets `status: approved`. Logs the diff in the run file's "Scorer vs GURT", updates INDEX,
+commits. Transcript health check and face check (look at frames) still come first.
 Next clip number: **68**.
 
 ## Status
@@ -102,6 +86,9 @@ Next clip number: **68**.
 - [ ] `signals` ad detection + heatmap ad-skip filter in code
 - [x] `score.py` (Claude API): 20-min pieces, structured output, length/dedupe in code. Run 3:
       Haiku 4.5 found 9/18 (too small); Sonnet 5.5 found 16/18. Sonnet is the scorer.
+- [x] `review.py`: review gate (`review.json`), dry-run preview, render with exact caption words,
+      curse masking, per-clip `.txt` post description; numbering continues across Used-Clips
+- [x] GUI (`gui.py`) per GUI_SPEC with a review stage. Smoke-tested; not yet run on a real episode
 - [ ] Sonnet matches GURT's blind picks on new shows (GURT keeps logging the diffs)
       Run 4 (Arenas): agreed on 5 of 10; Sonnet found 2 GURT missed; Tko kept all 11.
       Run 5 (Theo Von): agreed 6 of 10, 3 finds kept. Run 6 (Flagrant): agreed 7 of 10, 5 finds kept.
@@ -122,7 +109,6 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
   the rest is the manual recipe above)
 
 ## Next step
-Tko reviews clips 40–67 (runs 5–6). Then keep running new shows from `queue.txt` the same way:
-GURT picks blind, Sonnet picks, diff, log "Scorer vs GURT", render from clip 68 with masked captions.
-Code the render step (the dry run + `final.json` + render loop is still a scratch script) before the
-GUI; the GUI (`GUI_SPEC.md`) waits until Sonnet matches GURT's blind picks.
+Tko runs the GUI on real episodes and checks GUI_SPEC's "Done when" list (3 URLs in a row, kill mid-job and
+resume, bad URL, copy description, two Chrome profiles). GURT keeps doing the blind-pick diff on each job
+at the review stage. Tko still owes a look at clips 40–67.
