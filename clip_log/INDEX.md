@@ -29,42 +29,73 @@ universal) and note "(in skill.md)" here.
 |---|---|---|---|---|---|
 | 1 | `run-01-wild-ride-222.md` | Wild Ride #222 (Steve-O, penguinz0) | 73m | 01–05 | heatmap mostly ad-skip; BLUR only |
 | 2 | `run-02-matt-shane-638.md` | Matt & Shane #638 (rancher guest) | 77m | 06–10 | no heatmap, flat loudness, lowercase transcript |
-| 3 | `run-03-jre-2187-sandler.md` | JRE #2187 (Adam Sandler) | 137m | 11–28 | multi-camera, no SPLIT; 18 clips |
+| 3 | `run-03-jre-2187-sandler.md` | JRE #2187 (Adam Sandler) | 137m | 11–28 | multi-camera, no SPLIT; 18 clips; first scorer test |
+| 4 | `run-04-ball-in-the-family-34-arenas.md` | Ball in the Family #34 (Gilbert Arenas) | 71m | 29–39 | athlete show under comedian rules; 6-person couch; first blind-pick diff |
+| 5 | `run-05-this-past-weekend-489-druski.md` | This Past Weekend #489 (Druski, Roll Tide Willie) | 97m | 40–52 | race-heavy riffs skipped; real heatmap peak = best clip |
+| 6 | `run-06-flagrant-shane-gillis-steve-gerben.md` | Flagrant (Shane Gillis, Steve Gerben) | 108m | 53–67 | every peak fake, 0 loudness spikes, hallucinated transcript |
 
 ## Shapes (universal), most seen first
 Format: tally · shape · clips (score). Clip numbers match `Finished_Clips\` and the run files.
-- `[....]` **Self-roast of the past self**: delusion then, blunt truth now · 14 (7), 15 (9), 25 (8), 27 (9)
-- `[....]` **Scene → twist → reaction**: the reaction is the payoff · 06 (9), 11 (8), 20 (9), 22 (8)
-- `[...]` **Plan meets reality**: naive expectation, then the obvious question or bad trade · 13 (8), 16 (7), 26 (8)
-- `[...]` **Observational take**: name or reframe something everyone knows · 04 (7), 09 (7), 28 (7)
-- `[..]` **Strange true fact / hidden origin, explained in one breath** · 08 (8), 18 (8)
+3+ = proven, listed in `skill.md` Part B "Proven shapes".
+- `[......]` **Self-roast of the past self**: delusion then, blunt truth now · 14 (7), 15 (9), 25 (8), 27 (9), 38 (7), 53 (7)
+- `[......]` **Scene → twist → reaction**: the reaction is the payoff · 06 (9), 11 (8), 20 (9), 22 (8), 35 (7), 58 (8)
+- `[......]` **Observational take with a quotable capper** · 04 (7), 09 (7), 28 (7), 37 (7), 44 (8), 67 (7)
+- `[.....]` **Plan meets reality**: naive expectation, then the obvious question or bad trade · 13 (8), 16 (7), 26 (8), 30 (8), 54 (8)
+- `[....]` **Strange true fact, explained in one breath** · 08 (8), 18 (8), 42 (8), 55 (7)
+- `[...]` **Shameless confession, told proudly** · 19 (9), 36 (8), 64 (9)
+- `[...]` **Friend exposes the other's habit** · 57 (8), 66 (7), 67 (7)
+- `[..]` **Insider rule revealed, pushed to absurd precision** · 07 (9), 29 (8)
+- `[..]` **Self-justifying logic spiral** · 12 (8), 32 (7)
+- `[..]` **Confession in the first sentence** · 02 (8), 33 (9)
+- `[..]` **Behind-the-scenes reveal told straight** · 05 (6), 31 (9)
 - `[..]` **Energy build or outrageous comparison, then a capper that tops it** · 01 (8), 17 (9)
-- `[.]` **Insider rule revealed live** · 07 (9)
-- `[.]` **Self-justifying logic spiral** · 12 (8)
-- `[.]` **Absurd image → strong verdict** · 10 (8)
-- `[.]` **Confession in the first sentence** · 02 (8)
-- `[.]` **Clever cowardice told proudly** · 19 (9)
+- `[..]` **Proud reveal, instantly deflated** · 43 (9), 65 (8)
+- `[..]` **Parent collides with the joke** · 21 (7), 61 (8)
+- `[..]` **Absurd image → strong verdict** · 10 (8), 56 (8)
+- `[..]` **Prank or bit backfires** · 60 (7), 63 (7)
+- `[.]` **Unbreakable loyalty, broken in one question** · 52 (9)
+- `[.]` **Made-up fact, caught live** · 48 (8)
+- `[.]` **Embarrassing message read back live** · 59 (8)
+- `[.]` **List game with a guest who never breaks** · 50 (8)
+- `[.]` **A con presented as advice** · 47 (8)
+- `[.]` **Absurd escalation of a crush** · 45 (8)
+- `[.]` **Crude image, then someone finds the silver lining** · 41 (8)
+- `[.]` **Steering toward the line everyone's thinking, called out** · 40 (7)
+- `[.]` **Code of honor stated backwards** · 49 (7)
+- `[.]` **Roast of a third party's look** · 46 (7)
+- `[.]` **One-line policy, stated proudly** · 34 (8)
+- `[.]` **Parent's proud setup, kid's absurd reality** · 39 (7)
 - `[.]` **Backup plan justified by one absurd story** · 23 (8)
-- `[.]` **Innocent enthusiasm misread by a parent** · 21 (7)
 - `[.]` **Old doubters witness the success** · 24 (7)
-- `[.]` **Behind-the-scenes reveal** · 05 (6)
 - `[.]` **Vivid description → takeaway** · 03 (6)
 
-Early read: the four-period shapes are all *story* shapes. The observational shape has three
-sightings but every clip scored 7. Stories with a clear turn score higher than takes.
+Read so far: story shapes with a clear turn score 8–9; takes score 7 unless the capper is
+quotable. Duo shows (Shane/Steve) run on "friend exposes the other"; one-guest shows on self-roast.
 
 ## Recurring lessons, most seen first
-- `[....]` `[universal]` The best version of a story needs more than 35s of setup (run 1 clip 02, run 2 clip 10, run 3 clips 11, 26). Fix: jump cuts, not built yet.
-- `[...]` `[universal]` The last word of a clip got dropped (run 2 once, run 3 twice by different causes). A dry run of the first and last 5 words catches it. (in skill.md)
-- `[...]` `[universal]` Clips with zero signal support are as good as signalled ones (run 1 had 2, run 2 all 5, run 3 most). Always read the whole transcript. (in skill.md)
-- `[..]` `[universal]` Heatmap peaks right after ad reads are skip landings (runs 1, 3). (in skill.md)
-- `[..]` `[universal]` Whisper drops to lowercase with no punctuation (run 2 throughout, run 3 mid-episode). (in skill.md)
-- `[..]` `[universal]` A story fails the cold read when its subject is never named in the window (run 2 Post Malone, run 3 clip 16).
-- `[..]` `[universal]` The first try at framing was wrong (center crop in run 1, mediapipe detector in run 2). Always look at frames before rendering. (in skill.md)
-- `[.]` `[scorer]` Model gives no-payoff talk a 6 instead of rejecting it (run 3, Haiku and Sonnet). (in skill.md)
-- `[.]` `[scorer]` Model picks the weaker version of a repeated story type (run 3: JFK book over Malibu fires). (in skill.md)
+- `[......]` `[universal]` The best version of a story needs more than 35s (runs 1–6; run 6: catfish setup is 2 min before its payoff). Fix: jump cuts, not built yet.
+- `[.....]` `[universal]` The dry run of first/last 5 words catches cut-off words (runs 2–6). (in skill.md)
+- `[.....]` `[universal]` Clips with zero signal support are as good as signalled ones (runs 1–6; run 6: every peak fake, no loudness). (in skill.md)
+- `[....]` `[universal]` Heatmap peaks right after ad reads are skip landings (runs 1, 3, 5, 6; run 6: 5 of 5). (in skill.md)
+- `[....]` `[universal]` Whisper drops to lowercase with no punctuation (runs 2–4, 6). (in skill.md)
+- `[....]` `[universal]` A story fails the cold read when its subject is never named in the window (Post Malone, 16, 32, Sexy Red). (in skill.md)
+- `[....]` `[universal]` The first framing try was wrong: center crop, mediapipe, tiny-face SPLIT, poster faces. Look at frames before rendering. (in skill.md)
+- `[....]` `[scorer]` Model gives no-payoff talk a 6 instead of rejecting it (runs 3–6). (in skill.md, not biting yet)
+- `[...]` `[universal]` GURT missed clips the model found (runs 3–6; run 6: 5 accepted). Blind-pick, then diff, then accept finds after reading them. (in CONTEXT.md recipe)
+- `[...]` `[theme]` A non-comedian guest is gold when the hosts poke at their world (rancher, Arenas, Roll Tide Willie). (in skill.md)
+- `[..]` `[universal]` Loudness is useless on group or compressed shows (run 4: 21% spiked; run 6: 0 spikes). (in skill.md)
+- `[..]` `[universal]` Fix misheard words in captions when sure (Katt, Tide man, balls); cut around them when not. (in skill.md)
+- `[..]` `[universal]` Whisper hallucinations (repeat loops, word salad) sit next to good clips (runs 5, 6). Check the window's own captions. (in skill.md)
+- `[..]` `[scorer]` Model picks the weaker version of a repeated story, or a different window of it (runs 3–5).
+- `[..]` `[scorer]` Model scores race/N-word/religion bits on the payoff (runs 5, 6). Correct per Tko; it should still add a risk flag.
+- `[..]` `[scorer]` Model and "build backwards from the payoff": wrong on run 4 (30, 35), right on run 6 (59) where GURT wasn't.
+- `[.]` `[scorer]` Model under-scores "confession of incompetence told proudly" (run 6, 64: 6 vs 9).
 - `[.]` `[scorer]` Small model loses the second half of a long episode; send it in pieces (run 3, Haiku).
-- `[.]` `[universal]` GURT missed a top-shape clip the model found (run 3: pleather pants). Blind-pick then diff catches both sides.
+- `[.]` `[universal]` Never clip a cold-open teaser (run 4). (in skill.md)
+- `[.]` `[universal]` Caption the exact dry-run words, not words selected by time (run 4). Fixed in code.
+- `[.]` `[universal]` Best story lost to transcript garbage (run 6, SNL firing). Idea: re-transcribe one stretch.
 - `[.]` `[universal]` Evenly spaced heatmap peaks may be YouTube mid-roll breaks (run 3, guess).
-- `[.]` `[theme]` A non-comedian guest is gold when the hosts poke at their world (run 2).
-- `[.]` `[theme]` Two comedians ≈ 8 clips/hour; dedupe by story type (run 3).
+- `[.]` `[theme]` N-word/race bits: GURT skipped them in run 5; Tko overruled: judge on the payoff, flag the risk. (in skill.md)
+- `[.]` `[theme]` A guest walking in mid-episode is a clip farm; every question is a setup (run 5, Willie).
+- `[.]` `[theme]` Two comedians ≈ 8 clips/hour (run 3); runs 4–6 ran 8–9/hour.
+- `[.]` `[theme]` Athlete storytellers fit the comedian profile when the guest tells stories deadpan (run 4).
