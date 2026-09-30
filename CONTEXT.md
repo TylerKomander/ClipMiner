@@ -122,5 +122,7 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
   the rest is the manual recipe above)
 
 ## Next step
-Run 4 on a new show: GURT picks blind, Sonnet picks, diff and log in "Scorer vs GURT", render
-the agreed clips + any model find GURT accepts. GUI (`GUI_SPEC.md`) waits until Sonnet matches.
+Tko reviews clips 40–67 (runs 5–6). Then keep running new shows from `queue.txt` the same way:
+GURT picks blind, Sonnet picks, diff, log "Scorer vs GURT", render from clip 68 with masked captions.
+Code the render step (the dry run + `final.json` + render loop is still a scratch script) before the
+GUI; the GUI (`GUI_SPEC.md`) waits until Sonnet matches GURT's blind picks.
