@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -25,15 +26,28 @@ CAPTIONS_LOW = (2, 520)
 CAPTIONS_SEAM = (5, 0)
 
 
+# Tko's rule: no curse word may be readable on screen. The audio stays; only the caption is masked.
+CURSE = re.compile(
+    r"(mother)?f+u+c*k+\w*|\w*shit\w*|\w*bitch\w*|(dumb|jack|bad|smart)?ass(es|hole|holes)?|"
+    r"dick(s|head|heads)?|cock(s|sucker|suckers)?|puss(y|ies)|cunts?|nigg\w*|fag\w*|(god)?damn\w*|"
+    r"bastards?|whores?|sluts?|retard\w*|twats?|piss\w*|hoes?",
+    re.IGNORECASE,
+)
+
+
+def mask_curses(word: str) -> str:
+    core = word.strip(".,?!;:\"'-")
+    return word.replace(core, "*" * len(core)) if core and CURSE.fullmatch(core) else word
+
+
 def ass_time(t: float) -> str:
     cs = round(t * 100)
     return f"{cs // 360000}:{cs // 6000 % 60:02}:{cs // 100 % 60:02}.{cs % 100:02}"
 
 
-def caption_lines(words: list[dict], start: float, end: float, max_words: int = 3) -> list[tuple[float, float, str]]:
-    inside = [w for w in words if w["start"] >= start - 0.05 and w["end"] <= end + 0.05]
+def caption_lines(words: list[dict], start: float, max_words: int = 3) -> list[tuple[float, float, str]]:
     lines, chunk = [], []
-    for w in inside:
+    for w in words:
         chunk.append(w)
         if len(chunk) == max_words or w["word"].rstrip().endswith((".", ",", "?", "!")):
             lines.append(chunk)
@@ -41,16 +55,21 @@ def caption_lines(words: list[dict], start: float, end: float, max_words: int = 
     if chunk:
         lines.append(chunk)
     return [
-        (c[0]["start"] - start, c[-1]["end"] - start, " ".join(w["word"].strip() for w in c).upper())
+        (c[0]["start"] - start, c[-1]["end"] - start, " ".join(mask_curses(w["word"].strip()) for w in c).upper())
         for c in lines
     ]
 
 
 def render(video: Path, work: Path, out: Path, start: float, end: float,
-           video_filter: str = BLUR_FILL, captions: tuple[int, int] = CAPTIONS_LOW) -> Path:
-    words = [w for s in json.loads((work / "transcript.json").read_text(encoding="utf-8"))["segments"] for w in s["words"]]
+           video_filter: str = BLUR_FILL, captions: tuple[int, int] = CAPTIONS_LOW,
+           words: list[dict] | None = None) -> Path:
+    """`words` are the exact words to caption; the dry run picks them. Selecting by time instead
+    pulls in neighbours that share a timestamp with the first word (run 4: a stray "ON.")."""
+    if words is None:
+        every = [w for s in json.loads((work / "transcript.json").read_text(encoding="utf-8"))["segments"] for w in s["words"]]
+        words = [w for w in every if w["start"] >= start - 0.05 and w["end"] <= end + 0.05]
     ass = work / f"{out.stem}.ass"
-    events = [f"Dialogue: 0,{ass_time(a)},{ass_time(b)},Cap,{text}" for a, b, text in caption_lines(words, start, end)]
+    events = [f"Dialogue: 0,{ass_time(a)},{ass_time(b)},Cap,{text}" for a, b, text in caption_lines(words, start)]
     header = ASS_HEADER.format(alignment=captions[0], margin_v=captions[1])
     ass.write_text(header + "\n".join(events) + "\n", encoding="utf-8")
 
