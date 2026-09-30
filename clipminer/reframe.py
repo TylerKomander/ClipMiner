@@ -63,8 +63,9 @@ def find_faces(video: Path, start: float, end: float) -> list[tuple[int, int, in
     cap.release()
     if not hits:
         return []
-
-    hits.sort()
+    # Faces on posters and book covers behind the hosts are real detections but tiny (run 5).
+    biggest = max(w for _, _, w in hits)
+    hits = sorted(h for h in hits if h[2] >= biggest / 3)
     people, current = [], [hits[0]]
     for h in hits[1:]:
         if h[0] - current[-1][0] > 0.15 * W:
@@ -116,8 +117,8 @@ def speaker_segments(video: Path, start: float, end: float, faces, hold: float =
 
 def plan(video: Path, start: float, end: float) -> tuple[list[tuple[float, int]], list | None]:
     """TRACK segments as (clip-relative time, face center x), plus the two faces for SPLIT, or None
-    when SPLIT can't work (camera cuts, or not exactly two people in the one shot)."""
-    W, _ = frame_size(video)
+    when SPLIT can't work (camera cuts, not exactly two people in the one shot, or faces too small)."""
+    W, H = frame_size(video)
     bounds = [0.0, *shot_cuts(video, start, end), end - start]
     segments, shots = [], []
     for a, b in zip(bounds, bounds[1:]):
@@ -131,6 +132,9 @@ def plan(video: Path, start: float, end: float) -> tuple[list[tuple[float, int]]
             for t, i in speaker_segments(video, start + a, start + b, faces):
                 segments.append((a + t, faces[i][0]))
     split = shots[0] if len(shots) == 1 and len(shots[0]) == 2 else None
+    # A 960px panel is ~6 face-widths tall; below H*0.45 the upscale turns to mush (run 4 wide shot: 4x).
+    if split and min(w for _, _, w in split) * 6 < H * 0.45:
+        split = None
     return segments, split
 
 
