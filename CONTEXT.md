@@ -28,6 +28,8 @@ one-line reason per clip. Scoring moves from GURT-by-hand → Claude API → sma
 - **Clip count is variable** (quality decides, not a number). Every clip gets a 1–10 absolute
   score (rubric in `skill.md`); only 6+ are rendered. Videos over 1h are read in chunks.
 - Run 1 (clips 01–05) stays BLUR-only. Tko decided not to re-render it.
+- **Captions never show a curse word** (masked `****`; audio untouched). Clips 01–67 predate the rule
+  and are NOT masked. Tko treats them as test runs and will mostly scrap them; don't re-render.
 - **Every clip is rendered in all 3 layouts** (blur/split/track). Tko posts variations across
   platforms; performance decides. No layout rule until the numbers say so.
 - **No automatic judgment database.** GURT keeps the guidance by hand, and owns both files:
@@ -78,7 +80,7 @@ All commands from `Projects\ClipMiner`, with `PYTHONPATH` = project dir and the 
 9. Log the run as `clip_log\run-NN-<show>.md` (same format as run 3). Update `INDEX.md`:
    add the run row, add a period to every shape and lesson seen again, add new ones as
    `[.]`, re-sort, and promote 3+ into `skill.md`. Then commit and push.
-Next clip number: **29**.
+Next clip number: **68**.
 
 ## Status
 - [x] ffmpeg installed, `download` + `transcribe` produce a word-timed transcript
@@ -101,6 +103,8 @@ Next clip number: **29**.
 - [x] `score.py` (Claude API): 20-min pieces, structured output, length/dedupe in code. Run 3:
       Haiku 4.5 found 9/18 (too small); Sonnet 5.5 found 16/18. Sonnet is the scorer.
 - [ ] Sonnet matches GURT's blind picks on new shows (GURT keeps logging the diffs)
+      Run 4 (Arenas): agreed on 5 of 10; Sonnet found 2 GURT missed; Tko kept all 11.
+      Run 5 (Theo Von): agreed 6 of 10, 3 finds kept. Run 6 (Flagrant): agreed 7 of 10, 5 finds kept.
 - [ ] One local file (no heatmap) end-to-end
 
 **Later (not v1):** face-tracked crop · gameplay/visual signals · local model · app/agent wrapper.
