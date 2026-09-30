@@ -140,7 +140,10 @@ setups whose payoff is outside the length limit.
 3. For each candidate, find the payoff line; build the window backwards to a clean opener.
 4. Run the three tests. Drop failures.
 5. Score every survivor (rubric below). Render everything scoring **6+**.
-6. Mix kinds. No overlaps, 30s+ apart, no two clips on the same sub-topic.
+6. Mix kinds. No overlaps and no two clips on the same sub-topic. Two different stories may
+   sit back to back (run 3: "no-shirt overalls" was dropped for ending 11s before clip 18; wrong).
+7. **Same story type twice:** keep the version with the bigger payoff, not the first one found.
+8. **No turn, no clip.** A take or story with no capper is not a 6, it's a reject.
 
 ## How many clips
 **No fixed number.** The episode decides. A dead 2-hour episode might give 2; a great one
