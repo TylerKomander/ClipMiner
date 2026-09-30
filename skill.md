@@ -1,7 +1,8 @@
 # ClipMiner — how we pick clips
 
-The rulebook. Read this whole file before picking clips. Worked examples live in `clip_log.md`;
-read the entries you're given before judging. Tko + GURT tune both after every run.
+The rulebook. Read this whole file before picking clips. Worked examples live in `clip_log\`,
+one file per run; `clip_log\INDEX.md` lists every shape and lesson with a tally of how often it
+has been seen. Read the index, then only the run entries you're given. Tko + GURT tune both after every run.
 Anything marked **(guess)** hasn't been checked against a real run yet.
 
 Two parts:
@@ -42,7 +43,7 @@ profanity in the first 3s (reach), not the topic.
 ## Writing a new theme profile (when Tko changes the niche)
 Copy the block above and fill the same fields: name, what the content is, audience, what the
 payoff looks like (and which kind is the priority), where it hides, what's off-theme,
-tolerance. Keep the `clip_log.md` entries. Their *universal* lessons still apply, and their
+tolerance. Keep the `clip_log\` run files. Their *universal* lessons still apply, and their
 *theme* lessons show the new profile what "specific enough" looks like.
 
 ---
@@ -159,7 +160,7 @@ all five are great, all five are 9–10. If none are, none are.
 - **7:** good moment, noticeably flawed cut (filler opener, runs long past the payoff).
 - **6:** postable filler. Passes the tests, but nobody shares it.
 - **≤5:** don't render. Log it as rejected with the reason.
-Write the score and a one-line reason in `clip_log.md`. The score goes in the filename.
+Write the score and a one-line reason in the run's `clip_log\` file. The score goes in the filename.
 
 ## Risk flags (mention, don't auto-reject; Tko decides)
 - Rumors or accusations about named real people. Drug-use rumors about named celebrities →
