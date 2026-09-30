@@ -3,3 +3,5 @@ __pycache__/
 work/
 Finished_Clips/
 queue.txt
+queue.json
+profiles.json
