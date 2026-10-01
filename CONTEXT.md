@@ -97,6 +97,13 @@ Next clip number: **68**.
       Run 5 (Theo Von): agreed 6 of 10, 3 finds kept. Run 6 (Flagrant): agreed 7 of 10, 5 finds kept.
 - [ ] One local file (no heatmap) end-to-end
 
+**Cost plan (Tko 2026-09-30: fine for now, must get cheaper as it scales).** Today ~$1–1.50 per 2h
+episode, mostly Sonnet's output (~9k tokens per 20-min piece, flat across runs; logs don't shrink it).
+In order: (1) Message Batches API for queued episodes, −50% on everything, no quality risk; (2) lower
+reasoning effort once Sonnet matches GURT's blind picks, tested against them; (3) drop the rejects list
+from the output once it stops teaching; (4) cut ads/intro/outro from the transcript sent; (5) local model.
+Prompt caching is already on (~90k cached input tokens saved per episode).
+
 **Later (not v1):** face-tracked crop · gameplay/visual signals · local model · app/agent wrapper.
 
 **Reference:** github.com/mutonby/openshorts (MIT). Worth taking: SPLIT layout (two speakers
