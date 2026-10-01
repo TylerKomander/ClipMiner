@@ -65,8 +65,10 @@ def next_number(out_dir: Path) -> int:
 
 def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
     review = load(work)
-    if review["status"] == "rendered":
-        raise RuntimeError(f"{work.name} is already rendered")
+    # Picks added after a render (a second batch) render on their own; finished ones are never redone.
+    todo = [c for c in review["clips"] if c["keep"] and not c.get("rendered_as")]
+    if not todo:
+        raise RuntimeError(f"{work.name} has nothing new to render")
     words = transcript_words(work)
     W, H = reframe.frame_size(video)
     number = next_number(out_dir)
@@ -75,7 +77,7 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
     out_dir = out_dir / show
     out_dir.mkdir(parents=True, exist_ok=True)
     done = []
-    for clip in (c for c in review["clips"] if c["keep"]):
+    for clip in todo:
         stem = f"{number:02d}_s{clip['score']}_{clip['name']}"
         source, start, end, kept = splice.build(video, work, words, clip, stem)
         fixes = clip["fixes"]
