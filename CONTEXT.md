@@ -67,7 +67,7 @@ diffs against `review.json` (`by: sonnet` vs `by: gurt`), adds/edits clips with 
 first, last, "gurt", payoff, reason, fixes, description)` (word indices; `fixes` corrects misheard caption words),
 sets `keep`, saves, sets `status: approved`. Logs the diff in the run file's "Scorer vs GURT", updates INDEX,
 commits. Transcript health check and face check (look at frames) still come first.
-Next clip number: **86** (counted from the log automatically).
+Next clip number: **128** (counted from the logs automatically: write a run's log after it renders).
 
 ## Status
 - [x] ffmpeg installed, `download` + `transcribe` produce a word-timed transcript
@@ -93,6 +93,8 @@ Next clip number: **86** (counted from the log automatically).
 - [x] `review.py`: review gate (`review.json`), dry-run preview, render with exact caption words,
       curse masking, per-clip `.txt` post description; numbering continues across Used-Clips
 - [x] GUI (`gui.py`) per GUI_SPEC with a review stage. Smoke-tested; not yet run on a real episode
+- [x] Second batches: picks added after a render render on their own (`--render <slug>` or the app);
+      the source is re-downloaded. API key read fresh from the registry (`score.api_key`)
 - [ ] Sonnet matches GURT's blind picks on new shows (GURT keeps logging the diffs)
       Run 4 (Arenas): agreed on 5 of 10; Sonnet found 2 GURT missed; Tko kept all 11.
       Run 5 (Theo Von): agreed 6 of 10, 3 finds kept. Run 6 (Flagrant): agreed 7 of 10, 5 finds kept.
