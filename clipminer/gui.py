@@ -308,11 +308,14 @@ class ReviewPage(Page):
         if sel:
             c = self.data["clips"][int(sel[0])]
             self.detail.delete("1.0", "end")
-            self.detail.insert("end", f"Picked by {c['by']}\nPayoff: {c['payoff']}\nWhy: {c['reason']}\n\n{c['description']}")
+            spliced = "".join(f"\nSpliced out: {cut}" for cut in c.get("spliced_out", []))
+            self.detail.insert("end", f"Picked by {c['by']}\nPayoff: {c['payoff']}\nWhy: {c['reason']}{spliced}\n\n{c['description']}")
 
     def toggle(self) -> None:
         sel = self.picks.selection()
         if sel:
+            # Re-read first: GURT may have edited the same file from chat since it was opened.
+            self.data = review.load(self.work)
             clip = self.data["clips"][int(sel[0])]
             clip["keep"] = not clip["keep"]
             review.save(self.work, self.data)
@@ -322,6 +325,7 @@ class ReviewPage(Page):
     def approve(self) -> None:
         if not self.data:
             return
+        self.data = review.load(self.work)
         kept = sum(c["keep"] for c in self.data["clips"])
         if messagebox.askyesno("Approve", f"Render {kept} clip(s) from this episode?"):
             self.data["status"] = "approved"
