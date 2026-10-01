@@ -208,8 +208,8 @@ No emoji walls, no "wait for it", no "you won't believe". Curse words are masked
 ## Render — every clip in all three layouts
 Tko posts all three variants across platforms and lets performance decide. **No layout
 rule yet: always render all three.** Output:
-`Finished_Clips\NN_s<score>_<name>_{blur,split,track}.mp4` (e.g. `07_s9_dont-ask-head-count_split.mp4`).
-NN keeps counting up across runs.
+`Finished_Clips\<podcast>\NN_s<score>_<name>_{blur,split,track}.mp4` (e.g. `Flagrant\64_s9_bouncer-every-id-works_track.mp4`).
+NN keeps counting up across runs, from the clip log, even after clips are deleted.
 - **BLUR:** full 16:9 frame centered, blurred copy fills top and bottom. Never cuts anyone out.
 - **SPLIT:** two faces stacked (1080x960 each), captions on the seam. Top = left person.
   Needs both people *in the same shot for the whole clip*. Multi-camera shows that cut
