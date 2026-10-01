@@ -22,15 +22,17 @@ one-line reason per clip. Scoring moves from GURT-by-hand → Claude API → sma
   Themes will be swappable later; no implementation yet, but rules and log are split into
   universal vs theme so a new profile is all that's needed. Posting: the app fills the upload page,
   Tko clicks Post (never auto-publish). No movie clips (copyright).
-- **Clips folder:** `Finished_Clips\NN_s<score>_<name>_<layout>.mp4`. Tko moves posted clips
-  into `Finished_Clips\Used-Clips\` so he knows what's safe to delete. **GURT never deletes,
+- **Clips folder:** `Finished_Clips\<podcast>\NN_s<score>_<name>_<layout>.mp4` (+ `.txt` description).
+  The app groups clips by podcast, best score first, and tracks where each was posted in `posts.json`
+  (asked when the posting browser closes, or "Mark posted"). `Used-Clips\` is optional now. **GURT never deletes,
   renames or moves anything in `Used-Clips\`, and never deletes finished clips.** Tko owns
   cleanup.
 - **Clip count is variable** (quality decides, not a number). Every clip gets a 1–10 absolute
   score (rubric in `skill.md`); only 6+ are rendered. Videos over 1h are read in chunks.
 - Run 1 (clips 01–05) stays BLUR-only. Tko decided not to re-render it.
 - **Captions never show a curse word** (masked `****`; audio untouched). Clips 01–67 predate the rule
-  and are NOT masked. Tko treats them as test runs and will mostly scrap them; don't re-render.
+  and were deleted by Tko as test runs (2026-09-30); their reasoning stays in `clip_log\`. Clip numbers
+  keep counting from the log (`review.next_number`), so new clips start at 68 even with an empty folder.
 - **Every clip is rendered in all 3 layouts** (blur/split/track). Tko posts variations across
   platforms; performance decides. No layout rule until the numbers say so.
 - **No automatic judgment database.** GURT keeps the guidance by hand, and owns both files:
@@ -113,4 +115,4 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
 Tko: Accounts → New account, fill the platform slots, "Log in to this account's sites" and sign in once.
 Then run real episodes through the app (GUI_SPEC "Done when") and try one post per platform. The upload-page
 selectors in `post.py` are untested against logged-in pages: expect a fix or two per platform on first use.
-GURT keeps doing the blind-pick diff at review. Tko still owes a look at clips 40–67.
+GURT keeps doing the blind-pick diff at review.
