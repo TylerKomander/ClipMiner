@@ -33,25 +33,26 @@ universal) and note "(in skill.md)" here.
 | 4 | `run-04-ball-in-the-family-34-arenas.md` | Ball in the Family #34 (Gilbert Arenas) | 71m | 29–39 | athlete show under comedian rules; 6-person couch; first blind-pick diff |
 | 5 | `run-05-this-past-weekend-489-druski.md` | This Past Weekend #489 (Druski, Roll Tide Willie) | 97m | 40–52 | race-heavy riffs skipped; real heatmap peak = best clip |
 | 6 | `run-06-flagrant-shane-gillis-steve-gerben.md` | Flagrant (Shane Gillis, Steve Gerben) | 108m | 53–67 | every peak fake, 0 loudness spikes, hallucinated transcript |
+| 7 | `run-07-soder-139-louis-ck.md` | Soder Podcast #139 (Louis C.K.) | 77m | 68–85 | first run through the app; splicing + audio endings built after it |
 
 ## Shapes (universal), most seen first
 Format: tally · shape · clips (score). Clip numbers match `Finished_Clips\` and the run files.
 3+ = proven, listed in `skill.md` Part B "Proven shapes".
-- `[......]` **Self-roast of the past self**: delusion then, blunt truth now · 14 (7), 15 (9), 25 (8), 27 (9), 38 (7), 53 (7)
-- `[......]` **Scene → twist → reaction**: the reaction is the payoff · 06 (9), 11 (8), 20 (9), 22 (8), 35 (7), 58 (8)
-- `[......]` **Observational take with a quotable capper** · 04 (7), 09 (7), 28 (7), 37 (7), 44 (8), 67 (7)
+- `[.......]` **Self-roast of the past self**: delusion then, blunt truth now · 14 (7), 15 (9), 25 (8), 27 (9), 38 (7), 53 (7), 83 (8)
+- `[........]` **Scene → twist → reaction**: the reaction is the payoff · 06 (9), 11 (8), 20 (9), 22 (8), 35 (7), 58 (8), 77 (9), 78 (9)
+- `[........]` **Observational take with a quotable capper** · 04 (7), 09 (7), 28 (7), 37 (7), 44 (8), 67 (7), 73 (8), 74 (9)
 - `[.....]` **Plan meets reality**: naive expectation, then the obvious question or bad trade · 13 (8), 16 (7), 26 (8), 30 (8), 54 (8)
 - `[....]` **Strange true fact, explained in one breath** · 08 (8), 18 (8), 42 (8), 55 (7)
 - `[...]` **Shameless confession, told proudly** · 19 (9), 36 (8), 64 (9)
 - `[...]` **Friend exposes the other's habit** · 57 (8), 66 (7), 67 (7)
-- `[..]` **Insider rule revealed, pushed to absurd precision** · 07 (9), 29 (8)
+- `[...]` **Insider rule revealed, pushed to absurd precision** · 07 (9), 29 (8), 80 (8)
 - `[..]` **Self-justifying logic spiral** · 12 (8), 32 (7)
 - `[..]` **Confession in the first sentence** · 02 (8), 33 (9)
-- `[..]` **Behind-the-scenes reveal told straight** · 05 (6), 31 (9)
-- `[..]` **Energy build or outrageous comparison, then a capper that tops it** · 01 (8), 17 (9)
+- `[...]` **Behind-the-scenes reveal told straight** · 05 (6), 31 (9), 84 (8)
+- `[....]` **Energy build or outrageous comparison, then a capper that tops it** · 01 (8), 17 (9), 69 (8), 76 (9)
 - `[..]` **Proud reveal, instantly deflated** · 43 (9), 65 (8)
 - `[..]` **Parent collides with the joke** · 21 (7), 61 (8)
-- `[..]` **Absurd image → strong verdict** · 10 (8), 56 (8)
+- `[...]` **Absurd image → strong verdict** · 10 (8), 56 (8), 70 (8)
 - `[..]` **Prank or bit backfires** · 60 (7), 63 (7)
 - `[.]` **Unbreakable loyalty, broken in one question** · 52 (9)
 - `[.]` **Made-up fact, caught live** · 48 (8)
@@ -73,15 +74,18 @@ Read so far: story shapes with a clear turn score 8–9; takes score 7 unless th
 quotable. Duo shows (Shane/Steve) run on "friend exposes the other"; one-guest shows on self-roast.
 
 ## Recurring lessons, most seen first
-- `[......]` `[universal]` The best version of a story needs more than 35s (runs 1–6; run 6: catfish setup is 2 min before its payoff). Fix: jump cuts, not built yet.
+- `[.......]` `[universal]` The best version of a story needs more than 35s (runs 1–7). **Fixed after run 7: splicing** (`splice.py`; crematorium 77s → 32s). (in skill.md)
 - `[.....]` `[universal]` The dry run of first/last 5 words catches cut-off words (runs 2–6). (in skill.md)
-- `[.....]` `[universal]` Clips with zero signal support are as good as signalled ones (runs 1–6; run 6: every peak fake, no loudness). (in skill.md)
-- `[....]` `[universal]` Heatmap peaks right after ad reads are skip landings (runs 1, 3, 5, 6; run 6: 5 of 5). (in skill.md)
-- `[....]` `[universal]` Whisper drops to lowercase with no punctuation (runs 2–4, 6). (in skill.md)
+- `[.]` `[universal]` Whisper's word end times aren't where the sound stops; endings are cut from the audio now (run 7). (in skill.md)
+- `[.]` `[universal]` Whisper drops curse words entirely ("shut the up"); restore them with a caption fix when the punchline needs it (run 7).
+- `[......]` `[universal]` Clips with zero signal support are as good as signalled ones (runs 1–7). (in skill.md)
+- `[.....]` `[universal]` Heatmap peaks right after ad reads are skip landings (runs 1, 3, 5, 6, 7). (in skill.md)
+- `[.....]` `[universal]` Whisper drops to lowercase with no punctuation (runs 2–4, 6, 7). (in skill.md)
 - `[....]` `[universal]` A story fails the cold read when its subject is never named in the window (Post Malone, 16, 32, Sexy Red). (in skill.md)
 - `[....]` `[universal]` The first framing try was wrong: center crop, mediapipe, tiny-face SPLIT, poster faces. Look at frames before rendering. (in skill.md)
-- `[....]` `[scorer]` Model gives no-payoff talk a 6 instead of rejecting it (runs 3–6). (in skill.md, not biting yet)
-- `[...]` `[universal]` GURT missed clips the model found (runs 3–6; run 6: 5 accepted). Blind-pick, then diff, then accept finds after reading them. (in CONTEXT.md recipe)
+- `[.....]` `[scorer]` Model gives no-payoff or sincere talk a 6–7 instead of rejecting it (runs 3–7). (in skill.md, not biting yet)
+- `[.]` `[scorer]` Model misses escalating riffs and takes a story's flat tail (run 7: 69, 76, 84).
+- `[....]` `[universal]` GURT missed clips the model found (runs 3–7). Blind-pick, then diff, then accept finds after reading them. (in CONTEXT.md recipe)
 - `[...]` `[theme]` A non-comedian guest is gold when the hosts poke at their world (rancher, Arenas, Roll Tide Willie). (in skill.md)
 - `[..]` `[universal]` Loudness is useless on group or compressed shows (run 4: 21% spiked; run 6: 0 spikes). (in skill.md)
 - `[..]` `[universal]` Fix misheard words in captions when sure (Katt, Tide man, balls); cut around them when not. (in skill.md)
