@@ -46,6 +46,22 @@ def tiktok(page: Page, video: Path, hook: str, body: str, step: Callable[[str], 
     clear_and_type(page, caption, f"{hook}\n{body}")
 
 
+# YouTube ignores every hashtag on a video with more than 15; these go first when trimming.
+GENERIC_TAGS = ["#funny", "#podcast", "#comedypodcast", "#standupcomedy", "#standup", "#comedy"]
+
+
+def at_most_15_tags(body: str) -> str:
+    words = body.split(" ")
+    tags = [w for w in body.split() if w.startswith("#")]
+    for generic in GENERIC_TAGS:
+        if len(tags) <= 15:
+            break
+        if generic in tags:
+            tags.remove(generic)
+            words.remove(generic)
+    return " ".join(words)
+
+
 def youtube(page: Page, video: Path, hook: str, body: str, step: Callable[[str], None]) -> None:
     step("opening upload page")
     page.goto(PLATFORMS["YouTube"]["upload"])
@@ -55,7 +71,7 @@ def youtube(page: Page, video: Path, hook: str, body: str, step: Callable[[str],
     title = page.locator("#title-textarea #textbox")
     title.wait_for(timeout=WAIT)
     clear_and_type(page, title, hook[:100])
-    clear_and_type(page, page.locator("#description-textarea #textbox"), body)
+    clear_and_type(page, page.locator("#description-textarea #textbox"), at_most_15_tags(body))
     step("marking not made for kids")
     page.locator('tp-yt-paper-radio-button[name="VIDEO_MADE_FOR_KIDS_NOT_MFK"]').click()
 
