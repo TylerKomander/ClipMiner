@@ -11,7 +11,8 @@ one-line reason per clip. Scoring moves from GURT-by-hand → Claude API → sma
 - Language: Python 3.12
 - Where it runs: manual, Windows, RTX 2080 Super (local Whisper on GPU)
 - Deps: ffmpeg (winget), yt-dlp, faster-whisper, av (pinned), CUDA libs, mediapipe +
-  opencv-contrib (layouts). `anthropic` when `score` is automated. Confirm before adding more.
+  opencv-contrib (layouts), `anthropic` (score), `playwright` (fills upload pages; drives installed Chrome).
+  Confirm before adding more.
 - Inputs / outputs: YouTube URL or local file → `Finished_Clips\NN_<name>.mp4`
 - Failure mode — each stage caches to `work/<slug>/`; a crash resumes, not restarts
 - **Delete `work/<slug>/source.mp4` once the clips are rendered.** Tko's rule: no full videos kept.
@@ -19,8 +20,8 @@ one-line reason per clip. Scoring moves from GURT-by-hand → Claude API → sma
   Re-cutting a clip later means re-downloading.
 - v1 scope: **comedian podcasts** (active theme `comedian-podcast` in `skill.md` Part A).
   Themes will be swappable later; no implementation yet, but rules and log are split into
-  universal vs theme so a new profile is all that's needed. Posting stays manual. No movie
-  clips (copyright).
+  universal vs theme so a new profile is all that's needed. Posting: the app fills the upload page,
+  Tko clicks Post (never auto-publish). No movie clips (copyright).
 - **Clips folder:** `Finished_Clips\NN_s<score>_<name>_<layout>.mp4`. Tko moves posted clips
   into `Finished_Clips\Used-Clips\` so he knows what's safe to delete. **GURT never deletes,
   renames or moves anything in `Used-Clips\`, and never deletes finished clips.** Tko owns
@@ -109,6 +110,7 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
   the rest is the manual recipe above)
 
 ## Next step
-Tko runs the GUI on real episodes and checks GUI_SPEC's "Done when" list (3 URLs in a row, kill mid-job and
-resume, bad URL, copy description, two Chrome profiles). GURT keeps doing the blind-pick diff on each job
-at the review stage. Tko still owes a look at clips 40–67.
+Tko: Accounts → New account, fill the platform slots, "Log in to this account's sites" and sign in once.
+Then run real episodes through the app (GUI_SPEC "Done when") and try one post per platform. The upload-page
+selectors in `post.py` are untested against logged-in pages: expect a fix or two per platform on first use.
+GURT keeps doing the blind-pick diff at review. Tko still owes a look at clips 40–67.
