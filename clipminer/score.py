@@ -4,7 +4,7 @@ from pathlib import Path
 
 import anthropic
 
-from . import review
+from . import review, splice
 
 ROOT = Path(__file__).resolve().parent.parent
 MODEL = "claude-sonnet-5-5"
@@ -12,6 +12,7 @@ LINE_SECONDS = 15
 CHUNK_SECONDS = 20 * 60
 OVERLAP_SECONDS = 60
 MIN_LEN, MAX_LEN = 10, 40
+MAX_SPAN = 150  # a spliced story may cover this much of the episode
 SPIKE_LU = 6
 
 def _object(properties: dict) -> dict:
@@ -30,6 +31,9 @@ CLIP_SCHEMA = _object({
         "score": {"type": "integer", "description": "1-10 per the rubric"},
         "reason": {"type": "string", "description": "one line: why this score"},
         "description": {"type": "string", "description": "the post text, following the rulebook's 'Post description' section"},
+        "cuts": {"type": "array", "description": "stretches inside the clip to splice out (a tangent, a repeated setup, cross-talk); empty if none",
+                 "items": _object({"from_words": {"type": "string", "description": "first 5+ words of the stretch to remove, copied exactly"},
+                                   "to_words": {"type": "string", "description": "last 5+ words of the stretch to remove, copied exactly"}})},
     })},
     "rejected": {"type": "array", "items": _object({"approx_start": {"type": "string"}, "why": {"type": "string"}})},
 })
@@ -112,6 +116,10 @@ def user_prompt(info: dict, begin: float, piece: list[str], part: int, parts: in
         f"{10 * words_per_second:.0f}–{35 * words_per_second:.0f} words. Count before you submit.\n"
         "Before submitting a clip, quote its payoff: the line a stranger laughs at or says 'wait, what?' to. "
         "Warm conversation, praise, or a story with no turn is not a payoff. No payoff, no clip.\n"
+        "Long stories: you may splice. List `cuts` (a tangent, a repeated setup, cross-talk) and the clip is "
+        "joined with hard jump cuts; dead air is trimmed automatically. The kept part must be 10–40s, still make "
+        f"sense cold, and the whole window may span up to {MAX_SPAN // 60} and a half minutes. Never cut the payoff "
+        "or the line that sets it up.\n"
         "Submit every clip scoring 6+ and the notable rejects. "
         "first_words and last_words must be copied exactly from the text.\n\n"
         + "\n".join(piece)
@@ -139,9 +147,20 @@ def locate(clip: dict, words: list[dict], norm: list[str]) -> str | None:
         return "first or last words not found in the transcript"
     clip["first"], clip["last"] = i, j + len(last) - 1
     clip["start"], clip["end"] = words[i]["start"], words[clip["last"]]["end"]
-    length = clip["end"] - clip["start"]
+    if clip["end"] - clip["start"] > MAX_SPAN:
+        return f"spans {clip['end'] - clip['start']:.0f}s of the episode, over {MAX_SPAN}s"
+    middle, reach = (clip["start"] + clip["end"]) / 2, (clip["end"] - clip["start"]) / 2 + 5
+    clip["cut_ranges"] = []
+    for cut in clip.get("cuts", []):
+        head = re.findall(r"[a-z0-9']+", cut["from_words"].lower())[:4]
+        tail = re.findall(r"[a-z0-9']+", cut["to_words"].lower())[-4:]
+        a, b = snap(words, norm, middle, head, reach), snap(words, norm, middle, tail, reach)
+        if a is None or b is None or not clip["first"] < a <= b + len(tail) - 1 < clip["last"]:
+            return "a cut's words weren't found inside the clip"
+        clip["cut_ranges"].append([a, b + len(tail) - 1])
+    length = splice.seconds(words, clip["first"], clip["last"], clip["cut_ranges"])
     if not MIN_LEN <= length <= MAX_LEN:
-        return f"{length:.0f}s long, outside {MIN_LEN}-{MAX_LEN}s"
+        return f"{length:.0f}s after cuts, outside {MIN_LEN}-{MAX_LEN}s"
     return None
 
 
@@ -211,6 +230,6 @@ def score(work: Path, model: str = MODEL, examples: list[str] | None = None,
     if not (work / "review.json").exists():
         review.save(work, {"status": "awaiting", "model": model, "clips": [
             review.entry(words, c["name"], c["score"], c["first"], c["last"], model, c["payoff"], c["reason"],
-                         description=c["description"])
+                         description=c["description"], cuts=c["cut_ranges"])
             for c in kept]})
     return out
