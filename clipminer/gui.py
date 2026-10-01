@@ -6,11 +6,10 @@ import subprocess
 import threading
 import time
 import tkinter as tk
-import webbrowser
 from pathlib import Path
 from tkinter import messagebox, ttk
 
-from . import review
+from . import post, review
 from .__main__ import FINISHED, ROOT, finish
 from .download import fetch
 from .score import score
@@ -20,11 +19,6 @@ from .transcribe import transcribe
 JOBS = ROOT / "queue.json"
 PROFILES = ROOT / "profiles.json"
 RUNNING = ("download", "transcribe", "signals", "score", "render")
-CHROME = [
-    Path(os.environ.get("PROGRAMFILES", ""), "Google/Chrome/Application/chrome.exe"),
-    Path(os.environ.get("PROGRAMFILES(X86)", ""), "Google/Chrome/Application/chrome.exe"),
-    Path(os.environ.get("LOCALAPPDATA", ""), "Google/Chrome/Application/chrome.exe"),
-]
 
 # Dark tech palette after TerraPlayer's default skin: black, neon green, cyan.
 BG, PANEL, FIELD, LINE = "#07090b", "#0e1318", "#141b22", "#22303b"
@@ -55,6 +49,10 @@ def style(root: tk.Tk) -> None:
     s.configure("Help.TLabel", foreground=MUTED, font=(SANS, 10))
     s.configure("Section.TLabel", background=PANEL, foreground=CYAN, font=(MONO, 10, "bold"))
     s.configure("Error.TLabel", foreground=RED)
+    s.configure("Slot.TFrame", background=FIELD)
+    s.configure("Slot.TLabel", background=FIELD, foreground=INK)
+    s.configure("Panel.TRadiobutton", background=PANEL, foreground=INK, indicatorcolor=FIELD)
+    s.map("Panel.TRadiobutton", indicatorcolor=[("selected", GREEN)], background=[("active", PANEL)])
     s.configure("TButton", background=FIELD, foreground=INK, borderwidth=1, focusthickness=0, padding=(12, 6))
     s.map("TButton", background=[("active", LINE)], foreground=[("disabled", MUTED)])
     s.configure("Accent.TButton", background=GREEN, foreground=BG, font=(SANS, 10, "bold"))
@@ -324,8 +322,8 @@ class ReviewPage(Page):
 
 class ClipsPage(Page):
     def __init__(self, app):
-        super().__init__(app, "Clips", "Finished clips, highest number first. Copy the description into your post; "
-                                       "move posted clips to Used-Clips yourself.")
+        super().__init__(app, "Clips", "Pick a clip, check the description, then post it: the account's browser "
+                                       "opens with the clip and caption filled in, and you click Post.")
         split = ttk.Frame(self)
         split.pack(fill="both", expand=True)
         left = ttk.Frame(split, style="Panel.TFrame", padding=14)
@@ -335,21 +333,50 @@ class ClipsPage(Page):
         self.clips.configure(width=52)
         self.clips.pack(fill="y", expand=True)
         self.clips.bind("<<ListboxSelect>>", lambda _: self.show())
-        right = ttk.Frame(split, style="Panel.TFrame", padding=14)
+
+        right = ttk.Frame(split)
         right.pack(side="left", fill="both", expand=True)
-        ttk.Label(right, text="POST DESCRIPTION", style="Section.TLabel").pack(anchor="w", pady=(0, 8))
-        self.description = text_box(right, 10)
+        text = ttk.Frame(right, style="Panel.TFrame", padding=14)
+        text.pack(fill="both", expand=True)
+        ttk.Label(text, text="POST DESCRIPTION  ·  edit before posting if you like", style="Section.TLabel").pack(anchor="w", pady=(0, 8))
+        self.description = text_box(text, 7)
         self.description.pack(fill="both", expand=True)
-        bar = ttk.Frame(right, style="Panel.TFrame")
+        bar = ttk.Frame(text, style="Panel.TFrame")
         bar.pack(fill="x", pady=(10, 0))
-        ttk.Button(bar, text="Copy description", style="Accent.TButton", command=self.copy).pack(side="left")
+        ttk.Button(bar, text="Copy description", command=self.copy).pack(side="left")
         ttk.Button(bar, text="Play", command=self.play).pack(side="left", padx=8)
         ttk.Button(bar, text="Open folder", command=self.open_folder).pack(side="left")
         self.copied = ttk.Label(bar, style="Help.TLabel", background=PANEL)
         self.copied.pack(side="left", padx=10)
+
+        post = ttk.Frame(right, style="Panel.TFrame", padding=14)
+        post.pack(fill="x", pady=(12, 0))
+        ttk.Label(post, text="POST", style="Section.TLabel").pack(anchor="w", pady=(0, 8))
+        row = ttk.Frame(post, style="Panel.TFrame")
+        row.pack(fill="x")
+        ttk.Label(row, text="Layout", style="Panel.TLabel").pack(side="left")
+        self.layout = tk.StringVar(value="track")
+        self.layouts = ttk.Frame(row, style="Panel.TFrame")
+        self.layouts.pack(side="left", padx=(8, 24))
+        ttk.Label(row, text="Account", style="Panel.TLabel").pack(side="left")
+        self.account = tk.StringVar()
+        self.picker = ttk.Combobox(row, textvariable=self.account, state="readonly", width=24)
+        self.picker.pack(side="left", padx=8)
+        self.picker.bind("<<ComboboxSelected>>", lambda _: self.draw_platforms())
+        self.platforms = ttk.Frame(post, style="Panel.TFrame")
+        self.platforms.pack(fill="x", pady=(10, 0))
+        self.post_status = ttk.Label(post, style="Help.TLabel", background=PANEL, wraplength=700)
+        self.post_status.pack(anchor="w", pady=(8, 0))
         self.stems: list[str] = []
+        self.busy: set[str] = set()
+        self.status_text = ""
 
     def refresh(self) -> None:
+        names = [p["name"] for p in self.app.profiles]
+        self.picker["values"] = names
+        if names and self.account.get() not in names:
+            self.account.set(names[0])
+        self.draw_platforms()
         videos = sorted(FINISHED.glob("*_blur.mp4"), key=lambda f: int(f.name.split("_")[0]), reverse=True)
         stems = [f.name.removesuffix("_blur.mp4") for f in videos]
         if stems == self.stems:
@@ -366,9 +393,66 @@ class ClipsPage(Page):
     def show(self) -> None:
         txt = FINISHED / f"{self.stem()}.txt"
         self.description.delete("1.0", "end")
-        self.description.insert("end", txt.read_text(encoding="utf-8") if txt.exists()
-                                else "No description: this clip was made before descriptions existed.")
-        self.copied.config(text="")
+        self.description.insert("end", txt.read_text(encoding="utf-8") if txt.exists() else "")
+        self.copied.config(text="" if txt.exists() else "No saved description (older clip): write one above.")
+        for child in self.layouts.winfo_children():
+            child.destroy()
+        available = [name for name in ("track", "blur", "split") if (FINISHED / f"{self.stem()}_{name}.mp4").exists()]
+        if self.layout.get() not in available:
+            self.layout.set(available[0])
+        for name in available:
+            ttk.Radiobutton(self.layouts, text=name, value=name, variable=self.layout,
+                            style="Panel.TRadiobutton").pack(side="left", padx=(0, 8))
+
+    def draw_platforms(self) -> None:
+        for child in self.platforms.winfo_children():
+            child.destroy()
+        profile = next((p for p in self.app.profiles if p["name"] == self.account.get()), None)
+        ready = [name for name, s in (profile or {}).get("socials", {}).items() if s.get("handle") or s.get("url")]
+        if not ready:
+            ttk.Label(self.platforms, text="No platforms set up for this account yet: see Accounts.",
+                      style="Help.TLabel", background=PANEL).pack(side="left")
+        for name in ready:
+            ttk.Button(self.platforms, text=f"Post to {name}", style="Accent.TButton",
+                       command=lambda n=name: self.send(profile, n)).pack(side="left", padx=(0, 8))
+
+    def send(self, profile: dict, platform: str) -> None:
+        stem = self.stem()
+        if not stem:
+            messagebox.showinfo("Post", "Pick a clip first.")
+            return
+        folder = ROOT / profile["folder"]
+        if str(folder) in self.busy:
+            messagebox.showinfo("Post", "That account's browser is already open. Close it first.")
+            return
+        video = FINISHED / f"{stem}_{self.layout.get()}.mp4"
+        handle = profile["socials"][platform].get("handle") or profile["name"]
+        description = self.description.get("1.0", "end").strip()
+        if not messagebox.askyesno("Post", f"Open {platform} as {handle} with\n{video.name}\nand this description filled in?\n\n"
+                                           "Nothing is published until you click Post in the browser."):
+            return
+        self.copy()
+        self.busy.add(str(folder))
+
+        def step(text: str) -> None:
+            self.status_text = f"{platform}: {text}"
+
+        def run() -> None:
+            try:
+                post.prepare(folder, platform, video, description, step)
+                self.status_text = f"{platform}: browser closed."
+            except Exception as e:
+                self.status_text = f"{platform}: stopped ({type(e).__name__}: {str(e).splitlines()[0][:160]}). Finish by hand; the caption is on the clipboard."
+            finally:
+                self.busy.discard(str(folder))
+
+        threading.Thread(target=run, daemon=True).start()
+        self.watch()
+
+    def watch(self) -> None:
+        self.post_status.config(text=self.status_text)
+        if self.busy:
+            self.after(500, self.watch)
 
     def copy(self) -> None:
         self.app.clipboard_clear()
@@ -377,123 +461,118 @@ class ClipsPage(Page):
 
     def play(self) -> None:
         if self.stem():
-            os.startfile(FINISHED / f"{self.stem()}_blur.mp4")
+            os.startfile(FINISHED / f"{self.stem()}_{self.layout.get()}.mp4")
 
     def open_folder(self) -> None:
         if self.stem():
-            subprocess.Popen(["explorer", "/select,", str(FINISHED / f"{self.stem()}_blur.mp4")])
+            subprocess.Popen(["explorer", "/select,", str(FINISHED / f"{self.stem()}_{self.layout.get()}.mp4")])
 
 
 class AccountsPage(Page):
     def __init__(self, app):
-        super().__init__(app, "Accounts", "Each profile opens its social accounts in its own Chrome profile, "
-                                          "so you land already logged into the right account.")
-        self.profiles = load_json(PROFILES, [])
-        launch = self.card("Open an account", expand=False, fill="x")
-        row = ttk.Frame(launch, style="Panel.TFrame")
-        row.pack(fill="x")
-        self.active = tk.StringVar()
-        self.picker = ttk.Combobox(row, textvariable=self.active, state="readonly", width=28)
-        self.picker.pack(side="left")
-        self.picker.bind("<<ComboboxSelected>>", lambda _: self.draw_buttons())
-        self.buttons = ttk.Frame(row, style="Panel.TFrame")
-        self.buttons.pack(side="left", padx=12)
-
-        edit = self.card("Edit profiles")
-        split = ttk.Frame(edit, style="Panel.TFrame")
+        super().__init__(app, "Accounts", "Each account has its own browser that stays logged in. Fill in a slot per "
+                                          "platform, then click Log in once and sign in to each site.")
+        split = ttk.Frame(self)
         split.pack(fill="both", expand=True)
-        self.list = list_box(split)
-        self.list.configure(width=24)
-        self.list.pack(side="left", fill="y")
+        left = ttk.Frame(split, style="Panel.TFrame", padding=14)
+        left.pack(side="left", fill="y", padx=(0, 12))
+        ttk.Label(left, text="ACCOUNTS", style="Section.TLabel").pack(anchor="w", pady=(0, 8))
+        self.list = list_box(left)
+        self.list.configure(width=26)
+        self.list.pack(fill="y", expand=True)
         self.list.bind("<<ListboxSelect>>", lambda _: self.load())
-        form = ttk.Frame(split, style="Panel.TFrame")
-        form.pack(side="left", fill="both", expand=True, padx=(14, 0))
-        self.name, self.chrome = tk.StringVar(), tk.StringVar()
-        for label, var, hint in (("Profile name", self.name, ""),
-                                 ("Chrome profile folder", self.chrome,
-                                  "From chrome://version → Profile Path: the last folder (Default, Profile 1, …)")):
-            ttk.Label(form, text=label, style="Panel.TLabel").pack(anchor="w")
-            ttk.Entry(form, textvariable=var).pack(fill="x")
-            ttk.Label(form, text=hint, style="Help.TLabel", background=PANEL).pack(anchor="w", pady=(0, 8))
-        ttk.Label(form, text="Socials: one per line, platform then link", style="Panel.TLabel").pack(anchor="w")
-        self.socials = text_box(form, 6)
-        self.socials.pack(fill="both", expand=True)
-        ttk.Label(form, text="e.g.  TikTok https://www.tiktok.com/@handle", style="Help.TLabel",
-                  background=PANEL).pack(anchor="w")
+        ttk.Button(left, text="New account", command=self.new).pack(fill="x", pady=(10, 0))
+        ttk.Button(left, text="Delete", command=self.delete).pack(fill="x", pady=(6, 0))
+
+        form = ttk.Frame(split, style="Panel.TFrame", padding=14)
+        form.pack(side="left", fill="both", expand=True)
+        ttk.Label(form, text="ACCOUNT NAME", style="Section.TLabel").pack(anchor="w")
+        self.name = tk.StringVar()
+        ttk.Entry(form, textvariable=self.name, font=(SANS, 11)).pack(fill="x", pady=(4, 14))
+        self.fields: dict[str, dict[str, tk.StringVar]] = {}
+        for platform in post.PLATFORMS:
+            slot = ttk.Frame(form, style="Slot.TFrame", padding=12)
+            slot.pack(fill="x", pady=(0, 10))
+            ttk.Label(slot, text=platform.upper(), style="Slot.TLabel", font=(MONO, 10, "bold"),
+                      foreground=CYAN).grid(row=0, column=0, sticky="w", columnspan=4, pady=(0, 6))
+            self.fields[platform] = {"handle": tk.StringVar(), "url": tk.StringVar()}
+            for col, (key, label, width) in enumerate((("handle", "Username", 22), ("url", "Profile link", 52))):
+                ttk.Label(slot, text=label, style="Slot.TLabel").grid(row=1, column=col * 2, sticky="w", padx=(0, 6))
+                ttk.Entry(slot, textvariable=self.fields[platform][key], width=width).grid(
+                    row=1, column=col * 2 + 1, sticky="we", padx=(0, 16))
+            ttk.Button(slot, text="Open", command=lambda p=platform: self.open_profile(p)).grid(row=1, column=4)
+            slot.columnconfigure(3, weight=1)
+        ttk.Label(form, text="No passwords here: you sign in once inside the account's own browser and it stays "
+                             "signed in.", style="Help.TLabel", background=PANEL).pack(anchor="w", pady=(4, 10))
         bar = ttk.Frame(form, style="Panel.TFrame")
-        bar.pack(fill="x", pady=(10, 0))
+        bar.pack(fill="x")
         ttk.Button(bar, text="Save", style="Accent.TButton", command=self.store).pack(side="left")
-        ttk.Button(bar, text="New profile", command=self.new).pack(side="left", padx=8)
-        ttk.Button(bar, text="Delete", command=self.delete).pack(side="left")
+        ttk.Button(bar, text="Log in to this account's sites", command=self.log_in).pack(side="left", padx=8)
         self.redraw()
 
     def redraw(self, select: int = 0) -> None:
-        names = [p["name"] for p in self.profiles]
-        self.picker["values"] = names
-        if names and self.active.get() not in names:
-            self.active.set(names[0])
-        self.draw_buttons()
         self.list.delete(0, "end")
-        for name in names:
-            self.list.insert("end", f" {name}")
-        if names:
-            self.list.selection_set(select)
+        for p in self.app.profiles:
+            self.list.insert("end", f" {p['name']}")
+        if self.app.profiles:
+            self.list.selection_set(min(select, len(self.app.profiles) - 1))
             self.load()
 
-    def draw_buttons(self) -> None:
-        for child in self.buttons.winfo_children():
-            child.destroy()
-        profile = next((p for p in self.profiles if p["name"] == self.active.get()), None)
-        if not profile:
-            ttk.Label(self.buttons, text="No profiles yet: add one below.", style="Help.TLabel",
-                      background=PANEL).pack(side="left")
-            return
-        for social in profile["socials"]:
-            ttk.Button(self.buttons, text=social["platform"],
-                       command=lambda s=social: self.launch(profile, s)).pack(side="left", padx=(0, 6))
-
-    def launch(self, profile: dict, social: dict) -> None:
-        chrome = next((c for c in CHROME if c.is_file()), None)
-        if chrome:
-            subprocess.Popen([str(chrome), f"--profile-directory={profile['browser_profile']}", social["url"]])
-        else:
-            webbrowser.open(social["url"])
-            messagebox.showwarning("Chrome not found", "Opened in the default browser; account selection won't apply.")
-
-    def current(self) -> int | None:
+    def current(self) -> dict | None:
         sel = self.list.curselection()
-        return sel[0] if sel else None
+        return self.app.profiles[sel[0]] if sel else None
 
     def load(self) -> None:
-        i = self.current()
-        if i is None:
+        profile = self.current()
+        if not profile:
             return
-        p = self.profiles[i]
-        self.name.set(p["name"])
-        self.chrome.set(p.get("browser_profile", ""))
-        self.socials.delete("1.0", "end")
-        self.socials.insert("end", "\n".join(f"{s['platform']} {s['url']}" for s in p["socials"]))
+        self.name.set(profile["name"])
+        for platform, fields in self.fields.items():
+            saved = profile["socials"].get(platform, {})
+            for key, var in fields.items():
+                var.set(saved.get(key, ""))
 
     def store(self) -> None:
-        i = self.current()
-        if i is None:
+        profile = self.current()
+        if not profile:
             return
-        lines = [line.split(None, 1) for line in self.socials.get("1.0", "end").splitlines() if line.strip()]
-        self.profiles[i] = {"name": self.name.get().strip() or "Unnamed", "browser_profile": self.chrome.get().strip(),
-                            "socials": [{"platform": s[0], "url": s[1].strip()} for s in lines if len(s) == 2]}
-        save_json(PROFILES, self.profiles)
-        self.redraw(i)
+        profile["name"] = self.name.get().strip() or "Unnamed"
+        profile["socials"] = {platform: {key: var.get().strip() for key, var in fields.items()}
+                              for platform, fields in self.fields.items()}
+        save_json(PROFILES, self.app.profiles)
+        self.redraw(self.list.curselection()[0])
+        self.app.refresh()
 
     def new(self) -> None:
-        self.profiles.append({"name": "New profile", "browser_profile": "Default", "socials": []})
-        self.redraw(len(self.profiles) - 1)
+        name = f"Account {len(self.app.profiles) + 1}"
+        # The browser folder is fixed at creation, so renaming an account keeps its logins.
+        self.app.profiles.append({"name": name, "folder": str(post.browser_dir(name).relative_to(ROOT)), "socials": {}})
+        save_json(PROFILES, self.app.profiles)
+        self.redraw(len(self.app.profiles) - 1)
+        self.app.refresh()
 
     def delete(self) -> None:
-        i = self.current()
-        if i is not None and messagebox.askyesno("Delete", f"Delete profile '{self.profiles[i]['name']}'?"):
-            del self.profiles[i]
-            save_json(PROFILES, self.profiles)
+        profile = self.current()
+        if profile and messagebox.askyesno("Delete", f"Delete '{profile['name']}'? Its browser folder (and logins) "
+                                                     "stays on disk under browsers\\."):
+            self.app.profiles.remove(profile)
+            save_json(PROFILES, self.app.profiles)
             self.redraw()
+            self.app.refresh()
+
+    def log_in(self) -> None:
+        profile = self.current()
+        if profile:
+            self.store()
+            filled = [p for p, s in profile["socials"].items() if s.get("handle") or s.get("url")]
+            post.log_in(ROOT / profile["folder"], filled or list(post.PLATFORMS))
+
+    def open_profile(self, platform: str) -> None:
+        profile = self.current()
+        url = self.fields[platform]["url"].get().strip()
+        if profile and url:
+            (ROOT / profile["folder"]).mkdir(parents=True, exist_ok=True)
+            subprocess.Popen([str(post.CHROME), f"--user-data-dir={ROOT / profile['folder']}", url])
 
 
 class App(tk.Tk):
@@ -506,6 +585,7 @@ class App(tk.Tk):
         style(self)
         self.lock, self.events = threading.Lock(), queue.Queue()
         self.jobs = load_json(JOBS, [])
+        self.profiles = load_json(PROFILES, [])
         for job in self.jobs:
             # An app closed mid-job resumes from the work/ cache. A render cut short may have written
             # some clips already, so it stops for a look instead of re-rendering duplicates.
