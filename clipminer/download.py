@@ -37,6 +37,7 @@ def fetch(source: str, work_root: Path) -> tuple[Path, Path]:
     meta.write_text(json.dumps({
         "id": info["id"],
         "title": info.get("title"),
+        "channel": info.get("channel") or info.get("uploader"),
         "duration": info.get("duration"),
         "heatmap": info.get("heatmap"),
     }, indent=2), encoding="utf-8")
