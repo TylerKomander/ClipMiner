@@ -59,9 +59,15 @@ conversation" is not a clip. Ask: *would I send this to a friend?*
 ## Clip shape
 - Length: **10–30s target, up to ~35s when the payoff needs it** (Tko's ruling after run 2).
   Only stretch for the payoff, never for trailing chatter. Shorter is fine if it's complete.
-  Never pad. Run 3 went to 37–38s twice because the setup couldn't be cut without losing the
-  cold read. That costs a point. The real fix is jump cuts (splicing out a rambling middle),
-  which aren't built yet.
+  Never pad. Length means the **finished** clip, after splicing.
+- **Splicing (built after run 7; Tko: "good clipping accounts cut out empty space").** A story whose
+  best version runs long can be spliced with hard jump cuts: list `cuts` (word ranges) for a tangent,
+  a repeated setup or cross-talk. The source window may span up to ~2.5 minutes as long as the kept
+  part is 10–40s and still reads cold. Never cut the payoff, the line that sets it up, or a reaction
+  that is part of the payoff. Dead air (pauses over 0.6s with no laughter) is shortened
+  automatically; don't list it. Example: run 7's crematorium story, 77s → 32s with two cuts.
+- **Endings** are set from the audio (`splice.tail_end`), not Whisper's word end: it waits for the
+  voice to drop, or cuts at the quietest seam 0.25–0.8s after the last word.
 - **Opening line:** must make sense on its own and pull you in: a claim, a surprising fact,
   or a question. Never open on "And", "So yeah", "That's", "Like I said", or a pronoun with
   no name ("he did...").
@@ -195,7 +201,14 @@ its own line:
    the punchline; the clip delivers that. "He paid for his first rookie year before he got paid."
 2. **Credit:** show and guest, always. "From <show> <episode> with <guest>." Clips are someone
    else's work; the credit stays.
-3. **Hashtags:** 3–5. The show, the guest or host, and one or two broad ones (#comedy #podcast).
+3. **Hashtags: 10–15, all on one line** (Tko's rule: at least 10). Never more than 15: YouTube ignores
+   every hashtag on a video that has 16 or more. Mix three kinds, each tag related to the clip or theme:
+   - **Who:** the show, host and guest (#soderpodcast #dansoder #louisck).
+   - **Theme:** #comedy #standup #standupcomedy #comedypodcast #podcast #funny #comedian.
+   - **This clip:** 2–4 tags on its subject (#nursinghome #dogsoftiktok #seinfeld #pootietang).
+   No tags for things the clip isn't about. **Don't write these four; code adds them to every post**
+   (Tko's rule): #xybca #fyp #blowthisup #viral. That makes 14–19 in the file; YouTube posting trims
+   the most generic ones (#funny, #podcast, …) to stay at 15, and never drops the required four.
 No emoji walls, no "wait for it", no "you won't believe". Curse words are masked in the file.
 
 ## Risk flags (mention, don't auto-reject; Tko decides)
