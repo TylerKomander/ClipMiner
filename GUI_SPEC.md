@@ -34,27 +34,16 @@
 - GUI **Clips** panel: lists the finished clips, most recent first. Selecting one shows its description. Buttons: **Copy description** (clipboard), **Open folder** (Explorer with the file selected), **Play**.
 - Nothing calls a social media API. Posting stays manual.
 
-## 3. Account profiles
-- Stored in `profiles.json` at the project root. Tko edits it through the GUI; it can also be edited by hand.
-  ```json
-  [
-    {
-      "name": "Comedy Main",
-      "browser_profile": "Profile 2",
-      "socials": [
-        {"platform": "TikTok",    "url": "https://www.tiktok.com/@handle"},
-        {"platform": "YouTube",   "url": "https://studio.youtube.com/channel/UC..."},
-        {"platform": "Instagram", "url": "https://www.instagram.com/handle/"}
-      ]
-    }
-  ]
-  ```
-- GUI: a dropdown to pick the active profile, then one button per social in that profile. Add, edit and delete profiles and socials from a simple dialog.
-- **Button action:** `chrome.exe --profile-directory="<browser_profile>" <url>`.
-  - **Why the browser profile matters:** opening a URL alone lands you on the page as whichever account that browser is already logged into. Each ClipMiner profile gets its own Chrome profile that is permanently logged into that account's socials. That's how "click, and I'm in the right account" works.
-  - Find `chrome.exe` in the standard install paths. If Chrome isn't there, fall back to `webbrowser.open(url)` and show a warning that account selection won't apply.
-  - Profile directory names (`Default`, `Profile 1`, …) are listed at `chrome://version` → Profile Path. Put that tip next to the field.
-- Optional: show the active profile next to the Clips panel so the description and the account buttons are on screen together.
+## 3. Accounts and posting (reworked 2026-09-30, Tko's call)
+- `profiles.json`: each account has a name, a fixed browser folder (`browsers\<name>\`, gitignored) and one
+  slot per platform (TikTok, YouTube, Instagram): username + profile link. **No passwords stored**: Tko signs in
+  once inside that browser ("Log in" opens plain Chrome on that folder; Google blocks sign-in under automation).
+- Clips → Post: pick clip, layout and account, click "Post to <platform>", confirm. `clipminer\post.py` drives
+  the account's browser with Playwright (installed Chrome, not a downloaded one): opens the upload page, attaches
+  the clip, fills the caption (YouTube: title = hook, description = the rest, "not made for kids"), and stops.
+  **Tko clicks Post.** If a step fails the browser stays where it stopped and the caption is on the clipboard.
+- Risk Tko accepted: platform pages change and break selectors; TikTok/Instagram watch for automated browsers.
+- Your everyday Chrome profiles can't be used: since Chrome 136 automation is refused on the default user data dir.
 
 ---
 
