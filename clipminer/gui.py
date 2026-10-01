@@ -265,6 +265,7 @@ class ReviewPage(Page):
         self.picks = table(right, {"clip": 190, "keep": 45, "score": 50, "sec": 50, "opens": 200, "closes": 200})
         self.picks.tag_configure("dropped", foreground=MUTED)
         self.picks.tag_configure("kept", foreground=INK)
+        self.picks.tag_configure("overlap", foreground=AMBER)
         self.picks.pack(fill="both", expand=True)
         self.picks.bind("<<TreeviewSelect>>", lambda _: self.show())
         self.picks.bind("<Double-1>", lambda _: self.toggle())
@@ -301,8 +302,10 @@ class ReviewPage(Page):
         self.picks.delete(*self.picks.get_children())
         self.detail.delete("1.0", "end")
         for i, c in enumerate((self.data or {}).get("clips", [])):
-            self.picks.insert("", "end", iid=str(i), tags=("kept" if c["keep"] else "dropped",), values=(
-                c["name"], "✓" if c["keep"] else "✗", c["score"], c["seconds"], c["opens"], c["closes"]))
+            tag = "overlap" if c.get("overlaps") else "kept" if c["keep"] else "dropped"
+            self.picks.insert("", "end", iid=str(i), tags=(tag,), values=(
+                ("⚠ " if c.get("overlaps") else "") + c["name"], "✓" if c["keep"] else "✗",
+                c["score"], c["seconds"], c["opens"], c["closes"]))
 
     def show(self) -> None:
         sel = self.picks.selection()
@@ -310,6 +313,7 @@ class ReviewPage(Page):
             c = self.data["clips"][int(sel[0])]
             self.detail.delete("1.0", "end")
             spliced = "".join(f"\nSpliced out: {cut}" for cut in c.get("spliced_out", []))
+            spliced += "".join(f"\n⚠ Overlaps {name}: untick one or both render" for name in c.get("overlaps", []))
             self.detail.insert("end", f"Picked by {c['by']}\nPayoff: {c['payoff']}\nWhy: {c['reason']}{spliced}\n\n{c['description']}")
 
     def toggle(self) -> None:
@@ -328,7 +332,10 @@ class ReviewPage(Page):
             return
         self.data = review.load(self.work)
         kept = sum(c["keep"] for c in self.data["clips"])
-        if messagebox.askyesno("Approve", f"Render {kept} clip(s) from this episode?"):
+        pairs = sorted({tuple(sorted((c["name"], o))) for c in self.data["clips"] for o in c.get("overlaps", [])})
+        warning = ("\n\nThese ticked picks cover the same moment and would both render:\n"
+                   + "\n".join(f"  {a}  ↔  {b}" for a, b in pairs)) if pairs else ""
+        if messagebox.askyesno("Approve", f"Render {kept} clip(s) from this episode?{warning}"):
             self.data["status"] = "approved"
             review.save(self.work, self.data)
             self.work, self.data = None, None
