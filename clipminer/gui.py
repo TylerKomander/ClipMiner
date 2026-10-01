@@ -122,8 +122,9 @@ class Worker(threading.Thread):
     def next_job(self) -> dict | None:
         with self.lock:
             # Approved reviews go first: they are one render away from finished clips.
+            # A finished job comes back too when new picks are approved for it (a second batch).
             for job in self.jobs:
-                if job["stage"] == "review" and review.load(ROOT / "work" / job["slug"])["status"] == "approved":
+                if job["stage"] in ("review", "done") and review.load(ROOT / "work" / job["slug"])["status"] == "approved":
                     return job
             return next((job for job in self.jobs if job["stage"] == "queued"), None)
 
@@ -135,7 +136,7 @@ class Worker(threading.Thread):
                 continue
             began = time.time()
             try:
-                if job["stage"] == "review":
+                if job["stage"] in ("review", "done"):
                     self.set(job, stage="render")
                     finish(ROOT / "work" / job["slug"])
                     kept = sum(c["keep"] for c in review.load(ROOT / "work" / job["slug"])["clips"])
