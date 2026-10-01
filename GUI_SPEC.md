@@ -31,8 +31,10 @@
 ## 2. Post descriptions
 - **These are written by `score`, not by the GUI.** The same Claude API call that picks a clip returns a post description, saved as a `.txt` with the same name as the clip: `Finished_Clips\NN_s<score>_<name>_<layout>.mp4` → `NN_s<score>_<name>.txt` (one per clip, shared by all 3 layouts).
 - Contents: hook line + short caption + hashtags. Style rules go in `skill.md`.
-- GUI **Clips** panel: lists the finished clips, most recent first. Selecting one shows its description. Buttons: **Copy description** (clipboard), **Open folder** (Explorer with the file selected), **Play**.
-- Nothing calls a social media API. Posting stays manual.
+- GUI **Clips** section (reworked 2026-09-30): a tree grouped by podcast folder, best score first, with a Posted
+  column. Selecting a clip shows its description and post history (`posts.json`: platform, account, layout, date).
+  The app asks "Did you post it?" when the posting browser closes; "Mark posted" covers posts made elsewhere.
+  Buttons: **Copy description**, **Play**, **Open folder**.
 
 ## 3. Accounts and posting (reworked 2026-09-30, Tko's call)
 - `profiles.json`: each account has a name, a fixed browser folder (`browsers\<name>\`, gitignored) and one
