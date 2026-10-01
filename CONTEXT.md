@@ -67,7 +67,7 @@ diffs against `review.json` (`by: sonnet` vs `by: gurt`), adds/edits clips with 
 first, last, "gurt", payoff, reason, fixes, description)` (word indices; `fixes` corrects misheard caption words),
 sets `keep`, saves, sets `status: approved`. Logs the diff in the run file's "Scorer vs GURT", updates INDEX,
 commits. Transcript health check and face check (look at frames) still come first.
-Next clip number: **68**.
+Next clip number: **86** (counted from the log automatically).
 
 ## Status
 - [x] ffmpeg installed, `download` + `transcribe` produce a word-timed transcript
@@ -83,7 +83,8 @@ Next clip number: **68**.
 - [x] `queue.txt`: batch download + transcribe + loudness, so episodes are ready to judge
 - [ ] Try `condition_on_previous_text=False` in `transcribe.py` (Whisper went lowercase
       mid-episode in runs 2 and 3)
-- [ ] Jump cuts: splice out a rambling middle so 37–38s stories fit ~30s
+- [x] Splicing (`splice.py`): story cuts from review (`cuts`, Sonnet proposes them), dead air shortened
+      unless laughing, endings cut from the audio. Tested on run 7's crematorium story (77s → 32s)
 - [ ] Transcribe speed: run 2 took 634s for 76 min (goal ~5 min). Degraded output (no
       punctuation, a hallucinated repeat) may be related. Investigate before automating.
 - [ ] `signals` ad detection + heatmap ad-skip filter in code
