@@ -1,5 +1,7 @@
 import json
+import os
 import re
+import winreg
 from pathlib import Path
 
 import anthropic
@@ -164,6 +166,16 @@ def locate(clip: dict, words: list[dict], norm: list[str]) -> str | None:
     return None
 
 
+def api_key() -> str | None:
+    # A process keeps the environment it was launched with, so a key changed with setx while the app
+    # is open (or from a terminal opened earlier) never reaches it. Read the stored value each time.
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as env:
+            return winreg.QueryValueEx(env, "ANTHROPIC_API_KEY")[0]
+    except OSError:
+        return os.environ.get("ANTHROPIC_API_KEY")
+
+
 def recent_runs(count: int = 3) -> list[str]:
     return [p.name for p in sorted((ROOT / "clip_log").glob("run-*.md"))[-count:]]
 
@@ -179,7 +191,7 @@ def score(work: Path, model: str = MODEL, examples: list[str] | None = None,
     pieces = chunks(reading_lines(work), span)
     words_per_second = len(words) / transcript["duration"]
 
-    client = anthropic.Anthropic()
+    client = anthropic.Anthropic(api_key=api_key())
     system = [{"type": "text", "text": system_prompt(examples), "cache_control": {"type": "ephemeral"}}]
     clips, rejected, dropped, usage = [], [], [], {"input_tokens": 0, "cache_read_input_tokens": 0, "output_tokens": 0}
     parts_dir = work / f"parts-{model}"
