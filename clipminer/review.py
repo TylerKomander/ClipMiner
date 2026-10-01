@@ -4,7 +4,7 @@ import json
 import re
 from pathlib import Path
 
-from . import reframe
+from . import reframe, splice
 from .render import BLUR_FILL, CAPTIONS_LOW, CAPTIONS_SEAM, mask_curses, render
 
 
@@ -14,18 +14,22 @@ def transcript_words(work: Path) -> list[dict]:
 
 
 def entry(words: list[dict], name: str, score: int, first: int, last: int, by: str,
-          payoff: str = "", reason: str = "", fixes: dict | None = None, description: str = "") -> dict:
+          payoff: str = "", reason: str = "", fixes: dict | None = None, description: str = "",
+          cuts: list[list[int]] | None = None) -> dict:
     clip = {"name": name, "score": score, "first": first, "last": last, "by": by, "keep": True,
-            "payoff": payoff, "reason": reason, "fixes": fixes or {}, "description": description}
+            "payoff": payoff, "reason": reason, "fixes": fixes or {}, "description": description, "cuts": cuts or []}
     return preview(clip, words)
 
 
 def preview(clip: dict, words: list[dict]) -> dict:
     """The dry run: a reviewer reads these before approving, so a clipped opener or payoff shows."""
+    clip.setdefault("cuts", [])
     span = words[clip["first"]:clip["last"] + 1]
     clip["opens"] = " ".join(w["word"].strip() for w in span[:5])
     clip["closes"] = " ".join(w["word"].strip() for w in span[-5:])
-    clip["seconds"] = round(span[-1]["end"] - span[0]["start"] + 0.45, 1)
+    clip["seconds"] = splice.seconds(words, clip["first"], clip["last"], clip["cuts"])
+    clip["spliced_out"] = [f"{' '.join(w['word'].strip() for w in words[a:b + 1][:6])}… "
+                           f"({words[b]['end'] - words[a]['start']:.0f}s)" for a, b in clip["cuts"]]
     return clip
 
 
@@ -37,6 +41,18 @@ def save(work: Path, review: dict) -> None:
     words = transcript_words(work)
     review["clips"] = sorted((preview(c, words) for c in review["clips"]), key=lambda c: c["first"])
     (work / "review.json").write_text(json.dumps(review, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+# Tko's rule: these go on every post, on top of the clip's own hashtags.
+REQUIRED_TAGS = ["#xybca", "#fyp", "#blowthisup", "#viral"]
+
+
+def with_required_tags(description: str) -> str:
+    lines = description.strip().splitlines() or [""]
+    tagged = lines[-1].lstrip().startswith("#")
+    tags = lines[-1].split() if tagged else []
+    tags += [t for t in REQUIRED_TAGS if t not in tags]
+    return "\n".join((lines[:-1] if tagged else lines) + [" ".join(tags)])
 
 
 def next_number(out_dir: Path) -> int:
@@ -60,19 +76,20 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
     out_dir.mkdir(parents=True, exist_ok=True)
     done = []
     for clip in (c for c in review["clips"] if c["keep"]):
-        fixes = clip["fixes"]
-        caption = [{**w, "word": " ".join(fixes.get(x, x) for x in w["word"].split())}
-                   for w in words[clip["first"]:clip["last"] + 1]]
-        start, end = caption[0]["start"] - 0.15, caption[-1]["end"] + 0.3
         stem = f"{number:02d}_s{clip['score']}_{clip['name']}"
-        segments, split = reframe.plan(video, start, end)
-        done.append(render(video, work, out_dir / f"{stem}_blur.mp4", start, end, BLUR_FILL, CAPTIONS_LOW, caption))
-        done.append(render(video, work, out_dir / f"{stem}_track.mp4", start, end,
+        source, start, end, kept = splice.build(video, work, words, clip, stem)
+        fixes = clip["fixes"]
+        caption = [{**w, "word": " ".join(fixes.get(x, x) for x in w["word"].split())} for w in kept]
+        segments, split = reframe.plan(source, start, end)
+        done.append(render(source, work, out_dir / f"{stem}_blur.mp4", start, end, BLUR_FILL, CAPTIONS_LOW, caption))
+        done.append(render(source, work, out_dir / f"{stem}_track.mp4", start, end,
                            reframe.track_filter(segments, W, H), CAPTIONS_LOW, caption))
         if split:
-            done.append(render(video, work, out_dir / f"{stem}_split.mp4", start, end,
+            done.append(render(source, work, out_dir / f"{stem}_split.mp4", start, end,
                                reframe.split_filter(split, W, H), CAPTIONS_SEAM, caption))
-        text = "\n".join(" ".join(mask_curses(word) for word in line.split(" ")) for line in clip["description"].splitlines())
+        if source != video:
+            source.unlink()
+        text = "\n".join(" ".join(mask_curses(word) for word in line.split(" ")) for line in with_required_tags(clip["description"]).splitlines())
         (out_dir / f"{stem}.txt").write_text(text + "\n", encoding="utf-8")
         clip["rendered_as"] = stem
         print(f"[render]     {stem}  ({end - start:.1f}s, split {'yes' if split else 'no'})", flush=True)
