@@ -37,9 +37,20 @@ def load(work: Path) -> dict:
     return json.loads((work / "review.json").read_text(encoding="utf-8"))
 
 
+def mark_overlaps(clips: list[dict], words: list[dict]) -> None:
+    """GURT's and Sonnet's picks can land on the same moment; flag ticked pairs so it can't render twice
+    by accident (run 8 shipped two cuts of the Gronk story)."""
+    kept = [c for c in clips if c["keep"]]
+    for c in clips:
+        a, b = words[c["first"]]["start"], words[c["last"]]["end"]
+        c["overlaps"] = [o["name"] for o in kept if o is not c and c["keep"]
+                         and min(b, words[o["last"]]["end"]) - max(a, words[o["first"]]["start"]) > 5]
+
+
 def save(work: Path, review: dict) -> None:
     words = transcript_words(work)
     review["clips"] = sorted((preview(c, words) for c in review["clips"]), key=lambda c: c["first"])
+    mark_overlaps(review["clips"], words)
     (work / "review.json").write_text(json.dumps(review, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
