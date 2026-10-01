@@ -1,4 +1,5 @@
 import argparse
+import json
 import time
 from pathlib import Path
 
@@ -34,6 +35,10 @@ def prepare(source: str, model: str) -> Path:
 def finish(work: Path) -> list[Path]:
     """Render the approved picks, then drop the source: Tko's rule is no full videos kept."""
     video = work / "source.mp4"
+    if not video.exists():
+        # A second batch after the source was deleted: fetch it again (info.json has the id).
+        info = json.loads((work / "info.json").read_text(encoding="utf-8"))
+        fetch(f"https://www.youtube.com/watch?v={info['id']}", ROOT / "work")
     clips = review.render_approved(work, video, FINISHED)
     video.unlink()
     return clips
