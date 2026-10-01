@@ -40,8 +40,10 @@ def save(work: Path, review: dict) -> None:
 
 
 def next_number(out_dir: Path) -> int:
-    # Used-Clips counts too: numbers never repeat, even after Tko moves posted clips.
+    # Numbers never repeat: the clip log refers to clips by number long after Tko moves or deletes the files.
     numbers = [int(m.group(1)) for f in out_dir.rglob("*.mp4") if (m := re.match(r"(\d+)_", f.name))]
+    for run in (out_dir.parent / "clip_log").glob("run-*.md"):
+        numbers += [int(n) for n in re.findall(r"^- \*\*(\d+) · ", run.read_text(encoding="utf-8"), re.M)]
     return max(numbers, default=0) + 1
 
 
@@ -52,6 +54,10 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
     words = transcript_words(work)
     W, H = reframe.frame_size(video)
     number = next_number(out_dir)
+    info = json.loads((work / "info.json").read_text(encoding="utf-8")) if (work / "info.json").exists() else {}
+    show = re.sub(r'[<>:"/\\|?*]+', "", info.get("channel") or info.get("title") or "").strip()[:60] or "Local files"
+    out_dir = out_dir / show
+    out_dir.mkdir(parents=True, exist_ok=True)
     done = []
     for clip in (c for c in review["clips"] if c["keep"]):
         fixes = clip["fixes"]
