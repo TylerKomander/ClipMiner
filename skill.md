@@ -37,7 +37,9 @@ Funny is the priority for this theme; whacky and interesting fill the mix.
   Alabama fan). Every question to them is a setup. Runs 2, 4, 5.
 
 **Off-theme here:** sincere/earnest segments (charity, gratitude), technical explainers
-without a joke, business talk, tour-date plugs.
+without a joke, business talk, tour-date plugs, and **a guest or host plugging their own product**
+(run 8: Caleb's tequila taglines and shoe "review" — even when it's riffy, a clip of it is free
+advertising for them).
 
 **Theme-specific tolerance:** profanity and crude topics are normal and fine. Only flag
 profanity in the first 3s (reach), not the topic.
@@ -66,6 +68,9 @@ conversation" is not a clip. Ask: *would I send this to a friend?*
   part is 10–40s and still reads cold. Never cut the payoff, the line that sets it up, or a reaction
   that is part of the payoff. Dead air (pauses over 0.6s with no laughter) is shortened
   automatically; don't list it. Example: run 7's crematorium story, 77s → 32s with two cuts.
+  **The story's ending stays.** Splice the middle, never the end: run 8's Gronk story was cut to 34s
+  but stopped before "somebody told me that was the head of William Morris". Cut more of the middle
+  instead (the fixed version kept 38s of 2m09s with 7 cuts). Estimate ~2.5–3 words per second.
 - **Endings** are set from the audio (`splice.tail_end`), not Whisper's word end: it waits for the
   voice to drop, or cuts at the quietest seam 0.25–0.8s after the last word.
 - **Opening line:** must make sense on its own and pull you in: a claim, a surprising fact,
