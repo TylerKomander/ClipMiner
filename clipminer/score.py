@@ -14,7 +14,7 @@ LINE_SECONDS = 15
 CHUNK_SECONDS = 20 * 60
 OVERLAP_SECONDS = 60
 MIN_LEN, MAX_LEN = 10, 40
-MAX_SPAN = 150  # a spliced story may cover this much of the episode
+MAX_SPAN = 240  # a spliced story may cover this much of the episode (run 9: green-room setup sat 3 min before its payoff)
 SPIKE_LU = 6
 
 def _object(properties: dict) -> dict:
@@ -120,24 +120,33 @@ def user_prompt(info: dict, begin: float, piece: list[str], part: int, parts: in
         "Warm conversation, praise, or a story with no turn is not a payoff. No payoff, no clip.\n"
         "Long stories: you may splice. List `cuts` (a tangent, a repeated setup, cross-talk) and the clip is "
         "joined with hard jump cuts; dead air is trimmed automatically. The kept part must be 10–40s, still make "
-        f"sense cold, and the whole window may span up to {MAX_SPAN // 60} and a half minutes. Never cut the payoff "
-        "or the line that sets it up.\n"
+        f"sense cold, and the whole window may span up to {MAX_SPAN // 60} minutes. Never cut the payoff "
+        "or the line that sets it up. A payoff whose setup came minutes earlier is a splice (setup, then payoff), "
+        "not a reject and not a clip of the payoff alone.\n"
         "Submit every clip scoring 6+ and the notable rejects. "
         "first_words and last_words must be copied exactly from the text.\n\n"
         + "\n".join(piece)
     )
 
 
+def matches(norm: list[str], i: int, quote: list[str]) -> bool:
+    # Allow one miscopied word in a 4-word quote (lowercase stretches and fillers trip up exact quotes),
+    # never in a shorter one: "Yeah, yeah." with one miss matches any "yeah" (run 9).
+    need = len(quote) - 1 if len(quote) >= 4 else len(quote)
+    return sum(a == b for a, b in zip(norm[i:i + len(quote)], quote)) >= need
+
+
 def snap(words: list[dict], norm: list[str], near: float, quote: list[str], window: float) -> int | None:
     best = None
     for i, w in enumerate(words):
-        if abs(w["start"] - near) > window:
-            continue
-        # Allow one miscopied word: lowercase stretches and fillers trip up exact quotes.
-        if sum(a == b for a, b in zip(norm[i:i + len(quote)], quote)) >= len(quote) - 1:
+        if abs(w["start"] - near) <= window and matches(norm, i, quote):
             if best is None or abs(w["start"] - near) < abs(words[best]["start"] - near):
                 best = i
     return best
+
+
+def first_after(norm: list[str], quote: list[str], lo: int, hi: int) -> int | None:
+    return next((i for i in range(lo, hi + 1) if matches(norm, i, quote)), None)
 
 
 def locate(clip: dict, words: list[dict], norm: list[str]) -> str | None:
@@ -151,14 +160,16 @@ def locate(clip: dict, words: list[dict], norm: list[str]) -> str | None:
     clip["start"], clip["end"] = words[i]["start"], words[clip["last"]]["end"]
     if clip["end"] - clip["start"] > MAX_SPAN:
         return f"spans {clip['end'] - clip['start']:.0f}s of the episode, over {MAX_SPAN}s"
-    middle, reach = (clip["start"] + clip["end"]) / 2, (clip["end"] - clip["start"]) / 2 + 5
     clip["cut_ranges"] = []
     for cut in clip.get("cuts", []):
         head = re.findall(r"[a-z0-9']+", cut["from_words"].lower())[:4]
         tail = re.findall(r"[a-z0-9']+", cut["to_words"].lower())[-4:]
-        a, b = snap(words, norm, middle, head, reach), snap(words, norm, middle, tail, reach)
-        if a is None or b is None or not clip["first"] < a <= b + len(tail) - 1 < clip["last"]:
-            return "a cut's words weren't found inside the clip"
+        # Cuts come in order; each one starts after the last and ends after its own start.
+        lo = clip["cut_ranges"][-1][1] + 1 if clip["cut_ranges"] else clip["first"] + 1
+        a = first_after(norm, head, lo, clip["last"] - 1)
+        b = None if a is None else first_after(norm, tail, a, clip["last"] - len(tail))
+        if b is None:
+            return f"cut \"{cut['from_words']}\" … \"{cut['to_words']}\" not found inside the clip"
         clip["cut_ranges"].append([a, b + len(tail) - 1])
     length = splice.seconds(words, clip["first"], clip["last"], clip["cut_ranges"])
     if not MIN_LEN <= length <= MAX_LEN:
@@ -174,6 +185,32 @@ def api_key() -> str | None:
             return winreg.QueryValueEx(env, "ANTHROPIC_API_KEY")[0]
     except OSError:
         return os.environ.get("ANTHROPIC_API_KEY")
+
+
+def ask(client, model: str, system: list, messages: list, part: int) -> tuple[str, dict]:
+    with client.messages.stream(
+        model=model,
+        max_tokens=64000,
+        system=system,
+        output_config={"format": {"type": "json_schema", "schema": CLIP_SCHEMA}},
+        messages=messages,
+    ) as stream:
+        response = stream.get_final_message()
+    if response.stop_reason == "max_tokens":
+        raise RuntimeError(f"part {part} hit max_tokens")
+    usage = {key: getattr(response.usage, key) or 0 for key in ("input_tokens", "cache_read_input_tokens", "output_tokens")}
+    return next(b.text for b in response.content if b.type == "text"), usage
+
+
+def retry_prompt(long: list[tuple[dict, str]], words_per_second: float) -> str:
+    listed = "\n".join(f"- {c['name']}: {problem}" for c, problem in long)
+    return (
+        f"Measured from the word timestamps, these picks run too long:\n{listed}\n\n"
+        f"The kept part must be 10–40s, about {40 * words_per_second:.0f} words at this show's pace. For each one, "
+        "splice harder: cut more of the middle (tangents, repeats, a host's interjection), start at the latest line "
+        "that still makes sense, and keep the ending and its payoff. If it can't fit without losing the payoff, "
+        "leave it out. Return only these clips, revised, with the same names; `rejected` may be empty."
+    )
 
 
 def recent_runs(count: int = 3) -> list[str]:
@@ -201,18 +238,21 @@ def score(work: Path, model: str = MODEL, examples: list[str] | None = None,
         if cached.exists():
             picks = json.loads(cached.read_text(encoding="utf-8"))
         else:
-            with client.messages.stream(
-                model=model,
-                max_tokens=64000,
-                system=system,
-                output_config={"format": {"type": "json_schema", "schema": CLIP_SCHEMA}},
-                messages=[{"role": "user", "content": user_prompt(info, begin, piece, n, len(pieces), words_per_second)}],
-            ) as stream:
-                response = stream.get_final_message()
-            if response.stop_reason == "max_tokens":
-                raise RuntimeError(f"part {n} hit max_tokens")
-            picks = json.loads(next(b.text for b in response.content if b.type == "text"))
-            picks["usage"] = {key: getattr(response.usage, key) or 0 for key in usage}
+            messages = [{"role": "user", "content": user_prompt(info, begin, piece, n, len(pieces), words_per_second)}]
+            text, picks_usage = ask(client, model, system, messages, n)
+            picks = json.loads(text)
+            # It misjudges spoken length (10 finds over 40s in runs 7-9). Show it the measured length once
+            # and let it splice harder, instead of code dropping the find.
+            long = [(c, locate(dict(c), words, norm)) for c in picks["clips"]]
+            long = [(c, p) for c, p in long if p and "after cuts" in p and float(p.split("s")[0]) > MAX_LEN]
+            if long:
+                messages += [{"role": "assistant", "content": text},
+                             {"role": "user", "content": retry_prompt(long, words_per_second)}]
+                text, retry_usage = ask(client, model, system, messages, n)
+                revised = {c["name"]: c for c in json.loads(text)["clips"]}
+                picks["clips"] = [revised.get(c["name"], c) for c in picks["clips"]]
+                picks_usage = {key: picks_usage[key] + retry_usage[key] for key in usage}
+            picks["usage"] = picks_usage
             cached.write_text(json.dumps(picks, indent=2, ensure_ascii=False), encoding="utf-8")
         for key in usage:
             usage[key] += picks["usage"][key]
@@ -240,8 +280,16 @@ def score(work: Path, model: str = MODEL, examples: list[str] | None = None,
                                "dropped": dropped, "rejected": rejected}, indent=2, ensure_ascii=False), encoding="utf-8")
     # Never overwrite a review in progress: GURT or Tko may already have edited it.
     if not (work / "review.json").exists():
-        review.save(work, {"status": "awaiting", "model": model, "clips": [
-            review.entry(words, c["name"], c["score"], c["first"], c["last"], model, c["payoff"], c["reason"],
-                         description=c["description"], cuts=c["cut_ranges"])
-            for c in kept]})
+        entries = [review.entry(words, c["name"], c["score"], c["first"], c["last"], model, c["payoff"], c["reason"],
+                                description=c["description"], cuts=c["cut_ranges"]) for c in kept]
+        # A find that failed a length or cut check still shows in Review, unticked, so a reviewer can fix
+        # the window instead of never seeing it (run 9 lost two this way).
+        for c in dropped:
+            if "first" in c and not c["dropped"].startswith("overlaps"):
+                entry = review.entry(words, c["name"], c["score"], c["first"], c["last"], model, c["payoff"],
+                                     f"Dropped by code: {c['dropped']}. {c['reason']}",
+                                     description=c["description"], cuts=c.get("cut_ranges", []))
+                entry["keep"] = False
+                entries.append(entry)
+        review.save(work, {"status": "awaiting", "model": model, "clips": entries})
     return out
