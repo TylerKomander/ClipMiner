@@ -67,7 +67,7 @@ diffs against `review.json` (`by: sonnet` vs `by: gurt`), adds/edits clips with 
 first, last, "gurt", payoff, reason, fixes, description)` (word indices; `fixes` corrects misheard caption words),
 sets `keep`, saves, sets `status: approved`. Logs the diff in the run file's "Scorer vs GURT", updates INDEX,
 commits. Transcript health check and face check (look at frames) still come first.
-Next clip number: **128** (counted from the logs automatically: write a run's log after it renders).
+Next clip number: **147** (counted from the logs automatically: write a run's log after it renders).
 
 ## Status
 - [x] ffmpeg installed, `download` + `transcribe` produce a word-timed transcript
@@ -92,12 +92,14 @@ Next clip number: **128** (counted from the logs automatically: write a run's lo
       Haiku 4.5 found 9/18 (too small); Sonnet 5.5 found 16/18. Sonnet is the scorer.
 - [x] `review.py`: review gate (`review.json`), dry-run preview, render with exact caption words,
       curse masking, per-clip `.txt` post description; numbering continues across Used-Clips
-- [x] GUI (`gui.py`) per GUI_SPEC with a review stage. Smoke-tested; not yet run on a real episode
+- [x] GUI (`gui.py`) per GUI_SPEC with a review stage. Runs 7 and 8 went through it end to end
+- [x] Account `Comedian-House-TV` set up; posting works on YouTube + TikTok (4 clips, 2026-09-30 → 10-01)
 - [x] Second batches: picks added after a render render on their own (`--render <slug>` or the app);
       the source is re-downloaded. API key read fresh from the registry (`score.api_key`)
 - [ ] Sonnet matches GURT's blind picks on new shows (GURT keeps logging the diffs)
       Run 4 (Arenas): agreed on 5 of 10; Sonnet found 2 GURT missed; Tko kept all 11.
       Run 5 (Theo Von): agreed 6 of 10, 3 finds kept. Run 6 (Flagrant): agreed 7 of 10, 5 finds kept.
+      Run 9 (Bad Friends): found 9 of GURT's 18 (+2 lost in code, now fixed); 16 picks, only 4 weak.
 - [ ] One local file (no heatmap) end-to-end
 
 **Cost plan (Tko 2026-09-30: fine for now, must get cheaper as it scales).** Today ~$1–1.50 per 2h
@@ -122,7 +124,8 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
   the rest is the manual recipe above)
 
 ## Next step
-Tko: Accounts → New account, fill the platform slots, "Log in to this account's sites" and sign in once.
-Then run real episodes through the app (GUI_SPEC "Done when") and try one post per platform. The upload-page
-selectors in `post.py` are untested against logged-in pages: expect a fix or two per platform on first use.
-GURT keeps doing the blind-pick diff at review.
+Run 10 through the app. First run with the length retry and the new rules (splice setup + payoff,
+cross-talk, score calibration, escalating riff): check whether Sonnet's share of GURT's blind picks rises
+above ~65% and whether picks marked "Dropped by code" show up unticked in Review.
+Posting: every post so far is the `track` layout on YouTube + TikTok. Post blur variants too and log views
+in each run file's "Posted" line, or the layout question never gets answered.
