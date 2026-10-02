@@ -64,8 +64,10 @@ conversation" is not a clip. Ask: *would I send this to a friend?*
   Never pad. Length means the **finished** clip, after splicing.
 - **Splicing (built after run 7; Tko: "good clipping accounts cut out empty space").** A story whose
   best version runs long can be spliced with hard jump cuts: list `cuts` (word ranges) for a tangent,
-  a repeated setup or cross-talk. The source window may span up to ~2.5 minutes as long as the kept
-  part is 10–40s and still reads cold. Never cut the payoff, the line that sets it up, or a reaction
+  a repeated setup or cross-talk. The source window may span up to ~4 minutes as long as the kept
+  part is 10–40s and still reads cold. **A payoff whose setup came minutes earlier is a splice** (setup line,
+  then payoff), not a reject and not a clip of the payoff alone (run 9: the green-room game's setup sat 2.5
+  minutes before "who's this necromancer that brought Richard Pryor back from the dead?"). Never cut the payoff, the line that sets it up, or a reaction
   that is part of the payoff. Dead air (pauses over 0.6s with no laughter) is shortened
   automatically; don't list it. Example: run 7's crematorium story, 77s → 32s with two cuts.
   **The story's ending stays.** Splice the middle, never the end: run 8's Gronk story was cut to 34s
@@ -99,6 +101,12 @@ shape. But when a candidate fits one of these, build it to land the turn.
 - **Shameless confession, told proudly:** the teller is proud of the thing they should hide
   ("I didn't turn down one ID... their Westchester Rams card, I'd be like, that works").
 - **Friend exposes the other's habit:** duo shows. One host outs the other; the defence makes it worse.
+- **Escalating riff, capped:** a premise gets built on line after line, each topping the last, until one line
+  caps it ("we're in an insane asylum... we let them dress up on Saturday... double his meds"). Take the whole
+  build, never just its flat tail. The scorer misses these most (runs 7, 9).
+- **Absurd image → strong verdict:** someone paints a ridiculous picture and lands a flat judgment on it
+  ("if you make Heat, you should get to kill 20 horses minimum").
+- **Insider rule revealed, pushed to absurd precision:** how a job or scene really works, taken one step too far.
 
 **Build backwards from the payoff.** Find the payoff line, then start at the *latest* line that
 still makes sense cold. A story told over 45s often has a 20s clip inside it (run 4: "I spent
@@ -125,6 +133,9 @@ Post Malone doesn't work if the name is never said in the window. (Later: a titl
 - **Hallucinated loops and word salad** can sit right beside a good clip (run 6: "he's in the
   neighborhood" x40 at 1:11:34, clip 61 starts 20s later). Read the clip's own captions.
 - **Misheard names:** fix the caption when you're sure (Cat → Katt Williams); otherwise cut around it.
+- **Dropped curse words:** Whisper often leaves the curse out entirely ("who gives a has nothing to do with
+  them"). If the punchline needs it, restore it with a caption fix on the word before (the caption masks it as
+  `****` anyway). A fix replaces that word everywhere in the clip, so skip it when the word before is "a" or "the".
 - **Misheard payoff words:** if Whisper gets a key word wrong ("we have a *shot* in an hour"),
   move the boundary to avoid captioning it rather than posting a wrong caption.
 
@@ -163,7 +174,8 @@ peak with no payoff. Run 1: 2 of 5 kept clips had no signal. Run 2: all 5. **Alw
 whole transcript.**
 
 Drop on sight (any theme): ads, cold-open teasers (the full moment is later), intros/outros, "subscribe", housekeeping, rapid-fire Q&A lists,
-cross-talk captions can't follow, gestures the viewer can't see ("they were like *this*"),
+cross-talk captions can't follow (people talking *over* each other; quick back-and-forth lines are fine, and so is
+one voice with "yeah"s under it), gestures the viewer can't see ("they were like *this*"),
 setups whose payoff is outside the length limit.
 
 ## Selection order
@@ -191,6 +203,8 @@ bombed" stories). Keep the best one per story type, not every one that passes.
 ## Score (1–10, absolute, not relative)
 Each clip is scored against the bar, **not against the other clips in the episode**. If
 all five are great, all five are 9–10. If none are, none are.
+**Calibration (runs 3–9, every run):** the model scorer rates the best clips one point low. A clip with a clean
+payoff, a cold opener and no flaw you can name is a 9. Save 8 for a strong clip with one flaw you can name.
 - **10:** would bet on it. Instant hook, clean payoff, perfect cold read, no weaknesses.
 - **9:** strong on all three tests; one tiny nitpick.
 - **8:** strong payoff; one real flaw (weak opener, slight overrun, a risk flag).
