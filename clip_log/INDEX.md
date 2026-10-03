@@ -36,21 +36,23 @@ universal) and note "(in skill.md)" here.
 | 7 | `run-07-soder-139-louis-ck.md` | Soder Podcast #139 (Louis C.K.) | 77m | 68–85 | first run through the app; splicing + audio endings built after it |
 | 8 | `run-08-this-past-weekend-686-caleb-pressley.md` | This Past Weekend #686 (Caleb Pressley) | 125m | 86–117, 123–127 | Sonnet's 32 approved as-is; GURT's 5 as a second batch; first Sonnet splices |
 | 9 | `run-09-bad-friends-338-stavros.md` | Bad Friends Ep 338 (Stavros Halkias) | 69m | 128–146 | first half only; 19 clips (8 Sonnet, 11 GURT); length retry + cut-matching fixed after it |
+| 10 | `run-10-this-past-weekend-687-mamdani.md` | This Past Weekend #687 (Zohran Mamdani, NYC mayor) | 77m | 147–159 | politician guest; Sonnet found 11 of GURT's 14 (79%); nothing dropped by code |
 
 ## Shapes (universal), most seen first
 Format: tally · shape · clips (score). Clip numbers match `Finished_Clips\` and the run files.
 3+ = proven, listed in `skill.md` Part B "Proven shapes".
-- `[.........]` **Self-roast of the past self**: delusion then, blunt truth now · 14 (7), 15 (9), 25 (8), 27 (9), 38 (7), 53 (7), 83 (8), 124 (8), 142 (8)
-- `[.........]` **Scene → twist → reaction**: the reaction is the payoff · 06 (9), 11 (8), 20 (9), 22 (8), 35 (7), 58 (8), 77 (9), 78 (9), 138 (8)
-- `[.........]` **Observational take with a quotable capper** · 04 (7), 09 (7), 28 (7), 37 (7), 44 (8), 67 (7), 73 (8), 74 (9), 131 (7)
-- `[........]` **Friend exposes the other's habit** · 57 (8), 66 (7), 67 (7), 128 (7), 132 (8), 133 (8), 139 (7), 145 (8)
-- `[........]` **Energy build or outrageous comparison, then a capper that tops it** · 01 (8), 17 (9), 69 (8), 76 (9), 130 (7), 134 (8), 137 (8), 141 (8) (in skill.md)
-- `[.......]` **Absurd image → strong verdict** · 10 (8), 56 (8), 70 (8), 126 (9), 136 (8), 140 (7), 143 (8) (in skill.md)
+- `[..........]` **Self-roast of the past self**: delusion then, blunt truth now · 14 (7), 15 (9), 25 (8), 27 (9), 38 (7), 53 (7), 83 (8), 124 (8), 142 (8), 154 (8)
+- `[..........]` **Scene → twist → reaction**: the reaction is the payoff · 06 (9), 11 (8), 20 (9), 22 (8), 35 (7), 58 (8), 77 (9), 78 (9), 138 (8), 148 (9)
+- `[..........]` **Observational take with a quotable capper** · 04 (7), 09 (7), 28 (7), 37 (7), 44 (8), 67 (7), 73 (8), 74 (9), 131 (7), 150 (8)
+- `[..........]` **Absurd image → strong verdict** · 10 (8), 56 (8), 70 (8), 126 (9), 136 (8), 140 (7), 143 (8), 147 (7), 153 (8), 157 (9) (in skill.md)
+- `[.........]` **Friend exposes the other's habit** · 57 (8), 66 (7), 67 (7), 128 (7), 132 (8), 133 (8), 139 (7), 145 (8), 149 (8)
+- `[.........]` **Energy build or outrageous comparison, then a capper that tops it** · 01 (8), 17 (9), 69 (8), 76 (9), 130 (7), 134 (8), 137 (8), 141 (8), 152 (9) (in skill.md)
 - `[.....]` **Plan meets reality**: naive expectation, then the obvious question or bad trade · 13 (8), 16 (7), 26 (8), 30 (8), 54 (8)
 - `[.....]` **Strange true fact, explained in one breath** · 08 (8), 18 (8), 42 (8), 55 (7), 146 (7)
 - `[....]` **Shameless confession, told proudly** · 19 (9), 36 (8), 64 (9), 129 (8)
 - `[....]` **Insider rule revealed, pushed to absurd precision** · 07 (9), 29 (8), 80 (8), 123 (8) (in skill.md)
 - `[...]` **Behind-the-scenes reveal told straight** · 05 (6), 31 (9), 84 (8)
+- `[..]` **Roast in one line**: the guest's single dry reply to the host's ramble · 155 (8), 158 (8)
 - `[..]` **Self-justifying logic spiral** · 12 (8), 32 (7)
 - `[..]` **Confession in the first sentence** · 02 (8), 33 (9)
 - `[..]` **Proud reveal, instantly deflated** · 43 (9), 65 (8)
@@ -78,11 +80,11 @@ Read so far: story shapes with a clear turn score 8–9; takes score 7 unless th
 quotable. Duo shows (Shane/Steve) run on "friend exposes the other"; one-guest shows on self-roast.
 
 ## Recurring lessons, most seen first
-- `[........]` `[universal]` Clips with zero signal support are as good as signalled ones (runs 1–9). (in skill.md)
+- `[.........]` `[universal]` Clips with zero signal support are as good as signalled ones (runs 1–10). (in skill.md)
+- `[........]` `[universal]` Whisper drops to lowercase with no punctuation (runs 2–4, 6–10). (in skill.md)
+- `[........]` `[scorer]` Model scores the best clips one point low (runs 3–10, every run). Calibration added after run 9; run 10 still low (two 9s given 7–8). (in skill.md)
+- `[........]` `[scorer]` Model gives no-payoff, sincere or promotional talk a 6–7 instead of rejecting it (runs 3–10). Run 9: 16 picks, 4 weak; run 10: 13 picks, 2 weak, every policy segment rejected. **Biting.** (in skill.md)
 - `[.......]` `[universal]` The best version of a story needs more than 35s (runs 1–7). **Fixed after run 7: splicing** (`splice.py`; crematorium 77s → 32s). (in skill.md)
-- `[.......]` `[universal]` Whisper drops to lowercase with no punctuation (runs 2–4, 6–9). (in skill.md)
-- `[.......]` `[scorer]` Model scores the best clips one point low (runs 3–9, every run). Calibration added after run 9. (in skill.md)
-- `[.......]` `[scorer]` Model gives no-payoff, sincere or promotional talk a 6–7 instead of rejecting it (runs 3–9). Run 9: 16 picks, only 4 weak. **Starting to bite.** (in skill.md)
 - `[.....]` `[universal]` The dry run of first/last 5 words catches cut-off words (runs 2–6). (in skill.md)
 - `[.....]` `[universal]` Heatmap peaks right after ad reads are skip landings (runs 1, 3, 5, 6, 7). (in skill.md)
 - `[.....]` `[universal]` GURT missed clips the model found (runs 3–7, 9: 130, 140). Blind-pick, then diff, then accept finds after reading them. (in CONTEXT.md recipe)
@@ -91,16 +93,19 @@ quotable. Duo shows (Shane/Steve) run on "friend exposes the other"; one-guest s
 - `[...]` `[universal]` Whisper drops curse words entirely ("shut the up", "I don't give a no", "who gives a has"); restore them with a caption fix when the punchline needs it (runs 7–9). A fix replaces a word everywhere in the clip, so a dropped word after "a" can't be restored that way. (in skill.md)
 - `[...]` `[scorer]` Model's splices are sensible but often still run over 40s (runs 7–9: 10 finds dropped by code) and can drop the ending (run 8: Gronk). **Fixed after run 9:** the measured length goes back to it once and it splices harder; leftovers show in Review unticked. (in skill.md, in code)
 - `[...]` `[theme]` A non-comedian guest is gold when the hosts poke at their world (rancher, Arenas, Roll Tide Willie). (in skill.md)
+- `[...]` `[universal]` Fix misheard words in captions when sure (Katt, Tide man, balls, Xu, click-to-cancel); cut around them when not. (in skill.md)
+- `[...]` `[universal]` Whisper hallucinations (repeat loops, word salad) sit next to good clips (runs 5, 6, 10: "Yeah" ×20 a few seconds before 148). Check the window's own captions. (in skill.md)
+- `[...]` `[scorer]` Model picks the weaker version of a repeated story, or a different window of it (runs 3–5, 10: Barramundi over queefish). (selection rule 7 in skill.md; needs to reach the prompt harder)
 - `[..]` `[scorer]` Model misses escalating riffs and takes a story's flat tail (run 7: 69, 76, 84; run 9: green room payoff alone, unfuckables). Shape promoted after run 9. (in skill.md)
 - `[..]` `[universal]` Loudness is useless on group or compressed shows (run 4: 21% spiked; run 6: 0 spikes). (in skill.md)
-- `[..]` `[universal]` Fix misheard words in captions when sure (Katt, Tide man, balls); cut around them when not. (in skill.md)
-- `[..]` `[universal]` Whisper hallucinations (repeat loops, word salad) sit next to good clips (runs 5, 6). Check the window's own captions. (in skill.md)
-- `[..]` `[scorer]` Model picks the weaker version of a repeated story, or a different window of it (runs 3–5).
 - `[..]` `[scorer]` Model scores race/N-word/religion bits on the payoff (runs 5, 6). Correct per Tko; it should still add a risk flag.
 - `[..]` `[scorer]` Model and "build backwards from the payoff": wrong on run 4 (30, 35), right on run 6 (59) where GURT wasn't.
-- `[..]` `[theme]` Two comedians ≈ 8 clips/hour (run 3); runs 4–6 ran 8–9/hour. Run 9 (three comedians, a costume birthday) ran 16/hour.
+- `[..]` `[theme]` Two comedians ≈ 8 clips/hour (run 3); runs 4–6 ran 8–9/hour. Run 9 (three comedians, a costume birthday) ran 16/hour. Run 10 (comedian + politician) ran 10/hour, all from tangents.
 - `[.]` `[universal]` Whisper's word end times aren't where the sound stops; endings are cut from the audio now (run 7). (in skill.md)
 - `[.]` `[scorer]` Model rejects a payoff whose setup is minutes earlier, or clips the payoff alone (run 9: green room, freezer). Splice setup + payoff; span raised to 4 min. (in skill.md, in code)
+- `[.]` `[scorer]` Model misses the guest's one-line dry burn after the host's ramble (run 10: queefish, right at home).
+- `[.]` `[theme]` A politician guest is mostly off-theme; clips come from the host's tangents and the guest playing straight man (run 10).
+- `[.]` `[workflow]` Review window shows the copy loaded on click; GURT's chat edits appear only after clicking the episode again (run 10).
 - `[.]` `[scorer]` Model calls quick back-and-forth "cross-talk" and rejects it (run 9: flock cameras, unfuckables). (in skill.md)
 - `[.]` `[workflow]` Code lost the model's finds after it did its job: a 2-word cut quote matched the wrong "yeah" (run 9). Fixed: one miss allowed only in 4+ word quotes; a cut's end is searched after its start.
 - `[.]` `[universal]` Poster faces at a third of the real face's size pass the size filter, but TRACK stays on the talker (run 9).
