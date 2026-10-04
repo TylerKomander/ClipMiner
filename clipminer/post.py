@@ -6,6 +6,8 @@ from typing import Callable
 
 from playwright.sync_api import Page, sync_playwright
 
+from .review import REQUIRED_TAGS
+
 ROOT = Path(__file__).resolve().parent.parent
 BROWSERS = ROOT / "browsers"
 CHROME = Path(r"C:\Program Files\Google\Chrome\Application\chrome.exe")
@@ -13,6 +15,7 @@ PLATFORMS = {
     "TikTok": {"login": "https://www.tiktok.com/login", "upload": "https://www.tiktok.com/tiktokstudio/upload"},
     "YouTube": {"login": "https://studio.youtube.com", "upload": "https://www.youtube.com/upload"},
     "Instagram": {"login": "https://www.instagram.com/accounts/login/", "upload": "https://www.instagram.com/"},
+    "Facebook": {"login": "https://www.facebook.com/login", "upload": "https://www.facebook.com/reels/create"},
 }
 WAIT = 120_000  # uploads have to finish processing before the caption box appears
 
@@ -51,7 +54,8 @@ GENERIC_TAGS = ["#funny", "#podcast", "#comedypodcast", "#standupcomedy", "#stan
 
 
 def at_most_15_tags(body: str) -> str:
-    words = body.split(" ")
+    # Line breaks become their own tokens, so a tag that opens a line can be removed as a whole word.
+    words = body.replace("\n", " \n ").split(" ")
     tags = [w for w in body.split() if w.startswith("#")]
     for generic in GENERIC_TAGS:
         if len(tags) <= 15:
@@ -59,7 +63,13 @@ def at_most_15_tags(body: str) -> str:
         if generic in tags:
             tags.remove(generic)
             words.remove(generic)
-    return " ".join(words)
+    for tag in tags[::-1]:
+        if len(tags) <= 15:
+            break
+        if tag not in REQUIRED_TAGS:
+            tags.remove(tag)
+            words.remove(tag)
+    return " ".join(words).replace(" \n ", "\n")
 
 
 def youtube(page: Page, video: Path, hook: str, body: str, step: Callable[[str], None]) -> None:
@@ -97,7 +107,22 @@ def instagram(page: Page, video: Path, hook: str, body: str, step: Callable[[str
     clear_and_type(page, caption, f"{hook}\n{body}")
 
 
-FILLERS = {"TikTok": tiktok, "YouTube": youtube, "Instagram": instagram}
+def facebook(page: Page, video: Path, hook: str, body: str, step: Callable[[str], None]) -> None:
+    # Posts as whichever profile or Page is switched to in this browser: check the name before Publish.
+    step("opening reel composer")
+    page.goto(PLATFORMS["Facebook"]["upload"])
+    step("attaching clip")
+    page.locator('input[type="file"]').first.set_input_files(video, timeout=WAIT)
+    step("skipping the edit screen")
+    for _ in range(2):
+        page.get_by_role("button", name="Next", exact=True).last.click(timeout=WAIT)
+    step("filling description")
+    caption = page.locator('div[role="textbox"][contenteditable="true"]').first
+    caption.wait_for(timeout=WAIT)
+    clear_and_type(page, caption, f"{hook}\n{body}")
+
+
+FILLERS = {"TikTok": tiktok, "YouTube": youtube, "Instagram": instagram, "Facebook": facebook}
 
 
 def prepare(folder: Path, platform: str, video: Path, description: str, step: Callable[[str], None]) -> None:

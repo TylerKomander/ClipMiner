@@ -12,7 +12,10 @@ from mediapipe.tasks.python import BaseOptions, vision
 
 MODELS = Path(__file__).resolve().parent.parent / "models"
 cv2.utils.logging.setLogLevel(cv2.utils.logging.LOG_LEVEL_ERROR)
+# Sobel gradient a drawn webcam border clears and game texture mostly doesn't.
 EDGE = 25
+# Full-screen camera (talking to chat): the face is ~12% of the frame wide; in a webcam box ~4%.
+CAM_FACE = 0.09
 
 
 def _detector(W: int, H: int):
@@ -66,7 +69,7 @@ def find_faces(video: Path, start: float, end: float) -> list[tuple[int, int, in
     W, H = frame_size(video)
     det = _detector(W, H)
     hits, seen = [], 0
-    for frame in _frames(video, start, end, 2):
+    for frame in _frames(video, start, end, max(2, 1 / (end - start))):
         seen += 1
         _, found = det.detect(frame)
         for x, y, w, h, *_ in (found if found is not None else []):
@@ -76,16 +79,19 @@ def find_faces(video: Path, start: float, end: float) -> list[tuple[int, int, in
     # Faces on posters and book covers behind the hosts are real detections but tiny (run 5).
     # Not the max: one false hit in the gameplay (3x a webcam face) threw out every real one.
     biggest = sorted(w for _, _, w in hits)[int(len(hits) * 0.9)]
-    hits = sorted(h for h in hits if h[2] >= biggest / 3)
-    people, current = [], [hits[0]]
-    for h in hits[1:]:
-        if h[0] - current[-1][0] > 0.15 * W:
-            people.append(current)
-            current = []
-        current.append(h)
-    people.append(current)
+    # One person = hits within a face-width of each other, in x and y. Grouping by x alone merged the guest
+    # with the framed portraits on the wall beside him and TRACK cropped to the wall (run 13).
+    people = []
+    for h in sorted(h for h in hits if h[2] >= biggest / 3):
+        near = next((p for p in people if abs(h[0] - p[-1][0]) < h[2] and abs(h[1] - p[-1][1]) < h[2]), None)
+        if near:
+            near.append(h)
+        else:
+            people.append([h])
     people = [p for p in people if len(p) >= max(1, seen // 3)]
-    return [tuple(int(statistics.median(v)) for v in zip(*p)) for p in people]
+    # A face that doesn't move a pixel for three seconds is a picture, however big it is.
+    people = [p for p in people if len(p) < 6 or max(max(v) - min(v) for v in list(zip(*p))[:2]) > 2]
+    return sorted(tuple(int(statistics.median(v)) for v in zip(*p)) for p in people)
 
 
 def speaker_segments(video: Path, start: float, end: float, faces, hold: float = 1.5) -> list[tuple[float, int]]:
@@ -191,9 +197,8 @@ def cam_box(video: Path, work: Path) -> list[int] | None:
     seen = []
     for frame in _frames(video, 0, duration, 240 / duration, keyframes=True):
         _, found = det.detect(frame)
-        # Full-screen camera (talking to chat): the face is ~12% of the frame wide; in a webcam box ~4%.
         small = [(int(x + w / 2), int(y + h / 2), int(w)) for x, y, w, h, *_ in (found if found is not None else [])
-                 if w < W * 0.09]
+                 if w < W * CAM_FACE]
         seen.append((small, cv2.resize(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), (W // 2, H // 2))))
 
     # Faces in the game come and go; the streamer's sits in one spot.
@@ -220,6 +225,7 @@ def cam_box(video: Path, work: Path) -> list[int] | None:
                                  1.0 if t == 0 else level[t, l:r].mean(), 1.0 if b == H // 2 else level[b - 1, l:r].mean()]
                         # Lines inside the webcam (a shelf, a door frame) persist too: of the boxes that hold,
                         # take the widest, then the one whose weakest side holds best (chat rows under it are lines too).
+                        # The aspect window is 4:3 to 16:9 webcams with slack.
                         if 1.2 <= (r - l) / (b - t) <= 1.9 and min(sides) >= 0.5 and (r - l, min(sides)) > rank:
                             box, rank = [l, t, r - l, b - t], (r - l, min(sides))
         if box:
@@ -245,14 +251,14 @@ def shows_cam(video: Path, start: float, end: float, box: list[int]) -> bool:
     for frame in _frames(video, start, end, 2):
         _, found = det.detect(frame)
         seen += 1
-        inside += any(x < fx + fw / 2 < x + w and y < fy + fh / 2 < y + h and fw < w / 4
+        inside += any(x < fx + fw / 2 < x + w and y < fy + fh / 2 < y + h and fw < W * CAM_FACE
                       for fx, fy, fw, fh, *_ in (found if found is not None else []))
     return inside >= max(1, seen // 4)
 
 
 def zooms(video: Path, start: float, end: float, box: list[int]) -> list[tuple[float, float, int]]:
     """Stretches where the streamer's camera fills the frame, as (from, to, face x) on the clip's clock. An edited
-    stream upload cuts to the camera for the punchline, often mid-clip (run 12: 9 of 19 clips), at more than
+    stream upload cuts to the camera for the punchline, often mid-clip (run 12: 11 of the 18 gameplay clips), at more than
     one zoom level, so "zoomed" is any face clearly bigger than it is inside the webcam box."""
     W, H = frame_size(video)
     det = _detector(W, H)
@@ -262,7 +268,7 @@ def zooms(video: Path, start: float, end: float, box: list[int]) -> list[tuple[f
         found = [(int(x + w / 2), int(y + h / 2), int(w)) for x, y, w, h, *_ in (found if found is not None else [])]
         big = [(w, cx) for cx, cy, w in found if w >= box[2] / 4]
         # A big face in the game (a character select screen) isn't a zoom: the webcam is still in its box then.
-        boxed = any(box[0] < cx < box[0] + box[2] and box[1] < cy < box[1] + box[3] and w < box[2] / 4 for cx, cy, w in found)
+        boxed = any(box[0] < cx < box[0] + box[2] and box[1] < cy < box[1] + box[3] and w < W * CAM_FACE for cx, cy, w in found)
         faces.append(max(big)[1] if big and not boxed else None)
     # One stray sample (a face in the game, a missed detection) doesn't make or break a stretch.
     for k in range(1, len(faces) - 1):
@@ -286,7 +292,8 @@ def zooms(video: Path, start: float, end: float, box: list[int]) -> list[tuple[f
         if k - first >= 2:
             a = 0.0 if first == 0 else snap(first / 2 - 0.25)
             b = end - start if k == len(faces) else snap(k / 2 - 0.25)
-            out.append((a, b, int(statistics.median(faces[first:k]))))
+            if b > a:
+                out.append((a, b, int(statistics.median(faces[first:k]))))
     return out
 
 
@@ -307,8 +314,8 @@ def game_filter(cam: list[int], W: int, H: int, zoomed: list[tuple[float, float,
     if not zoomed:
         return f"[0:v]split[c][g];{stacked}"
     cw = int(H * 9 / 16) // 2 * 2
-    zx = "+".join(f"{min(max(fx - cw // 2, 0), W - cw)}*between(t\\,{a:.2f}\\,{b:.2f})" for a, b, fx in zoomed)
-    during = "+".join(f"between(t\\,{a:.2f}\\,{b:.2f})" for a, b, _ in zoomed)
+    zx = "+".join(f"{min(max(fx - cw // 2, 0), W - cw)}*gte(t\\,{a:.2f})*lt(t\\,{b:.2f})" for a, b, fx in zoomed)
+    during = "+".join(f"gte(t\\,{a:.2f})*lt(t\\,{b:.2f})" for a, b, _ in zoomed)
     return (f"[0:v]split=3[c][g][z];{stacked}[gm];[z]crop={cw}:{H}:{zx}:0,scale=1080:1920[zz];"
             f"[gm][zz]overlay=enable={during}")
 

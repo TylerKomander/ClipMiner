@@ -38,7 +38,7 @@
 
 ## 3. Accounts and posting (reworked 2026-09-30, Tko's call)
 - `profiles.json`: each account has a name, a fixed browser folder (`browsers\<name>\`, gitignored) and one
-  slot per platform (TikTok, YouTube, Instagram): username + profile link. **No passwords stored**: Tko signs in
+  slot per platform (TikTok, YouTube, Instagram, Facebook): username + profile link. **No passwords stored**: Tko signs in
   once inside that browser ("Log in" opens plain Chrome on that folder; Google blocks sign-in under automation).
 - Clips → Post: pick clip, layout and account, click "Post to <platform>", confirm. `clipminer\post.py` drives
   the account's browser with Playwright (installed Chrome, not a downloaded one): opens the upload page, attaches

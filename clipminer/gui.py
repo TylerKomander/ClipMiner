@@ -336,6 +336,10 @@ class ReviewPage(Page):
             return
         self.data = review.load(self.work)
         kept = sum(c["keep"] for c in self.data["clips"])
+        cap = review.clip_cap(self.work)
+        if kept > cap:
+            messagebox.showerror("Approve", f"{kept} clips ticked, the limit for this video is {cap}: untick {kept - cap}.")
+            return
         pairs = sorted({tuple(sorted((c["name"], o))) for c in self.data["clips"] for o in c.get("overlaps", [])})
         warning = ("\n\nThese ticked picks cover the same moment and would both render:\n"
                    + "\n".join(f"  {a}  ↔  {b}" for a, b in pairs)) if pairs else ""

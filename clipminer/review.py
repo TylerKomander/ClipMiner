@@ -11,6 +11,12 @@ from .render import BLUR_FILL, CAPTIONS_LOW, CAPTIONS_SEAM, mask_curses, render
 KINDS = {"podcast": ("Podcast", "comedian-podcast"), "stream": ("Streaming", "streamer")}
 
 
+def clip_cap(work: Path) -> int:
+    """Tko's rule: at most 20 clips per video, 30 for a video over 3 hours."""
+    duration = json.loads((work / "transcript.json").read_text(encoding="utf-8"))["duration"]
+    return 30 if duration > 3 * 3600 else 20
+
+
 def transcript_words(work: Path) -> list[dict]:
     transcript = json.loads((work / "transcript.json").read_text(encoding="utf-8"))
     return [w for s in transcript["segments"] for w in s["words"]]
@@ -77,15 +83,25 @@ def next_number(out_dir: Path) -> int:
     return max(numbers, default=0) + 1
 
 
-def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
-    review = load(work)
+def to_render(review: dict, work: Path) -> list[dict]:
+    """The refusals come first so a second batch is turned down before its source is re-downloaded."""
     # Picks added after a render (a second batch) render on their own; finished ones are never redone.
     todo = [c for c in review["clips"] if c["keep"] and not c.get("rendered_as")]
     if not todo:
         raise RuntimeError(f"{work.name} has nothing new to render")
+    kept, cap = sum(c["keep"] for c in review["clips"]), clip_cap(work)
+    if kept > cap:
+        raise RuntimeError(f"{kept} clips ticked, the limit for this video is {cap}: untick {kept - cap} in Review")
+    return todo
+
+
+def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
+    review = load(work)
+    todo = to_render(review, work)
     words = transcript_words(work)
     W, H = reframe.frame_size(video)
-    number = next_number(out_dir)
+    # A clip that died before its first file was written holds its number in review.json only.
+    number = max([next_number(out_dir)] + [int(c["rendering_as"].split("_")[0]) + 1 for c in review["clips"] if "rendering_as" in c])
     info = json.loads((work / "info.json").read_text(encoding="utf-8")) if (work / "info.json").exists() else {}
     show = re.sub(r'[<>:"/\\|?*]+', "", info.get("channel") or info.get("title") or "").strip()[:60] or "Local files"
     kind = review.get("kind", "podcast")
@@ -95,10 +111,12 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
     cam = review.get("facecam") or (reframe.cam_box(video, work) if kind == "stream" else None)
     done = []
     for clip in todo:
-        # A render that died partway (run 12: a blocked DLL) left this clip's first file behind: finish it
-        # under the same number instead of rendering it twice.
-        partial = next(iter(out_dir.glob(f"*_s{clip['score']}_{clip['name']}_blur.mp4")), None)
-        stem = partial.name.removesuffix("_blur.mp4") if partial else f"{number:02d}_s{clip['score']}_{clip['name']}"
+        # A render that died partway (run 12: a blocked DLL) resumes under the number it was given, not a
+        # new one; the stem is written down first because another clip can share the name and score.
+        partial = "rendering_as" in clip
+        stem = clip.get("rendering_as") or f"{number:02d}_s{clip['score']}_{clip['name']}"
+        clip["rendering_as"] = stem
+        save(work, review)
         source, start, end, kept = splice.build(video, work, words, clip, stem)
         fixes = clip["fixes"]
         # A fix to "" drops the word: Whisper wrote fake speaker names as spoken words in run 11.
@@ -106,8 +124,9 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
         caption = [w for w in caption if w["word"].strip()]
         done.append(render(source, work, out_dir / f"{stem}_blur.mp4", start, end, BLUR_FILL, CAPTIONS_LOW, caption))
         # A stream switches between gameplay and talking to the camera, so the layout is decided per clip.
-        split = None
+        split, game = None, False
         if cam and reframe.shows_cam(source, start, end, cam):
+            game = True
             zoomed = reframe.zooms(source, start, end, cam)
             # On the seam the caption would sit across the streamer's face once the camera goes full screen.
             where = CAPTIONS_LOW if zoomed else (8, reframe.cam_height(cam) - 48)
@@ -124,9 +143,9 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
             source.unlink()
         text = "\n".join(" ".join(mask_curses(word) for word in line.split(" ")) for line in with_required_tags(clip["description"]).splitlines())
         (out_dir / f"{stem}.txt").write_text(text + "\n", encoding="utf-8")
-        clip["rendered_as"] = stem
+        clip["rendered_as"] = clip.pop("rendering_as")
         save(work, review)
-        print(f"[render]     {stem}  ({end - start:.1f}s, {'split' if split else 'game' if (out_dir / f'{stem}_game.mp4').exists() else 'no split'})", flush=True)
+        print(f"[render]     {stem}  ({end - start:.1f}s, {'split' if split else 'game' if game else 'no split'})", flush=True)
         number += not partial
     review["status"] = "rendered"
     save(work, review)

@@ -68,8 +68,8 @@ the banter exactly like `comedian-podcast` banter. The game is the backdrop, not
 - Lulls in the game: waiting for the monster, loading, walking. That's when the group talks.
 - Right after a failure: who caused it, who ran away, who didn't help.
 - A story one friend refuses to tell and the others drag out of them.
-- Loudness spikes. Unlike group podcasts, they work here (run 12: 14 of 19 clips on a spike, the two
-  attack scenes the loudest stretches of the video). Read around every spike.
+- Loudness spikes. Unlike group podcasts, they work here (run 12: 14 of 19 clips on a spike; the first
+  attack is the loudest stretch of the video, +21, the second peaks at +12). Read around every spike.
 - Full-screen "just chatting" stretches (usually the start and end) **(guess)**.
 
 **You only have the words.** The scorer can't see the game. A scream with few words around it is not a
@@ -116,8 +116,11 @@ conversation" is not a clip. Ask: *would I send this to a friend?*
   part is 10–40s and still reads cold. **A payoff whose setup came minutes earlier is a splice** (setup line,
   then payoff), not a reject and not a clip of the payoff alone (run 9: the green-room game's setup sat 2.5
   minutes before "who's this necromancer that brought Richard Pryor back from the dead?"). Never cut the payoff, the line that sets it up, or a reaction
-  that is part of the payoff. Dead air (pauses over 0.6s with no laughter) is shortened
-  automatically; don't list it. Example: run 7's crematorium story, 77s → 32s with two cuts.
+  that is part of the payoff. Dead air is shortened automatically; don't list it.
+  It is cut only where the **audio** is quiet for over 0.6s, never on a gap in the transcript alone, and never
+  leaving a stretch under 1s (Tko after run 12: cuts landed mid-word, between two people talking, and left
+  flashes). So a clip with laughter, cross-talk or game sound keeps its pauses: don't count on trimming to
+  get under 40s. Example: run 7's crematorium story, 77s → 32s with two cuts.
   **The story's ending stays.** Splice the middle, never the end: run 8's Gronk story was cut to 34s
   but stopped before "somebody told me that was the head of William Morris". Cut more of the middle
   instead (the fixed version kept 38s of 2m09s with 7 cuts). Estimate ~2.5–3 words per second.
@@ -244,9 +247,12 @@ setups whose payoff is outside the length limit.
 8. **No turn, no clip.** A take or story with no capper is not a 6, it's a reject.
 
 ## How many clips
-**No fixed number.** The episode decides. A dead 2-hour episode might give 2; a great one
-might give 15. Never pad the count with 5s to hit a number, and never cap strong clips to
-stay under one. Density so far: ~4/hr (runs 1–2, host + non-comedian guest) to ~8/hr (run 3,
+**No fixed number, but a ceiling** (Tko's rule, 2026-10-04): **at most 20 clips per video, 30 for
+a video over 3 hours.** Under the ceiling the episode decides. A dead 2-hour episode might give 2;
+a great one might give 15. Never pad the count with 5s to hit a number. When more than the ceiling
+pass the bar, keep the highest scores and log the rest as rejected with "over the cap". Code holds
+the line: the scorer's extras land in Review unticked, and a render with too many ticked is refused
+(`review.clip_cap`). Density so far: ~4/hr (runs 1–2, host + non-comedian guest) to ~8/hr (run 3,
 two comedians trading road stories).
 
 **Same-story dedupe:** comedians tell many versions of one story type (run 3 had 5+ "I
@@ -279,7 +285,8 @@ its own line:
    - **This clip:** 2–4 tags on its subject (#nursinghome #dogsoftiktok #seinfeld #pootietang).
    No tags for things the clip isn't about. **Don't write these four; code adds them to every post**
    (Tko's rule): #xybca #fyp #blowthisup #viral. That makes 14–19 in the file; YouTube posting trims
-   the most generic ones (#funny, #podcast, …) to stay at 15, and never drops the required four.
+   the most generic ones (#funny, #podcast, …) first, then tags from the end of the line, to stay at 15,
+   and never drops the required four. **So order the line by importance: who, then this clip, then theme.**
 No emoji walls, no "wait for it", no "you won't believe". Curse words are masked in the file.
 
 ## Risk flags (mention, don't auto-reject; Tko decides)
@@ -289,9 +296,10 @@ No emoji walls, no "wait for it", no "you won't believe". Curse words are masked
   run 5: "if the clip is good I don't care if it has the N-word." Score on the payoff, then add a
   risk flag so Tko knows. The caption shows `****`, never the word (see Render).
 
-## Render — every clip in all three layouts
-Tko posts all three variants across platforms and lets performance decide. **No layout
-rule yet: always render all three.** Output:
+## Render — the layouts a clip's type calls for
+**Podcast: BLUR + TRACK, + SPLIT when both faces share the shot. Streaming: BLUR + GAME on
+gameplay clips, BLUR + TRACK when there is no gameplay.** Tko posts the variants across
+platforms and lets performance decide. Output:
 `Finished_Clips\<Podcast|Streaming>\<show>\NN_s<score>_<name>_{blur,split,track,game}.mp4`
 (e.g. `Podcast\Flagrant\64_s9_bouncer-every-id-works_track.mp4`).
 NN keeps counting up across runs, from the clip log, even after clips are deleted.
@@ -308,8 +316,9 @@ NN keeps counting up across runs, from the clip log, even after clips are delete
 - **GAME** (Streaming only): webcam across the top at full width (~1/3 of the frame for a 16:9
   cam), gameplay under it, captions on the seam. Replaces TRACK and SPLIT on gameplay clips, so
   those render BLUR + GAME. Decided per clip: a stream clip with no gameplay gets BLUR + TRACK on the
-  streamer. Edited uploads cut to the camera full screen mid-clip (run 12: 9 of 19 clips); GAME
-  switches to a full-height crop on the face for those shots and its captions drop to the low third.
+  streamer. Edited uploads cut to the camera full screen mid-clip (run 12: zoom stretches in 11 of the 18
+  gameplay clips, and 193 is camera-only); GAME switches to a full-height crop on the face for those
+  shots and its captions drop to the low third.
   **Look at a strip of frames across each rendered clip**, not one frame. The webcam box is found once per video (`reframe.cam_box`, cached in
   `work\<slug>\facecam.json`). **Look at `work\<slug>\facecam.jpg` before approving**; a wrong
   box is fixed by putting `"facecam": [x, y, w, h]` at the top of `review.json`.

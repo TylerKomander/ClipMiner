@@ -15,17 +15,18 @@ words again ("go take a and then send me a picture"). **All four voices are one 
 spoke, and three of the four are never on camera. Game names and gamer words are misheard ("are peeing" = RPing,
 "mac dumped the wall" = mag dumped the wolf, "insulin" = incel, "players" = flares, "war" = lore).
 **Faces / webcam:** box found at [1430, 0, 490, 272] (top right, 16:9), checked on `facecam.jpg`. **The editor cuts to
-the camera full screen for punchlines, mid-clip, in 9 of the 19 clips.** GAME now switches to a full-height crop on the
-face for those shots.
+the camera full screen for punchlines, mid-clip: the final render found zoom stretches in 11 of the 18 gameplay clips
+(192, 211, 213, 216, 219, 220, 221, 223, 225, 226, 227), and 193 is camera-only.** GAME now switches to a full-height
+crop on the face for those shots.
 
 **Clips** (GURT = picked blind by GURT; Sonnet = Sonnet's pick). VISUAL = the payoff is on screen; GURT looked at frames.
 - **192 · 8 · Tongue on the delete key** (2:25, 21s, GURT). "My tongue on the delete key, my toes on semicolon just in
   case." Shape: *friend exposes the other's habit*.
 - **193 · 8 · On Roblox as a girl** (3:53, 23s, GURT). "Why were you on Roblox as a girl last night?" "Because they give
   you gifts and stuff." Shape: *shameless confession*.
-- **211 · 8 · Keybinds didn't save** (7:19, 23s, 1 cut, Sonnet). "My scroll wheel is my move forward button."
+- **211 · 8 · Keybinds didn't save** (7:19, 24s, 1 cut, Sonnet). "My scroll wheel is my move forward button."
   Shape: *shameless confession*.
-- **212 · 8 · Bigfoot charges the cabin** (17:23, 25s, GURT). VISUAL. Calm talk about gassing up the car, then Bigfoot
+- **212 · 8 · Bigfoot charges the cabin** (17:23, 26s, GURT). VISUAL. Calm talk about gassing up the car, then Bigfoot
   runs into the gun sight and the webcam screams for ten seconds (+21 LU). Shape: *calm, then the jump scare*.
 - **213 · 8 · That wolf didn't have a weapon** (24:21, 18s, GURT). He empties a magazine into a wolf, then: "That wolf
   didn't have a weapon on him, bro." Shape: *roast in one line*.
@@ -37,7 +38,7 @@ face for those shots.
   Shape: *tense guess, mundane reveal*.
 - **217 · 8 · Bigfoot is scared of women** (34:47, 14s, GURT). "He knows there's a woman present and he gets nervous."
   Shape: *absurd theory, and one of the group takes the credit*.
-- **218 · 8 · Bigfoot walks into the dynamite** (35:44, 16s, GURT). VISUAL. The trap they spent 30 minutes on goes up in a
+- **218 · 8 · Bigfoot walks into the dynamite** (35:44, 18s, GURT). VISUAL. The trap they spent 30 minutes on goes up in a
   fireball; "he's running away, that fucker." Shape: *plan meets reality*.
 - **219 · 8 · Anime guy, 4000 series** (39:36, 34s, GURT). "My knowledge is on par. But I have friends that have seen
   over 4000 series." Shape: *made-up fact, caught live* (they do the maths).
@@ -49,13 +50,13 @@ face for those shots.
   Shape: *friend exposes the other's habit*.
 - **223 · 8 · Cake of mud, three wet wipes** (51:25, 18s, Sonnet). "He'll be like, is this normal?" GURT had it at 7
   (crude image, abrupt opener); kept as Sonnet's find. Shape: *absurd image → strong verdict*.
-- **224 · 8 · Buddy peed himself at the party** (52:53, 27s, GURT). "He goes, I think I'm going to pee myself. And then
+- **224 · 8 · Buddy peed himself at the party** (52:53, 29s, GURT). "He goes, I think I'm going to pee myself. And then
   he goes, I'm peeing." Shape: *scene → twist → reaction*.
 - **225 · 8 · Pooping yourself is less weird** (53:46, 26s, GURT). The take, argued. Shape: *observational take with a
   quotable capper*.
 - **226 · 8 · Vague posting on my stream** (54:21, 30s, GURT). "You're vague posting on my Twitch stream."
   Shape: *steering toward the line everyone's thinking, called out*.
-- **227 · 9 · Utter shock, I was drenched** (58:19, 33s, GURT; Sonnet's version of the same story ran 273s). "It wasn't
+- **227 · 9 · Utter shock, I was drenched** (58:19, 39.9s, GURT; Sonnet's version of the same story ran 273s). "It wasn't
   even unenjoyment. It was utter shock, bro." / "I just spit water all over my keyboard." Shape: *scene → twist → reaction*.
 
 **Rejected** (GURT): Joseph Stalin riff 4:13 (mild, 7); slasher-film "baddie dies first" 14:06 (misheard, 7); "Scott
@@ -68,13 +69,13 @@ mangled" 18:11 (second half of the attack, 14 words in 16s; unheard, left out); 
 - **Sonnet submitted 3; GURT picked 17.** Agreed on 1 (the squirting story, and Sonnet's version spanned 273s and was
   dropped by code). Sonnet found 2 GURT had at 7 (211, 223). **Sonnet found 1 of GURT's 17 (6%).** Worst run so far.
 - **It saw almost all of them and wrote them off as 7.** Its reject list names the romantic waterfall ("a decent
-  one-liner"), the flare roast, scared of women ("fun premise"), the anime-con story, the weeb line, the GTA RP janitor
-  ("a 7: the transcript is garbled") and the pee story. Same low-by-a-point habit as runs 3–11, and now that a 7 is a
+  one-liner"), the flare roast, scared of women ("fun premise"), the anime-con story, the GTA RP janitor ("a 7: the
+  transcript is garbled") and the pee story. Same low-by-a-point habit as runs 3–11, and now that a 7 is a
   reject it costs the whole clip instead of a point. **Open decision 3 in CONTEXT is no longer optional.**
 - **A garbled transcript is not a reason to reject.** The janitor rant is the best clip in the video; "are peeing" is
   one caption fix. It rejected on transcript quality four times.
-- **"Needs the stream's history" was wrong three times** (weeb line, anime story, flare roast). The profile's "in-jokes
-  that need the stream's history" line made it over-reject anything with a callback.
+- **"Needs the stream's history" was wrong twice** (weeb line, pee story; the flare roast was "needs the game state").
+  The profile's "in-jokes that need the stream's history" line made it over-reject anything with a callback.
 - **It did the visual rule right:** both Bigfoot attacks went to `rejected` as "visual, check the frame", GURT looked
   at the frames, both are clips. That handoff works and should stay.
 - It did not hallucinate picks out of the "A, A, A" loop, and rejected the debate rant correctly.
@@ -107,8 +108,8 @@ mangled" 18:11 (second half of the attack, 14 words in 16s; unheard, left out); 
 **Lessons**
 - `[theme]` **A friend-group stream is a podcast with a game on screen.** 16 of 19 clips are voice-chat banter that
   would pass the podcast tests; 3 need the game on screen (212, 213, 218). The profile undersold this.
-- `[theme]` Loudness works on a stream: 14 of 19 clips have a second 6+ LU over the median, and the two visual clips
-  are the loudest stretches in the video (+21 and +12). The opposite of group podcasts (runs 4, 6).
+- `[theme]` Loudness works on a stream: 14 of 19 clips have a second 6+ LU over the median; the first attack is the
+  loudest stretch of the video (+21), the second peaks at +12. The opposite of group podcasts (runs 4, 6).
 - `[theme]` Voice-chat friends are never on camera. The GAME layout shows the streamer listening while someone else
   delivers the line. Fine for a reaction; watch how those clips perform against the ones where the streamer talks.
 - `[scorer]` With a strict 8+ bar and scores a point low, the scorer submits almost nothing (3 of 65 minutes).

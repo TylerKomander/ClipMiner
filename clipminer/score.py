@@ -114,7 +114,7 @@ def system_prompt(examples: list[str], theme: str) -> str:
 def user_prompt(info: dict, begin: float, piece: list[str], part: int, parts: int, words_per_second: float) -> str:
     heat_note = "present" if info.get("heatmap") else "missing for this video"
     return (
-        f"Episode: {info.get('title')}\nLength: {hms(info.get('duration') or 0)}\nHeatmap: {heat_note}\n"
+        f"Video: {info.get('title')}\nLength: {hms(info.get('duration') or 0)}\nHeatmap: {heat_note}\n"
         f"This is part {part} of {parts}, covering {hms(begin)} to {hms(begin + CHUNK_SECONDS)}. The minute before "
         "and after overlaps the neighbouring parts: pick a clip there only if it crosses the boundary, so no story "
         "is cut off by it. Duplicates are removed in code.\n\n"
@@ -125,7 +125,8 @@ def user_prompt(info: dict, begin: float, piece: list[str], part: int, parts: in
         "Before submitting a clip, quote its payoff: the line a stranger laughs at or says 'wait, what?' to. "
         "Warm conversation, praise, or a story with no turn is not a payoff. No payoff, no clip.\n"
         "Long stories: you may splice. List `cuts` (a tangent, a repeated setup, cross-talk) and the clip is "
-        "joined with hard jump cuts; dead air is trimmed automatically. The kept part must be 10–40s, still make "
+        "joined with hard jump cuts; dead air is trimmed only where the audio really goes quiet, so do not count on "
+        "it: the kept words themselves must run 10–40s, still make "
         f"sense cold, and the whole window may span up to {MAX_SPAN // 60} minutes. Never cut the payoff "
         "or the line that sets it up. A payoff whose setup came minutes earlier is a splice (setup, then payoff), "
         "not a reject and not a clip of the payoff alone.\n"
@@ -229,6 +230,11 @@ def recent_runs(theme: str, count: int = 3) -> list[str]:
 def score(work: Path, model: str = MODEL, examples: list[str] | None = None,
           span: tuple[float, float] | None = None, kind: str = "podcast") -> Path:
     theme = review.KINDS[kind][1]
+    if (work / "review.json").exists():
+        scored_as = review.load(work).get("kind", "podcast")
+        if scored_as != kind:
+            raise RuntimeError(f"{work.name} was scored as {scored_as}; remove work/{work.name}/review.json "
+                               f"to rescore it as {kind}")
     examples = examples or recent_runs(theme)
     info = json.loads((work / "info.json").read_text(encoding="utf-8"))
     transcript = json.loads((work / "transcript.json").read_text(encoding="utf-8"))
@@ -241,7 +247,8 @@ def score(work: Path, model: str = MODEL, examples: list[str] | None = None,
     client = anthropic.Anthropic(api_key=api_key())
     system = [{"type": "text", "text": system_prompt(examples, theme), "cache_control": {"type": "ephemeral"}}]
     clips, rejected, dropped, usage = [], [], [], {"input_tokens": 0, "cache_read_input_tokens": 0, "output_tokens": 0}
-    parts_dir = work / f"parts-{model}"
+    # Runs before the Streaming type cached under parts-<model>; those are all comedian-podcast.
+    parts_dir = work / (f"parts-{model}" if theme == "comedian-podcast" else f"parts-{model}-{theme}")
     parts_dir.mkdir(exist_ok=True)
     for n, (begin, piece) in enumerate(pieces, 1):
         cached = parts_dir / f"{int(begin)}.json"
@@ -301,5 +308,9 @@ def score(work: Path, model: str = MODEL, examples: list[str] | None = None,
                                      description=c["description"], cuts=c.get("cut_ranges", []))
                 entry["keep"] = False
                 entries.append(entry)
+        # Over the limit, the lowest scores stay visible in Review but unticked.
+        for entry in sorted((e for e in entries if e["keep"]), key=lambda e: -e["score"])[review.clip_cap(work):]:
+            entry["keep"] = False
+            entry["reason"] = f"Over the cap of {review.clip_cap(work)} clips. {entry['reason']}"
         review.save(work, {"status": "awaiting", "model": model, "kind": kind, "clips": entries})
     return out

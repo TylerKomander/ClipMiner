@@ -1,14 +1,14 @@
 """Turn a reviewed pick into the stretches of video it keeps: story cuts removed, dead air shortened,
 and an ending that waits for the last word to finish. More than one stretch means jump cuts."""
-import json
 import subprocess
 from pathlib import Path
 
 import numpy as np
 
 PAD = 0.12           # kept either side of a spoken stretch; a trimmed pause ends up ~0.25s
-DEAD_AIR = 0.6       # pauses longer than this get shortened...
-LAUGH_LU = 6         # ...unless the room is laughing (loudness this far over the episode median)
+DEAD_AIR = 0.6       # pauses longer than this get shortened, but only where the audio really is quiet
+QUIET_DB = 18        # "quiet" = this far under the clip's speech level
+MIN_KEEP = 1.0       # a kept stretch shorter than this is a flash on screen: leave the pause beside it alone
 MIN_TAIL, MAX_TAIL = 0.25, 0.8
 
 
@@ -27,22 +27,57 @@ def kept_runs(first: int, last: int, cuts: list[list[int]]) -> list[tuple[int, i
     return runs
 
 
+def envelope(video: Path, start: float, end: float) -> tuple[float, np.ndarray]:
+    """Loudness in dB every 20ms, from `start`."""
+    raw = subprocess.run(
+        ["ffmpeg", "-hide_banner", "-loglevel", "error", "-ss", f"{start:.3f}", "-t", f"{end - start:.3f}",
+         "-i", str(video), "-vn", "-ac", "1", "-ar", "16000", "-f", "s16le", "-"],
+        capture_output=True, check=True).stdout
+    samples = np.frombuffer(raw, dtype=np.int16).astype(np.float32)
+    frames = samples[: len(samples) // 320 * 320].reshape(-1, 320)
+    return start, np.convolve(20 * np.log10(np.sqrt((frames ** 2).mean(axis=1)) + 1), np.ones(3) / 3, mode="same")
+
+
+def quiet_part(sound: tuple[float, np.ndarray], level: float, gap_from: float, gap_to: float) -> tuple[float, float]:
+    """The longest truly quiet run inside a gap between two words. Whisper's word times are loose and it
+    leaves out whoever talks over the gap, so a gap in the transcript is not a silence (Tko, run 12: cuts
+    landed mid-word and between two people talking)."""
+    t0, db = sound
+    lo, hi = max(int((gap_from - t0) / 0.02), 0), int((gap_to - t0) / 0.02)
+    below = db[lo:hi] < level - QUIET_DB
+    best, begin, run = 0, 0, 0
+    for k, quiet in enumerate(below):
+        run = run + 1 if quiet else 0
+        if run > best:
+            best, begin = run, k - run + 1
+    return t0 + (lo + begin) * 0.02, t0 + (lo + begin + best) * 0.02
+
+
 def stretches(words: list[dict], first: int, last: int, cuts: list[list[int]],
-              loud: dict | None = None) -> list[tuple[float, float]]:
-    """Time spans to keep. Without loudness data every long pause counts as dead air (used for the
-    review preview, which only needs an estimate)."""
-    median = loud["median"] if loud else 0
-    level = {p["t"]: p["m"] for p in loud["series"]} if loud else {}
+              sound: tuple[float, np.ndarray] | None = None) -> list[tuple[float, float]]:
+    """Time spans to keep. Without the audio every long gap between words counts as dead air (used for
+    the review preview, which only needs an estimate; the render trims less, so it can run a little longer)."""
+    runs = kept_runs(first, last, cuts)
+    if sound:
+        t0, db = sound
+        level = np.percentile(np.concatenate(
+            [db[max(int((words[a]["start"] - t0) / 0.02), 0):int((words[b]["end"] - t0) / 0.02)] for a, b in runs]), 90)
     spans = []
-    for a, b in kept_runs(first, last, cuts):
-        start = words[a]["start"] - PAD
+    for a, b in runs:
+        run = [(words[a]["start"] - PAD, None)]
         for i in range(a, b):
-            gap_from, gap_to = words[i]["end"], words[i + 1]["start"]
-            laughing = any(level.get(t, -99) - median >= LAUGH_LU for t in range(int(gap_from), int(gap_to) + 1))
-            if gap_to - gap_from > DEAD_AIR and not laughing:
-                spans.append((start, gap_from + PAD))
-                start = gap_to - PAD
-        spans.append((start, words[b]["end"] + PAD))
+            quiet_from, quiet_to = words[i]["end"], words[i + 1]["start"]
+            if sound and quiet_to - quiet_from > DEAD_AIR:
+                quiet_from, quiet_to = quiet_part(sound, level, quiet_from, quiet_to)
+            if quiet_to - quiet_from > DEAD_AIR:
+                run[-1] = (run[-1][0], quiet_from + PAD)
+                run.append((quiet_to - PAD, None))
+        run[-1] = (run[-1][0], words[b]["end"] + PAD)
+        for span in run:
+            if span is not run[0] and min(span[1] - span[0], spans[-1][1] - spans[-1][0]) < MIN_KEEP:
+                spans[-1] = (spans[-1][0], span[1])
+            else:
+                spans.append((max(span[0], spans[-1][1]) if spans else span[0], span[1]))
     return spans
 
 
@@ -76,8 +111,8 @@ def tail_end(video: Path, t: float) -> float:
 
 def build(video: Path, work: Path, words: list[dict], clip: dict, stem: str) -> tuple[Path, float, float, list[dict]]:
     """Source file, start, end and caption words (on that file's clock) for one clip."""
-    loud = json.loads((work / "loudness.json").read_text(encoding="utf-8"))
-    spans = stretches(words, clip["first"], clip["last"], clip.get("cuts", []), loud)
+    sound = envelope(video, max(words[clip["first"]]["start"] - 1, 0), words[clip["last"]]["end"] + 1)
+    spans = stretches(words, clip["first"], clip["last"], clip.get("cuts", []), sound)
     spans[-1] = (spans[-1][0], tail_end(video, words[clip["last"]]["end"]))
     kept = [w for a, b in kept_runs(clip["first"], clip["last"], clip.get("cuts", [])) for w in words[a:b + 1]]
     if len(spans) == 1:

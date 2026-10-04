@@ -35,6 +35,7 @@ def prepare(source: str, model: str, kind: str) -> Path:
 def finish(work: Path) -> list[Path]:
     """Render the approved picks, then drop the source: Tko's rule is no full videos kept."""
     video = work / "source.mp4"
+    review.to_render(review.load(work), work)
     if not video.exists():
         # A second batch after the source was deleted: fetch it again (info.json has the id).
         info = json.loads((work / "info.json").read_text(encoding="utf-8"))
