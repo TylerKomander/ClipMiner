@@ -100,9 +100,11 @@ def chunks(lines: list[tuple[float, str]], span: tuple[float, float]) -> list[tu
     return out
 
 
-def system_prompt(examples: list[str]) -> str:
+def system_prompt(examples: list[str], theme: str) -> str:
     return "\n\n".join([
-        "You pick short-form clips from long podcast episodes. Follow the rulebook exactly.",
+        "You pick short-form clips from long videos. Follow the rulebook exactly.",
+        f"The theme for this video is `{theme}`: use that profile in Part A and ignore the other profiles. "
+        "Part B applies to every theme.",
         "# RULEBOOK\n" + (ROOT / "skill.md").read_text(encoding="utf-8"),
         "# CLIP LOG INDEX\n" + (ROOT / "clip_log" / "INDEX.md").read_text(encoding="utf-8"),
         *(f"# WORKED EXAMPLE RUN\n{(ROOT / 'clip_log' / name).read_text(encoding='utf-8')}" for name in examples),
@@ -217,13 +219,17 @@ def retry_prompt(long: list[tuple[dict, str]], words_per_second: float) -> str:
     )
 
 
-def recent_runs(count: int = 3) -> list[str]:
-    return [p.name for p in sorted((ROOT / "clip_log").glob("run-*.md"))[-count:]]
+def recent_runs(theme: str, count: int = 3) -> list[str]:
+    runs = sorted((ROOT / "clip_log").glob("run-*.md"))
+    # A new theme has no runs yet: the other theme's runs still show the universal rules applied.
+    own = [p for p in runs if f"**Theme:** `{theme}`" in p.read_text(encoding="utf-8")]
+    return [p.name for p in (own or runs)[-count:]]
 
 
 def score(work: Path, model: str = MODEL, examples: list[str] | None = None,
-          span: tuple[float, float] | None = None) -> Path:
-    examples = examples or recent_runs()
+          span: tuple[float, float] | None = None, kind: str = "podcast") -> Path:
+    theme = review.KINDS[kind][1]
+    examples = examples or recent_runs(theme)
     info = json.loads((work / "info.json").read_text(encoding="utf-8"))
     transcript = json.loads((work / "transcript.json").read_text(encoding="utf-8"))
     words = [w for s in transcript["segments"] for w in s["words"]]
@@ -233,7 +239,7 @@ def score(work: Path, model: str = MODEL, examples: list[str] | None = None,
     words_per_second = len(words) / transcript["duration"]
 
     client = anthropic.Anthropic(api_key=api_key())
-    system = [{"type": "text", "text": system_prompt(examples), "cache_control": {"type": "ephemeral"}}]
+    system = [{"type": "text", "text": system_prompt(examples, theme), "cache_control": {"type": "ephemeral"}}]
     clips, rejected, dropped, usage = [], [], [], {"input_tokens": 0, "cache_read_input_tokens": 0, "output_tokens": 0}
     parts_dir = work / f"parts-{model}"
     parts_dir.mkdir(exist_ok=True)
@@ -295,5 +301,5 @@ def score(work: Path, model: str = MODEL, examples: list[str] | None = None,
                                      description=c["description"], cuts=c.get("cut_ranges", []))
                 entry["keep"] = False
                 entries.append(entry)
-        review.save(work, {"status": "awaiting", "model": model, "clips": entries})
+        review.save(work, {"status": "awaiting", "model": model, "kind": kind, "clips": entries})
     return out

@@ -21,6 +21,7 @@ JOBS = ROOT / "queue.json"
 PROFILES = ROOT / "profiles.json"
 POSTS = ROOT / "posts.json"
 RUNNING = ("download", "transcribe", "signals", "score", "render")
+CATEGORIES = [folder for folder, _ in review.KINDS.values()]
 
 # Dark tech palette after TerraPlayer's default skin: black, neon green, cyan.
 BG, PANEL, FIELD, LINE = "#07090b", "#0e1318", "#141b22", "#22303b"
@@ -156,7 +157,7 @@ class Worker(threading.Thread):
         self.set(job, stage="signals")
         loudness(video, work)
         self.set(job, stage="score")
-        score(work)
+        score(work, kind=job.get("kind", "podcast"))
         self.set(job, stage="review", clips=len(review.load(work)["clips"]))
 
 
@@ -179,17 +180,19 @@ class Page(ttk.Frame):
 
 class QueuePage(Page):
     def __init__(self, app):
-        super().__init__(app, "Queue", "Paste episode links, one per line. They run one at a time "
+        super().__init__(app, "Queue", "Pick the type, then paste links, one per line. They run one at a time "
                                        "(download → transcribe → pick clips) and then wait in Review.")
         add = self.card("Add episodes", expand=False, fill="x")
         row = ttk.Frame(add, style="Panel.TFrame")
         row.pack(fill="x")
+        self.kind = tk.StringVar(value=CATEGORIES[0])
+        ttk.Combobox(row, textvariable=self.kind, values=CATEGORIES, state="readonly", width=11).pack(side="left", padx=(0, 10))
         self.urls = text_box(row, 3)
         self.urls.pack(side="left", fill="x", expand=True)
         ttk.Button(row, text="Add to queue", style="Accent.TButton", command=self.add).pack(side="left", padx=(10, 0))
 
         jobs = self.card("Episodes")
-        self.tree = table(jobs, {"episode": 520, "stage": 110, "clips": 70, "time": 70})
+        self.tree = table(jobs, {"episode": 440, "type": 90, "stage": 110, "clips": 70, "time": 70})
         self.tree.pack(fill="both", expand=True)
         for stage, color in STAGE_COLOR.items():
             self.tree.tag_configure(stage, foreground=color)
@@ -203,10 +206,11 @@ class QueuePage(Page):
 
     def add(self) -> None:
         lines = [line.strip() for line in self.urls.get("1.0", "end").splitlines() if line.strip()]
+        kind = next(k for k, (folder, _) in review.KINDS.items() if folder == self.kind.get())
         with self.app.lock:
             next_id = max((j["id"] for j in self.app.jobs), default=0) + 1
             for i, source in enumerate(lines):
-                self.app.jobs.append({"id": next_id + i, "source": source, "title": source, "slug": "",
+                self.app.jobs.append({"id": next_id + i, "source": source, "title": source, "slug": "", "kind": kind,
                                       "stage": "queued", "clips": 0, "elapsed": 0, "error": ""})
             save_json(JOBS, self.app.jobs)
         self.urls.delete("1.0", "end")
@@ -240,7 +244,7 @@ class QueuePage(Page):
         with self.app.lock:
             for j in self.app.jobs:
                 self.tree.insert("", "end", iid=str(j["id"]), tags=(j["stage"],), values=(
-                    j["title"], j["stage"], j["clips"] or "", f"{j['elapsed'] / 60:.0f}m" if j["elapsed"] else ""))
+                    j["title"], review.KINDS[j.get("kind", "podcast")][0], j["stage"], j["clips"] or "", f"{j['elapsed'] / 60:.0f}m" if j["elapsed"] else ""))
         if keep and self.tree.exists(keep[0]):
             self.tree.selection_set(keep)
 
@@ -345,7 +349,7 @@ class ReviewPage(Page):
 
 class ClipsPage(Page):
     def __init__(self, app):
-        super().__init__(app, "Clips", "Grouped by podcast, best score first. Pick a clip to see its description and "
+        super().__init__(app, "Clips", "Grouped by type, then show, best score first. Pick a clip to see its description and "
                                        "where it has been posted, then post it: you only click Post.")
         split = ttk.Frame(self)
         split.pack(fill="both", expand=True)
@@ -353,12 +357,13 @@ class ClipsPage(Page):
         left.pack(side="left", fill="y", padx=(0, 12))
         ttk.Label(left, text="CLIPS", style="Section.TLabel").pack(anchor="w", pady=(0, 8))
         self.tree = ttk.Treeview(left, columns=("score", "posted"), show="tree headings", selectmode="browse")
-        self.tree.heading("#0", text="PODCAST / CLIP", anchor="w")
+        self.tree.heading("#0", text="TYPE / SHOW / CLIP", anchor="w")
         self.tree.heading("score", text="SCORE", anchor="w")
         self.tree.heading("posted", text="POSTED", anchor="w")
         self.tree.column("#0", width=330)
         self.tree.column("score", width=55, stretch=False)
         self.tree.column("posted", width=130, stretch=False)
+        self.tree.tag_configure("category", foreground=GREEN, font=(MONO, 11, "bold"))
         self.tree.tag_configure("show", foreground=CYAN, font=(MONO, 10, "bold"))
         self.tree.tag_configure("posted", foreground=MUTED)
         self.tree.pack(fill="y", expand=True)
@@ -410,13 +415,15 @@ class ClipsPage(Page):
         self.status_text = ""
         self.finished: list[tuple[str, str, str, str]] = []
 
-    def scan(self) -> dict[str, list[Path]]:
-        # Clips from before per-podcast folders sit loose in Finished_Clips (or in Used-Clips).
-        shows: dict[str, list[Path]] = {}
+    def scan(self) -> dict[tuple[str, str], list[Path]]:
+        # Show folders from before the type folders sit straight under Finished_Clips: all podcasts.
+        # Clips from before per-show folders sit loose there (or in Used-Clips).
+        shows: dict[tuple[str, str], list[Path]] = {}
         for video in FINISHED.rglob("*_blur.mp4"):
-            folder = video.parent.relative_to(FINISHED)
-            show = "Older clips" if folder in (Path("."), Path("Used-Clips")) else str(folder)
-            shows.setdefault(show, []).append(video.with_name(video.name.removesuffix("_blur.mp4")))
+            parts = video.parent.relative_to(FINISHED).parts
+            category, parts = (parts[0], parts[1:]) if parts and parts[0] in CATEGORIES else (CATEGORIES[0], parts)
+            show = "Older clips" if parts in ((), ("Used-Clips",)) else "\\".join(parts)
+            shows.setdefault((category, show), []).append(video.with_name(video.name.removesuffix("_blur.mp4")))
         return shows
 
     def refresh(self, force: bool = False) -> None:
@@ -432,16 +439,22 @@ class ClipsPage(Page):
         keep = self.base()
         self.tree.delete(*self.tree.get_children())
         self.clips = {}
-        for show in sorted(shows, key=lambda s: (s == "Older clips", s.lower())):
-            parent = self.tree.insert("", "end", text=f"{show}  ({len(shows[show])})", open=True, tags=("show",))
-            ranked = sorted(shows[show], key=lambda b: (-score_of(b), -number_of(b)))
-            for base in ranked:
-                where = self.posted_on(base.name)
-                iid = self.tree.insert(parent, "end", text=f"{number_of(base)}  {base.name.split('_', 2)[-1]}", tags=("posted",) if where else (),
-                                       values=(score_of(base), ", ".join(where)))
-                self.clips[iid] = base
-                if base == keep:
-                    self.tree.selection_set(iid)
+        for category in CATEGORIES:
+            names = sorted((s for c, s in shows if c == category), key=lambda s: (s == "Older clips", s.lower()))
+            if not names:
+                continue
+            count = sum(len(shows[category, s]) for s in names)
+            top = self.tree.insert("", "end", text=f"{category.upper()}  ({count})", open=True, tags=("category",))
+            for show in names:
+                bases = shows[category, show]
+                parent = self.tree.insert(top, "end", text=f"{show}  ({len(bases)})", open=True, tags=("show",))
+                for base in sorted(bases, key=lambda b: (-score_of(b), -number_of(b))):
+                    where = self.posted_on(base.name)
+                    iid = self.tree.insert(parent, "end", text=f"{number_of(base)}  {base.name.split('_', 2)[-1]}",
+                                           tags=("posted",) if where else (), values=(score_of(base), ", ".join(where)))
+                    self.clips[iid] = base
+                    if base == keep:
+                        self.tree.selection_set(iid)
 
     def base(self) -> Path | None:
         sel = self.tree.selection()
@@ -464,7 +477,7 @@ class ClipsPage(Page):
                             foreground=INK if entries else MUTED)
         for child in self.layouts.winfo_children():
             child.destroy()
-        available = [name for name in ("track", "blur", "split") if base.with_name(f"{base.name}_{name}.mp4").exists()]
+        available = [name for name in ("game", "track", "blur", "split") if base.with_name(f"{base.name}_{name}.mp4").exists()]
         if self.layout.get() not in available:
             self.layout.set(available[0])
         for name in available:

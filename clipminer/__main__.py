@@ -14,7 +14,7 @@ QUEUE = ROOT / "queue.txt"
 FINISHED = ROOT / "Finished_Clips"
 
 
-def prepare(source: str, model: str) -> Path:
+def prepare(source: str, model: str, kind: str) -> Path:
     t0 = time.perf_counter()
     work, video = fetch(source, ROOT / "work")
     print(f"[download]   {video}  ({time.perf_counter() - t0:.1f}s)")
@@ -27,7 +27,7 @@ def prepare(source: str, model: str) -> Path:
     print(f"[loudness]   {loudness(video, work)}  ({time.perf_counter() - t0:.1f}s)")
 
     t0 = time.perf_counter()
-    score(work)
+    score(work, kind=kind)
     print(f"[score]      {work / 'review.json'} awaiting review  ({time.perf_counter() - t0:.1f}s)")
     return work
 
@@ -44,7 +44,7 @@ def finish(work: Path) -> list[Path]:
     return clips
 
 
-def run_queue(model: str) -> None:
+def run_queue(model: str, kind: str) -> None:
     while True:
         lines = QUEUE.read_text(encoding="utf-8").splitlines()
         pending = [line.strip() for line in lines if line.strip() and not line.startswith("#")]
@@ -55,7 +55,7 @@ def run_queue(model: str) -> None:
         print(f"[queue]      {source}  ({len(pending) - 1} after this)")
         # A dead link shouldn't stall a night's batch; it's kept in the file, commented, for a look later.
         try:
-            prepare(source, model)
+            prepare(source, model, kind)
             status = None
         except Exception as e:
             status = f"# failed: {type(e).__name__}: {e}".splitlines()[0]
@@ -71,15 +71,17 @@ def main() -> None:
     parser = argparse.ArgumentParser(prog="clipminer")
     parser.add_argument("source", nargs="?", help="YouTube URL or local media file; omit to work through queue.txt")
     parser.add_argument("--model", default="large-v3", help="Whisper model size")
+    parser.add_argument("--kind", choices=list(review.KINDS), default="podcast",
+                        help="what the video is: sets the theme profile and the layouts")
     parser.add_argument("--render", metavar="SLUG", help="render the approved picks in work/SLUG/review.json")
     args = parser.parse_args()
 
     if args.render:
         finish(ROOT / "work" / args.render)
     elif args.source:
-        prepare(args.source, args.model)
+        prepare(args.source, args.model, args.kind)
     else:
-        run_queue(args.model)
+        run_queue(args.model, args.kind)
 
 
 if __name__ == "__main__":

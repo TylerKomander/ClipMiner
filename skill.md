@@ -14,7 +14,10 @@ Two parts:
 
 # Part A — Theme profile
 
-## Active theme: `comedian-podcast`
+One profile per video type. Tko picks the type in the app before pasting the link (Podcast →
+`comedian-podcast`, Streaming → `streamer`); the prompt names the profile in force. Ignore the others.
+
+## Theme: `comedian-podcast`
 Long-form podcasts hosted by (or featuring) stand-up comedians. Hosts riff, commit to bits,
 tell road/tour stories, and interview guests who are often *not* comedians (run 2: a rancher).
 
@@ -44,8 +47,53 @@ advertising for them).
 **Theme-specific tolerance:** profanity and crude topics are normal and fine. Only flag
 profanity in the first 3s (reach), not the topic.
 
-## Writing a new theme profile (when Tko changes the niche)
-Copy the block above and fill the same fields: name, what the content is, audience, what the
+## Theme: `streamer`
+Livestreams and stream uploads: a streamer at a webcam, usually playing a game, often with friends
+on voice chat. One run behind it (run 12, Joe Bart Games); lines marked **(guess)** are untested.
+
+**Audience:** people who scroll for laughs and follow streamers. Same bar as the podcast theme: funny first.
+
+**A friend-group stream is a podcast with a game on screen.** Run 12: 16 of 19 clips were friends
+roasting each other and telling stories over the game, and would have passed as podcast clips. Judge
+the banter exactly like `comedian-podcast` banter. The game is the backdrop, not the reason to reject.
+
+**What the payoff looks like in this theme:**
+- **Funny:** a roast, a comeback, a confession or a rant that lands inside the clip (GTA RP janitor,
+  "because they give you gifts and stuff"). The line is often a friend's, not the streamer's. Fine.
+- **Whacky:** something goes absurdly wrong in the game and someone says it out loud ("that wolf
+  didn't have a weapon on him").
+- **Interesting:** a story or take told to the group, same as a podcast clip.
+
+**Where it hides in this theme:**
+- Lulls in the game: waiting for the monster, loading, walking. That's when the group talks.
+- Right after a failure: who caused it, who ran away, who didn't help.
+- A story one friend refuses to tell and the others drag out of them.
+- Loudness spikes. Unlike group podcasts, they work here (run 12: 14 of 19 clips on a spike, the two
+  attack scenes the loudest stretches of the video). Read around every spike.
+- Full-screen "just chatting" stretches (usually the start and end) **(guess)**.
+
+**You only have the words.** The scorer can't see the game. A scream with few words around it is not a
+clip on the transcript alone: put it in `rejected` with "visual, check the frame" so the reviewer looks
+(run 12: both of those were clips once the frames were checked). Everything else, judge on the words.
+
+**Do not reject for these (run 12, all wrong):**
+- **A garbled transcript.** Gamer words are misheard constantly ("are peeing" = RPing, "mac dumped the
+  wall" = mag dumped the wolf, "insulin" = incel). They are caption fixes. Read through them.
+- **A callback.** "Needs the stream's history" applies only when the clip makes no sense without it.
+- **Several voices.** Four friends trading lines is the format, not cross-talk.
+
+**Off-theme here:** silent or mumbled gameplay, pure callouts ("he's on me", "I need ammo"), menus and
+mod setup, sub/donation thank-yous, sponsor reads, stream scheduling, and sincere drama about another
+creator (run 12: the debate rant; named person, no joke).
+
+**Transcript traps:** every voice is one stream of words, with nothing to say who spoke; game
+characters' lines are transcribed too. Long screaming stretches come out as a few words or a
+hallucinated loop ("A, A, A" ×100).
+
+**Theme-specific tolerance:** same as `comedian-podcast`.
+
+## Writing a new theme profile (when Tko adds a video type)
+Add the type to `review.KINDS` (app label, folder, profile name), then copy a block above and fill the same fields: name, what the content is, audience, what the
 payoff looks like (and which kind is the priority), where it hides, what's off-theme,
 tolerance. Keep the `clip_log\` run files. Their *universal* lessons still apply, and their
 *theme* lessons show the new profile what "specific enough" looks like.
@@ -107,6 +155,8 @@ shape. But when a candidate fits one of these, build it to land the turn.
 - **Absurd image → strong verdict:** someone paints a ridiculous picture and lands a flat judgment on it
   ("if you make Heat, you should get to kill 20 horses minimum").
 - **Insider rule revealed, pushed to absurd precision:** how a job or scene really works, taken one step too far.
+- **Roast in one line:** a long ramble or a dumb move, answered by one dry line ("that wolf didn't have a weapon on
+  him, bro"). The line is short, so take enough of what it answers. The scorer misses these (runs 10, 12).
 - **Made-up fact or dodge, caught live:** someone bluffs or dodges and the room calls it on the spot ("who would you
   consider a friend?" / "you pulled the Bill Clinton: what is is?").
 
@@ -242,7 +292,8 @@ No emoji walls, no "wait for it", no "you won't believe". Curse words are masked
 ## Render — every clip in all three layouts
 Tko posts all three variants across platforms and lets performance decide. **No layout
 rule yet: always render all three.** Output:
-`Finished_Clips\<podcast>\NN_s<score>_<name>_{blur,split,track}.mp4` (e.g. `Flagrant\64_s9_bouncer-every-id-works_track.mp4`).
+`Finished_Clips\<Podcast|Streaming>\<show>\NN_s<score>_<name>_{blur,split,track,game}.mp4`
+(e.g. `Podcast\Flagrant\64_s9_bouncer-every-id-works_track.mp4`).
 NN keeps counting up across runs, from the clip log, even after clips are deleted.
 - **BLUR:** full 16:9 frame centered, blurred copy fills top and bottom. Never cuts anyone out.
 - **SPLIT:** two faces stacked (1080x960 each), captions on the seam. Top = left person.
@@ -254,6 +305,14 @@ NN keeps counting up across runs, from the clip log, even after clips are delete
   threshold 10; real cuts score ~22–24). Per shot: 1 face → center on it; 2+ faces → follow
   the talker by mediapipe `jawOpen` (switch only if clearly higher, hold ≥ 1.5s); 0 faces →
   center of frame.
+- **GAME** (Streaming only): webcam across the top at full width (~1/3 of the frame for a 16:9
+  cam), gameplay under it, captions on the seam. Replaces TRACK and SPLIT on gameplay clips, so
+  those render BLUR + GAME. Decided per clip: a stream clip with no gameplay gets BLUR + TRACK on the
+  streamer. Edited uploads cut to the camera full screen mid-clip (run 12: 9 of 19 clips); GAME
+  switches to a full-height crop on the face for those shots and its captions drop to the low third.
+  **Look at a strip of frames across each rendered clip**, not one frame. The webcam box is found once per video (`reframe.cam_box`, cached in
+  `work\<slug>\facecam.json`). **Look at `work\<slug>\facecam.jpg` before approving**; a wrong
+  box is fixed by putting `"facecam": [x, y, w, h]` at the top of `review.json`.
 - **No plain center crop:** wide shots put people at the edges.
 - Face detection is OpenCV YuNet. mediapipe's short-range detector failed on wide shots
   (boxed hands, a plant pot, a belt buckle). **Draw boxes on one frame per show and look

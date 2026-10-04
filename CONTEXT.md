@@ -3,9 +3,9 @@
 > Kind: `scripts`
 
 ## Goal
-`clipminer <url-or-file>` turns a long comedian podcast into every clip worth posting
-(variable count, scored 1–10), each 10–35s, 9:16, burned-in captions, in all 3 layouts, with a
-one-line reason per clip. Scoring moves from GURT-by-hand → Claude API → small local model.
+`clipminer <url-or-file>` turns a long comedian podcast or a stream into every clip worth posting
+(variable count, scored 1–10), each 10–35s, 9:16, burned-in captions, in the layouts its type calls
+for, with a one-line reason per clip. Tko picks the type (Podcast / Streaming) before pasting the link. Scoring moves from GURT-by-hand → Claude API → small local model.
 
 ## Constraints
 - Language: Python 3.12
@@ -18,12 +18,20 @@ one-line reason per clip. Scoring moves from GURT-by-hand → Claude API → sma
 - **Delete `work/<slug>/source.mp4` once the clips are rendered.** Tko's rule: no full videos kept.
   Keep the small text files (transcript, info, loudness); the `clip_log\` run files refer to them.
   Re-cutting a clip later means re-downloading.
-- v1 scope: **comedian podcasts** (active theme `comedian-podcast` in `skill.md` Part A).
-  Themes will be swappable later; no implementation yet, but rules and log are split into
-  universal vs theme so a new profile is all that's needed. Posting: the app fills the upload page,
-  Tko clicks Post (never auto-publish). No movie clips (copyright).
-- **Clips folder:** `Finished_Clips\<podcast>\NN_s<score>_<name>_<layout>.mp4` (+ `.txt` description).
-  The app groups clips by podcast, best score first, and tracks where each was posted in `posts.json`
+- **Two video types** (`review.KINDS`, picked in the Queue dropdown or `--kind`; stored as `kind` on the
+  job and in `review.json`): `podcast` → theme `comedian-podcast`, `stream` → theme `streamer` (added
+  2026-10-04, all guesses until runs are logged). The type sets the theme profile the scorer uses, the
+  layouts, and the clips folder. A new type = one line in `KINDS` + a profile in `skill.md` Part A.
+  Posting: the app fills the upload page, Tko clicks Post (never auto-publish). No movie clips (copyright).
+- **Stream layouts:** a gameplay clip renders BLUR + GAME (webcam on top, game under it, switching to a
+  full-height crop on the face for shots where the editor cuts to the camera full screen); a clip with no gameplay
+  renders BLUR + TRACK on the streamer. Decided per clip. The webcam box is found once per
+  video; **GURT looks at `work\<slug>\facecam.jpg` before approving** and overrides a wrong box with
+  `"facecam": [x, y, w, h]` in `review.json`. The scorer only reads the transcript: it can't see the game.
+- **Clips folder:** `Finished_Clips\<Podcast|Streaming>\<show>\NN_s<score>_<name>_<layout>.mp4` (+ `.txt`).
+  Show folders from before 2026-10-04 sit straight under `Finished_Clips\`; the app lists them under
+  Podcast where they are (Tko may move them into `Podcast\`; nothing depends on the path).
+  The app groups clips by type, then show, best score first, and tracks where each was posted in `posts.json`
   (asked when the posting browser closes, or "Mark posted"). `Used-Clips\` is optional now. **GURT never deletes,
   renames or moves anything in `Used-Clips\`, and never deletes finished clips.** Tko owns
   cleanup.
@@ -67,7 +75,7 @@ diffs against `review.json` (`by: sonnet` vs `by: gurt`), adds/edits clips with 
 first, last, "gurt", payoff, reason, fixes, description)` (word indices; `fixes` corrects misheard caption words),
 sets `keep`, saves, sets `status: approved`. Logs the diff in the run file's "Scorer vs GURT", updates INDEX,
 commits. Transcript health check and face check (look at frames) still come first.
-Next clip number: **192** (counted from the logs automatically: write a run's log after it renders).
+Next clip number: **228** (counted from the logs automatically: write a run's log after it renders).
 
 ## Status
 - [x] ffmpeg installed, `download` + `transcribe` produce a word-timed transcript
@@ -104,6 +112,10 @@ Next clip number: **192** (counted from the logs automatically: write a run's lo
       Run 11 (Stavvy's World): found 15 of GURT's 22 (68%, 5 lost to length on stale code, 3 lost at chunk
       boundaries); 12 of its 25 were 7s, all failed recheck. Bar raised to 8+.
 - [ ] One local file (no heatmap) end-to-end
+- [x] Streaming type: Queue dropdown, `streamer` theme, GAME layout, type folders, Clips tree by type.
+      Run 12 (Joe Bart Games `VxPBaAT13gk`) went through it: 19 clips, BLUR + GAME
+- [ ] Sonnet matches GURT on streams. Run 12: found 1 of GURT's 17; it rated the rest 7 and a 7 is a reject.
+- [ ] First 3 stream runs logged (1 of 3) (`**Theme:** \`streamer\`` in the run file) so the profile stops being guesses
 
 **Cost plan (Tko 2026-09-30: fine for now, must get cheaper as it scales).** Today ~$1–1.50 per 2h
 episode, mostly Sonnet's output (~9k tokens per 20-min piece, flat across runs; logs don't shrink it).
@@ -127,7 +139,17 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
   the rest is the manual recipe above)
 
 ## Next step
-Left off 2026-10-04 after run 11 rendered (160–191). Code changes from run 11 are committed; **restart the app first.**
+Left off 2026-10-04 after run 12 (first stream run, Joe Bart Games, 19 clips: 192, 193, 211–227). **Not committed.
+Restart the app first** (render code changed during the run; the run 12 queue entry shows `failed`, remove it).
+0. **BLOCKER for podcast renders: Windows Smart App Control blocks `libmediapipe.dll`** (WinError 4551, first seen
+   2026-10-04 13:33; it loaded fine through run 11). Stream renders no longer use it. Podcast TRACK with 2+ faces and
+   SPLIT still do, so the clip 165 re-render and run 13 will fail until Tko decides: turn Smart App Control off
+   (Windows Security → App & browser control; it can't be turned back on without a reset), or GURT replaces jawOpen
+   with something that needs no unsigned DLL. GURT does not change that setting.
+0b. **Tko watches the run 12 clips** and judges: the 1/3 webcam + 2/3 game split, clips where the line is a friend's
+   and the webcam only shows Joe listening, the two visual clips (212, 218), which GURT picked from frames without hearing them.
+   **Stale files to delete (Tko):** the `_track.mp4` of 211, 219, 220, 221, 223, 225, 226, 227 in
+   `Finished_Clips\Streaming\Joe Bart Games` (first render, wrong layout; the `_game.mp4` beside each is the real one).
 1. **Re-render clip 165** (family-so-big): "ROB MARKMAN" shows twice in its captions. The fix entries are in
    `work/MpjdkVCj5ys/review.json` (add the name-blanking fixes to clip 165, untick the rest, `--render` re-downloads).
    Tko deletes the old 165 files himself.
@@ -135,9 +157,11 @@ Left off 2026-10-04 after run 11 rendered (160–191). Code changes from run 11 
    Tko's call whether to delete them.
 3. **Open decision (Tko):** the bar is now a strict 8+ in the prompt. Risk: Sonnet scores best clips a point low (run
    10: 4 clips it rated 7 ended 8–9). GURT's recommendation: Sonnet still submits 7s, code shows them unticked in
-   Review so they don't render but stay visible. Decide before run 12.
-4. Run 12 through the app: first run with chunk overlap, length retry and unticked drops actually live. Check the
-   process start time is after the last code commit. Grep the transcript for repeated fake names before picking.
+   Review so they don't render but stay visible. **Run 12 made this urgent: Sonnet submitted 3 clips, GURT found 17,
+   and Sonnet's reject list called 8 of them "a 7".** Decide before run 13.
+4. Run 13 (podcast, once 0 is settled): first podcast run with chunk overlap, length retry and unticked drops live.
+   Check the process start time is after the last code change. Grep the transcript for repeated fake names.
+   **Write the run log only after the render finishes**: clip numbers are counted from the log (run 12 skipped 194–210).
 5. Small fixes pending: Review window doesn't reload after GURT's chat edits (`gui.py` `ReviewPage`); the app could warn
    when `clipminer\*.py` is newer than its own start time; transcription should drop fake-name tokens at the source.
 Posting: every post so far is `track` on YouTube + TikTok. Post blur variants too and log views in each run file's

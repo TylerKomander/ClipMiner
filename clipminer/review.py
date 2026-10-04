@@ -7,6 +7,9 @@ from pathlib import Path
 from . import reframe, splice
 from .render import BLUR_FILL, CAPTIONS_LOW, CAPTIONS_SEAM, mask_curses, render
 
+# What Tko picks before pasting a link: kind -> (Finished_Clips folder, theme profile in skill.md).
+KINDS = {"podcast": ("Podcast", "comedian-podcast"), "stream": ("Streaming", "streamer")}
+
 
 def transcript_words(work: Path) -> list[dict]:
     transcript = json.loads((work / "transcript.json").read_text(encoding="utf-8"))
@@ -85,20 +88,35 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
     number = next_number(out_dir)
     info = json.loads((work / "info.json").read_text(encoding="utf-8")) if (work / "info.json").exists() else {}
     show = re.sub(r'[<>:"/\\|?*]+', "", info.get("channel") or info.get("title") or "").strip()[:60] or "Local files"
-    out_dir = out_dir / show
+    kind = review.get("kind", "podcast")
+    out_dir = out_dir / KINDS[kind][0] / show
     out_dir.mkdir(parents=True, exist_ok=True)
+    # `facecam` in review.json overrides a wrong box; check work/<slug>/facecam.jpg before approving.
+    cam = review.get("facecam") or (reframe.cam_box(video, work) if kind == "stream" else None)
     done = []
     for clip in todo:
-        stem = f"{number:02d}_s{clip['score']}_{clip['name']}"
+        # A render that died partway (run 12: a blocked DLL) left this clip's first file behind: finish it
+        # under the same number instead of rendering it twice.
+        partial = next(iter(out_dir.glob(f"*_s{clip['score']}_{clip['name']}_blur.mp4")), None)
+        stem = partial.name.removesuffix("_blur.mp4") if partial else f"{number:02d}_s{clip['score']}_{clip['name']}"
         source, start, end, kept = splice.build(video, work, words, clip, stem)
         fixes = clip["fixes"]
         # A fix to "" drops the word: Whisper wrote fake speaker names as spoken words in run 11.
         caption = [{**w, "word": " ".join(fixes.get(x, x) for x in w["word"].split())} for w in kept]
         caption = [w for w in caption if w["word"].strip()]
-        segments, split = reframe.plan(source, start, end)
         done.append(render(source, work, out_dir / f"{stem}_blur.mp4", start, end, BLUR_FILL, CAPTIONS_LOW, caption))
-        done.append(render(source, work, out_dir / f"{stem}_track.mp4", start, end,
-                           reframe.track_filter(segments, W, H), CAPTIONS_LOW, caption))
+        # A stream switches between gameplay and talking to the camera, so the layout is decided per clip.
+        split = None
+        if cam and reframe.shows_cam(source, start, end, cam):
+            zoomed = reframe.zooms(source, start, end, cam)
+            # On the seam the caption would sit across the streamer's face once the camera goes full screen.
+            where = CAPTIONS_LOW if zoomed else (8, reframe.cam_height(cam) - 48)
+            done.append(render(source, work, out_dir / f"{stem}_game.mp4", start, end,
+                               reframe.game_filter(cam, W, H, zoomed), where, caption))
+        else:
+            segments, split = reframe.plan(source, start, end, solo=kind == "stream")
+            done.append(render(source, work, out_dir / f"{stem}_track.mp4", start, end,
+                               reframe.track_filter(segments, W, H), CAPTIONS_LOW, caption))
         if split:
             done.append(render(source, work, out_dir / f"{stem}_split.mp4", start, end,
                                reframe.split_filter(split, W, H), CAPTIONS_SEAM, caption))
@@ -107,8 +125,9 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
         text = "\n".join(" ".join(mask_curses(word) for word in line.split(" ")) for line in with_required_tags(clip["description"]).splitlines())
         (out_dir / f"{stem}.txt").write_text(text + "\n", encoding="utf-8")
         clip["rendered_as"] = stem
-        print(f"[render]     {stem}  ({end - start:.1f}s, split {'yes' if split else 'no'})", flush=True)
-        number += 1
+        save(work, review)
+        print(f"[render]     {stem}  ({end - start:.1f}s, {'split' if split else 'game' if (out_dir / f'{stem}_game.mp4').exists() else 'no split'})", flush=True)
+        number += not partial
     review["status"] = "rendered"
     save(work, review)
     return done
