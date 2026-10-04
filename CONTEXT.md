@@ -28,7 +28,7 @@ one-line reason per clip. Scoring moves from GURT-by-hand → Claude API → sma
   renames or moves anything in `Used-Clips\`, and never deletes finished clips.** Tko owns
   cleanup.
 - **Clip count is variable** (quality decides, not a number). Every clip gets a 1–10 absolute
-  score (rubric in `skill.md`); only 6+ are rendered. Videos over 1h are read in chunks.
+  score (rubric in `skill.md`); only 8+ are rendered (Tko, run 11). Videos over 1h are read in chunks.
 - Run 1 (clips 01–05) stays BLUR-only. Tko decided not to re-render it.
 - **Captions never show a curse word** (masked `****`; audio untouched). Clips 01–67 predate the rule
   and were deleted by Tko as test runs (2026-09-30); their reasoning stays in `clip_log\`. Clip numbers
@@ -67,7 +67,7 @@ diffs against `review.json` (`by: sonnet` vs `by: gurt`), adds/edits clips with 
 first, last, "gurt", payoff, reason, fixes, description)` (word indices; `fixes` corrects misheard caption words),
 sets `keep`, saves, sets `status: approved`. Logs the diff in the run file's "Scorer vs GURT", updates INDEX,
 commits. Transcript health check and face check (look at frames) still come first.
-Next clip number: **160** (counted from the logs automatically: write a run's log after it renders).
+Next clip number: **192** (counted from the logs automatically: write a run's log after it renders).
 
 ## Status
 - [x] ffmpeg installed, `download` + `transcribe` produce a word-timed transcript
@@ -101,6 +101,8 @@ Next clip number: **160** (counted from the logs automatically: write a run's lo
       Run 5 (Theo Von): agreed 6 of 10, 3 finds kept. Run 6 (Flagrant): agreed 7 of 10, 5 finds kept.
       Run 9 (Bad Friends): found 9 of GURT's 18 (+2 lost in code, now fixed); 16 picks, only 4 weak.
       Run 10 (Theo/Mamdani): found 11 of GURT's 14 (79%); 13 picks, 2 weak. Missed the guest's dry one-liners.
+      Run 11 (Stavvy's World): found 15 of GURT's 22 (68%, 5 lost to length on stale code, 3 lost at chunk
+      boundaries); 12 of its 25 were 7s, all failed recheck. Bar raised to 8+.
 - [ ] One local file (no heatmap) end-to-end
 
 **Cost plan (Tko 2026-09-30: fine for now, must get cheaper as it scales).** Today ~$1–1.50 per 2h
@@ -125,9 +127,18 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
   the rest is the manual recipe above)
 
 ## Next step
-Run 11 through the app (MpjdkVCj5ys, queued 2026-10-03). Still untested: whether picks marked "Dropped by code"
-show up unticked in Review (run 10 had none). Watch whether Sonnet's share of GURT's blind picks holds near 79%.
-Small fix pending: the Review window doesn't reload `review.json` after GURT's chat edits until the episode is
-clicked again (`gui.py` `ReviewPage`); make it re-read on the 5-tick refresh.
-Posting: every post so far is the `track` layout on YouTube + TikTok. Post blur variants too and log views
-in each run file's "Posted" line, or the layout question never gets answered.
+Left off 2026-10-04 after run 11 rendered (160–191). Code changes from run 11 are committed; **restart the app first.**
+1. **Re-render clip 165** (family-so-big): "ROB MARKMAN" shows twice in its captions. The fix entries are in
+   `work/MpjdkVCj5ys/review.json` (add the name-blanking fixes to clip 165, untick the rest, `--render` re-downloads).
+   Tko deletes the old 165 files himself.
+2. **Don't post the 12 ✗ clips** in `Finished_Clips\Stavvy's World` (160, 162, 168, 170, 172, 174, 179, 183–186, 188).
+   Tko's call whether to delete them.
+3. **Open decision (Tko):** the bar is now a strict 8+ in the prompt. Risk: Sonnet scores best clips a point low (run
+   10: 4 clips it rated 7 ended 8–9). GURT's recommendation: Sonnet still submits 7s, code shows them unticked in
+   Review so they don't render but stay visible. Decide before run 12.
+4. Run 12 through the app: first run with chunk overlap, length retry and unticked drops actually live. Check the
+   process start time is after the last code commit. Grep the transcript for repeated fake names before picking.
+5. Small fixes pending: Review window doesn't reload after GURT's chat edits (`gui.py` `ReviewPage`); the app could warn
+   when `clipminer\*.py` is newer than its own start time; transcription should drop fake-name tokens at the source.
+Posting: every post so far is `track` on YouTube + TikTok. Post blur variants too and log views in each run file's
+"Posted" line.

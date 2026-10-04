@@ -107,6 +107,8 @@ shape. But when a candidate fits one of these, build it to land the turn.
 - **Absurd image → strong verdict:** someone paints a ridiculous picture and lands a flat judgment on it
   ("if you make Heat, you should get to kill 20 horses minimum").
 - **Insider rule revealed, pushed to absurd precision:** how a job or scene really works, taken one step too far.
+- **Made-up fact or dodge, caught live:** someone bluffs or dodges and the room calls it on the spot ("who would you
+  consider a friend?" / "you pulled the Bill Clinton: what is is?").
 
 **Build backwards from the payoff.** Find the payoff line, then start at the *latest* line that
 still makes sense cold. A story told over 45s often has a 20s clip inside it (run 4: "I spent
@@ -185,7 +187,7 @@ setups whose payoff is outside the length limit.
    read in ~15-min chunks with ~1 min of overlap so no clip gets split across a boundary.
 3. For each candidate, find the payoff line; build the window backwards to a clean opener.
 4. Run the three tests. Drop failures.
-5. Score every survivor (rubric below). Render everything scoring **6+**.
+5. Score every survivor (rubric below). Render everything scoring **8+** (Tko's rule after run 11: 7s are filler; every 7 re-checked in run 11 failed).
 6. Mix kinds. No overlaps and no two clips on the same sub-topic. Two different stories may
    sit back to back (run 3: "no-shirt overalls" was dropped for ending 11s before clip 18; wrong).
 7. **Same story type twice:** keep the version with the bigger payoff, not the first one found.
@@ -210,7 +212,7 @@ payoff, a cold opener and no flaw you can name is a 9. Save 8 for a strong clip 
 - **8:** strong payoff; one real flaw (weak opener, slight overrun, a risk flag).
 - **7:** good moment, noticeably flawed cut (filler opener, runs long past the payoff).
 - **6:** postable filler. Passes the tests, but nobody shares it.
-- **≤5:** don't render. Log it as rejected with the reason.
+- **≤7:** don't render. Log it as rejected with the reason.
 Write the score and a one-line reason in the run's `clip_log\` file. The score goes in the filename.
 
 ## Post description (one per clip, written with the pick)

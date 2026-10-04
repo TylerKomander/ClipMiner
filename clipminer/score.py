@@ -90,7 +90,10 @@ def reading_lines(work: Path) -> list[tuple[float, str]]:
 def chunks(lines: list[tuple[float, str]], span: tuple[float, float]) -> list[tuple[float, list[str]]]:
     out, t = [], span[0]
     while t < span[1]:
-        piece = [text for start, text in lines if t - OVERLAP_SECONDS <= start < min(t + CHUNK_SECONDS, span[1])]
+        # Overlap on both sides: a story that crosses a boundary must be whole in one part (run 11 lost
+        # hide-and-seek and the compression shirt at 20:00 and 40:00). Twins are deduped after scoring.
+        piece = [text for start, text in lines
+                 if t - OVERLAP_SECONDS <= start < min(t + CHUNK_SECONDS + OVERLAP_SECONDS, span[1])]
         if piece:
             out.append((t, piece))
         t += CHUNK_SECONDS
@@ -110,8 +113,9 @@ def user_prompt(info: dict, begin: float, piece: list[str], part: int, parts: in
     heat_note = "present" if info.get("heatmap") else "missing for this video"
     return (
         f"Episode: {info.get('title')}\nLength: {hms(info.get('duration') or 0)}\nHeatmap: {heat_note}\n"
-        f"This is part {part} of {parts}. It starts at {hms(begin)}; earlier lines are context only. "
-        "Only pick clips that start at or after it.\n\n"
+        f"This is part {part} of {parts}, covering {hms(begin)} to {hms(begin + CHUNK_SECONDS)}. The minute before "
+        "and after overlaps the neighbouring parts: pick a clip there only if it crosses the boundary, so no story "
+        "is cut off by it. Duplicates are removed in code.\n\n"
         f"Reading file: one line per ~{LINE_SECONDS}s as `h:mm:ss text`. <Ln/+x> = n seconds at least "
         f"{SPIKE_LU} LU over the episode median, max +x. <H0.xx> = heatmap value of the overlapping bucket.\n\n"
         f"Speech here runs ~{words_per_second:.1f} words/s, so a 10–35s clip is about "
@@ -123,7 +127,7 @@ def user_prompt(info: dict, begin: float, piece: list[str], part: int, parts: in
         f"sense cold, and the whole window may span up to {MAX_SPAN // 60} minutes. Never cut the payoff "
         "or the line that sets it up. A payoff whose setup came minutes earlier is a splice (setup, then payoff), "
         "not a reject and not a clip of the payoff alone.\n"
-        "Submit every clip scoring 6+ and the notable rejects. "
+        "Submit every clip scoring 8+ and the notable rejects; a 7 is a reject. "
         "first_words and last_words must be copied exactly from the text.\n\n"
         + "\n".join(piece)
     )

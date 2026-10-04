@@ -135,7 +135,23 @@ def plan(video: Path, start: float, end: float) -> tuple[list[tuple[float, int]]
     # A 960px panel is ~6 face-widths tall; below H*0.45 the upscale turns to mush (run 4 wide shot: 4x).
     if split and min(w for _, _, w in split) * 6 < H * 0.45:
         split = None
+    # YuNet boxed a patterned pillow bigger than the guest's face (run 11); a SPLIT panel needs a real face.
+    if split and not all(_has_landmarks(video, start + (end - start) / 2, f) for f in split):
+        split = None
     return segments, split
+
+
+def _has_landmarks(video: Path, t: float, face: tuple[int, int, int]) -> bool:
+    cap = cv2.VideoCapture(str(video))
+    cap.set(cv2.CAP_PROP_POS_MSEC, t * 1000)
+    ok, frame = cap.read()
+    cap.release()
+    if not ok:
+        return False
+    cx, cy, w = face
+    s = int(w * 1.8)
+    crop = cv2.resize(frame[max(0, cy - s):cy + s, max(0, cx - s):cx + s], (320, 320))
+    return bool(_landmarker().detect(_rgb(crop)).face_landmarks)
 
 
 def split_filter(faces, W: int, H: int) -> str:

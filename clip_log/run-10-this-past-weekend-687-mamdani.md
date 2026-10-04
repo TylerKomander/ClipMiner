@@ -1,6 +1,7 @@
 ## Run 10 — This Past Weekend #687 (guest Zohran Mamdani, NYC mayor), 77m, 2026-10-02
 **Theme:** `comedian-podcast` · **Posted:** _(pending)_ · **Layouts:** BLUR + TRACK; SPLIT none
-GURT picked blind before reading Sonnet's list. First run with the length retry and the run 9 rules.
+GURT picked blind before reading Sonnet's list. Run 9's rules in `skill.md` applied (read fresh each call), but **the
+app still ran 10/1 code** (found in run 11), so no length retry and no unticked drops; none happened to matter here.
 
 **Episode read:** a sitting politician on a comedian's show. Most of the 77 minutes is sincere policy talk (budget,
 rent, childcare, nurses' strike, socialism, Trump meetings) and a long Gaza/Netanyahu stretch at the end; all of it
@@ -58,7 +59,7 @@ lottery take (earnest).
   tangent, Cold Stone kept the lie).
 - **Precision:** 13 picks, 2 weak (snow, Barramundi). Rejected all policy and Gaza talk correctly.
 - **Scores:** tight-shit day 7 (GURT 9), word lifeguards 8 (9), Tony/pigeonhole/bridge 7 (8). One point low again.
-- **Dropped by code: none**, so the "unticked in Review" path is still untested.
+- **Dropped by code: none.** (The app predated that fix anyway; see run 11.)
 - Mayor-as-straight-man picks (queefish, right at home) were the ones it missed: the joke is the guest's one dry line.
 
 **Fixes this run**

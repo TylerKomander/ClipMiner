@@ -92,7 +92,9 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
         stem = f"{number:02d}_s{clip['score']}_{clip['name']}"
         source, start, end, kept = splice.build(video, work, words, clip, stem)
         fixes = clip["fixes"]
+        # A fix to "" drops the word: Whisper wrote fake speaker names as spoken words in run 11.
         caption = [{**w, "word": " ".join(fixes.get(x, x) for x in w["word"].split())} for w in kept]
+        caption = [w for w in caption if w["word"].strip()]
         segments, split = reframe.plan(source, start, end)
         done.append(render(source, work, out_dir / f"{stem}_blur.mp4", start, end, BLUR_FILL, CAPTIONS_LOW, caption))
         done.append(render(source, work, out_dir / f"{stem}_track.mp4", start, end,
