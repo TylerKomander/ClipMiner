@@ -159,10 +159,21 @@ Left off 2026-10-05 after run 15 (Are You Garbage / Joey Diaz, 20 clips: 264–2
 **Tko starts the app himself** (`.\.venv\Scripts\python.exe -m clipminer.gui`): a render inside an app GURT launched
 from its own shell was killed mid-file (run 14). If GURT must render, use `--render <slug>` as a background task.
 
-**Open, 2026-10-05: Tko wants a big change to the editing and video style** for YouTube's Shorts recommendation
-change (announced 2026-10-01: channels that mostly re-upload others' videos without significant changes get less
-Shorts-feed reach; voice-over describing the screen, minor technical edits and template bulk changes don't count;
-original commentary, unique editing or storytelling do). Not specified yet: what the new style is. Nothing built.
+**Open, 2026-10-05: new video style, not built yet.** Why: YouTube's Shorts recommendation change (announced
+2026-10-01: channels that mostly re-upload others' videos without significant changes get less reach; minor
+technical edits and template bulk changes don't count). Tko dropped the fake-tweet idea and wants "subtle changes"
+modelled on three references (`7nz19kyX164` Slice Comedy, `mTJXBdaj8tk` The Podcast Archives, `nJsK00XAoz0`
+LifeofLogos; two predate the change, so they prove nothing about the new filter):
+1. **Face tracking and camera switching:** tight single on whoever is talking, hard cut on the first word of each
+   turn, reaction shots or a two-panel stack on laughs and fast exchanges, a smoothed crop that follows the face.
+   The Podcast Archives builds all of it from one locked wide shot. **Blocked on knowing who is talking**: the
+   `jawOpen` pick put run 15's TRACK on a listener in 17 of 20 clips. Fix and test that first, against run 15.
+2. **Subtitles:** 1-2 words, all caps, mid-frame (y about 0.5), cap height about 70px, heavy display font
+   (references: Montserrat Black, Komika Axis, VCR OSD Mono), black outline, pop-in scale over about 0.15s, gone in
+   pauses; two references colour the text per speaker. Curses masked as now.
+3. **On-screen joke caption:** Tko's own addition. **None of the three references has one** (two have a channel
+   watermark at y about 0.8). Written per clip with the pick; top band; same clean rules as captions.
+Full measured specs were in the session scratchpad (not kept). Nothing decided on font or caption placement.
 
 **Run 15's TRACK files are wrong on 17 of 20 clips** (crop on a laughing host while Joey talks; see the run file's
 "Render check"). Post the BLUR files, or wait for the new style. Not re-rendered. Caption bugs to fix in code first:
