@@ -83,7 +83,7 @@ diffs against `review.json` (`by: sonnet` vs `by: gurt`), adds/edits clips with 
 first, last, "gurt", payoff, reason, fixes, description)` (word indices; `fixes` corrects misheard caption words),
 sets `keep`, saves, sets `status: approved`. Logs the diff in the run file's "Scorer vs GURT", updates INDEX,
 commits. Transcript health check and face check (look at frames) still come first.
-Next clip number: **248** (counted from the logs automatically: write a run's log after it renders).
+Next clip number: **264** (counted from the logs automatically: write a run's log after it renders).
 
 ## Status
 - [x] ffmpeg installed, `download` + `transcribe` produce a word-timed transcript
@@ -124,6 +124,7 @@ Next clip number: **248** (counted from the logs automatically: write a run's lo
       Run 11 (Stavvy's World): found 15 of GURT's 22 (68%, 5 lost to length on stale code, 3 lost at chunk
       boundaries); 12 of its 25 were 7s, all failed recheck. Bar raised to 8+.
       Run 13 (We Might Be Drunk): 14 picks, 12 kept, no filler; found 12 of GURT's 25 (48%). 2 picks were played footage.
+      Run 14 (Matt & Shane 637): 15 picks, 10 kept and all 10 recut; found 10 of 16 (63%); its 3 solo picks failed.
 - [ ] One local file (no heatmap) end-to-end
 - [x] Streaming type: Queue dropdown, `streamer` theme, GAME layout, type folders, Clips tree by type.
       Run 12 (Joe Bart Games `VxPBaAT13gk`) went through it: 19 clips: 18 BLUR + GAME, 193 BLUR + TRACK
@@ -152,39 +153,56 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
   the rest is the manual recipe above)
 
 ## Next step
-Left off 2026-10-04 after run 13 (We Might Be Drunk / Paul Walter Hauser, 20 clips: 228–247, the first run at the
-20-clip limit). **Restart the app** (face grouping and Facebook were added after it started).
-0. **Tko watches the run 13 clips** for two things GURT could only check on stills: the new audio-based trimming
-   (do the pauses feel long now? were any cuts still wrong?) and clip 244, a fart gag that depends on the sound.
-0b. **Tko watches the run 12 clips** and judges: the 1/3 webcam + 2/3 game split, clips where the line is a friend's
-   and the webcam only shows Joe listening, the two visual clips (212, 218), which GURT picked from frames without hearing them.
-   **Stale files to delete (Tko):** the `_track.mp4` of 211, 219, 220, 221, 223, 225, 226, 227 in
-   `Finished_Clips\Streaming\Joe Bart Games` (first render, wrong layout; the `_game.mp4` beside each is the real one).
-1. **Re-render clip 165** (family-so-big): "ROB MARKMAN" shows twice in its captions. The fix entries are in
-   `work/MpjdkVCj5ys/review.json`: delete `rendered_as` from the 165 entry (with it set, `--render` says "nothing new
-   to render"), add the name-blanking fixes to it, untick the rest, `--render` re-downloads. It renders under the next
-   free number (248) into `Finished_Clips\Podcast\Stavvy's World`. Tko deletes the old 165 files himself.
-   Smart App Control stopped blocking `libmediapipe.dll` on its own (it loaded and rendered run 13); if WinError 4551
-   comes back, that is Tko's setting to decide, not GURT's.
-2. **Don't post the 12 ✗ clips** in `Finished_Clips\Stavvy's World` (160, 162, 168, 170, 172, 174, 179, 183–186, 188).
-   Tko's call whether to delete them.
-3. **Open decision (Tko): recall.** With the strict 8+ bar Sonnet's picks are all good (run 13: 12 of 14 kept) but it
-   finds half of what GURT does (run 13: 12 of 25; run 12: 1 of 17) because it scores strong one-liners a 7 and a 7 is
-   a reject. GURT's recommendation stands: Sonnet also submits its 7s, code shows them unticked in Review so they don't
-   render but GURT and Tko can promote them. Costs output tokens. With the 20-clip cap the damage is smaller on a
-   good episode (GURT fills the gap by hand) and total on a thin one.
-4. **Scorer prompt fixes owed from run 13:** (a) played footage is not clippable: a film clip, or a stretch where the
-   hosts go silent and an unnamed voice tells a polished story; (b) a clip wholly inside the overlap minute must be
-   picked by the part it belongs to (Katt Williams at 39:31 was skipped by both); (c) credit only the people in the clip.
-5. **Facebook:** first real post will show whether `post.facebook`'s selectors match; fix from where it stops.
-5b. **Clean-text rule (2026-10-04):** restart the app to load the check. 16 old descriptions were rewritten; Tko reads
-   the hooks of 178, 182, 188, 191 before posting (written from the log, not the transcript). Open: Review window
-   can't edit a flagged description; curses in file names (134, 143, 161, 170); description cleanup the check found
-   (`#stavvyshalkias` in 161–166, `#markNormand` in 236, 245–247, `#robmarkman` on 179–180, 20–22 hashtags on seven
-   Joe Bart files, mixed credit lines in Bad Friends and We Might Be Drunk).
-6. Small fixes pending: Review window doesn't reload after GURT's chat edits (`gui.py` `ReviewPage`); the app could warn
-   when `clipminer\*.py` is newer than its own start time; transcription should drop fake-name tokens at the source;
-   webcam near the frame edge and face-bin splitting in `cam_box` (deferred until a second streamer).
-**Write the run log only after the render finishes**: clip numbers are counted from the log (run 12 skipped 194–210).
+Left off 2026-10-05 00:55 after run 14 (Matt & Shane Ep 637 / Jeremiah Watkins, 16 clips: 248–263, BLUR + TRACK, in
+`Finished_Clips\Podcast\Matt and Shane's Secret Podcast`). Everything is committed. The app is closed.
+**Tko starts the app himself** (`.\.venv\Scripts\python.exe -m clipminer.gui`): a render inside an app GURT launched
+from its own shell was killed mid-file (run 14). If GURT must render, use `--render <slug>` as a background task.
+
+**Tko's queue, oldest first. GURT has listened to nothing; these need ears.**
+1. **Run 14 clips (248–263).** Guessed captions: "in Austin" (249), "Husky of a mustache" (251). Endings: 257 (last
+   word missing from the transcript), 261. Splice seams: 248, 254, 263. Is TRACK on the person talking? (GURT saw
+   stills of 248 and 250 only.) Risk calls: 251 (Hitler mustache), 252 (crude), 255 (drunk woman joke).
+2. **Run 13 clips (228–247):** do pauses feel long with the audio-based trimming; clip 244 depends on a fart sound;
+   228 is an age-of-consent joke (post at all?).
+3. **Run 12 clips:** the 1/3 webcam + 2/3 game split; clips where the webcam only shows Joe listening; 212 and 218
+   (picked from frames, never heard). **Stale files to delete (Tko):** the `_track.mp4` of 211, 219, 220, 221, 223,
+   225, 226, 227 in `Finished_Clips\Streaming\Joe Bart Games`.
+4. **Don't post the 12 ✗ clips** in `Finished_Clips\Stavvy's World` (160, 162, 168, 170, 172, 174, 179, 183–186, 188).
+5. **Read four rewritten hooks before posting** (written from the log, not the transcript): 178, 182, 188, 191.
+
+**Tko's open decisions**
+- **Clean-text rule scope:** GURT allowed alcohol and toilet humor in post text. Ban those too?
+- **File names with curses** (134, 143, 161, 170): rename only if a platform shows the upload's file name.
+- **Recall:** should Sonnet also submit its 7s, shown unticked in Review? Run 14 says the cheaper answer may be
+  GURT's blind pass: three independent pickers found 6 clips Sonnet missed, and agreement between pickers predicted
+  survival (16 of 20 moments found by two or more survived; 0 of 3 found by one).
+- **Facebook:** no username is needed to post. First real post will show whether `post.facebook`'s selectors match;
+  switch the browser to the Page first.
+
+**GURT's work, in order**
+1. **Re-render clip 165** (family-so-big): "ROB MARKMAN" shows twice in its captions. In
+   `work/MpjdkVCj5ys/review.json` delete `rendered_as` from the 165 entry, add the name-blanking fixes, untick the
+   rest, `--render` (re-downloads). It renders as 264. Tko deletes the old 165 files himself.
+2. **Scorer prompt fixes owed:** (a) played footage is not clippable (run 13); (b) a clip wholly inside the overlap
+   minute belongs to the part it sits in (run 13); (c) credit only the people in the clip (run 13); (d) **stop on
+   the payoff**: it ran 10–18s past it on three of ten kept picks (run 14; third sighting, promote into `skill.md`).
+3. **Description cleanup the clean-text pass found:** `#stavvyshalkias` in 161–166, `#markNormand` in 236, 245–247,
+   `#robmarkman` on 179–180, 20–22 hashtags on seven Joe Bart files, mixed credit lines in Bad Friends and We Might
+   Be Drunk. Tko said "looks good" to the report; he has not asked for this cleanup yet.
+4. **Review window can't edit a description.** A pick flagged by `review.off_limits` has to be reworded in
+   `review.json` or by GURT in chat. Also still pending: the window doesn't reload after GURT's chat edits.
+5. **Transcript quality:** run 14 lost most curse words and went lowercase again. Try
+   `condition_on_previous_text=False` in `transcribe.py` on this episode's audio before the next run.
+6. Smaller: the app could warn when `clipminer\*.py` is newer than its start time; drop fake-name tokens at
+   transcription; webcam near the frame edge and face-bin splitting in `cam_box` (wait for a second streamer);
+   `queue.json` job 6 (run 12) still says "failed" although its clips rendered from the command line.
+
+**How run 14's review was done** (repeat it if it worked for Tko): write the reading file from
+`score.reading_lines`; three blind picker agents (stories / one-liners / signals) plus a health-check agent; map
+their quotes with `score.locate`; group with Sonnet's picks **by payoff line, not by overlapping time** (the overlap
+merge hid a clip); an editor agent and then a skeptic agent per batch of five moments, working from word-indexed
+transcript rows; GURT decides, applies with `review.entry`, checks every fix word appears once in the kept words,
+runs `review.off_limits` on each description, approves. Curses in caption fixes are written as `****` directly.
+**Write the run log only after the render finishes**: clip numbers are counted from the log.
 Posting: every post so far is `track` on YouTube + TikTok. Post blur variants too and log views in each run file's
 "Posted" line.
