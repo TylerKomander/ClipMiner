@@ -41,24 +41,25 @@ universal) and note "(in skill.md)" here.
 | 12 | `run-12-joe-bart-bigfoot.md` | Joe Bart Games "How Hard Is Finding Bigfoot?" (stream, 4 friends) | 65m | 192–193, 211–227 | first `streamer` run; Sonnet submitted 3, GURT found 17; GAME layout; Smart App Control blocked mediapipe |
 | 13 | `run-13-we-might-be-drunk-paul-walter-hauser.md` | We Might Be Drunk (Paul Walter Hauser, Alex Moffat) | 77m | 228–247 | first run at the 20-clip cap; Sonnet 14 picks, 12 kept, found 12 of GURT's 25; guest merged with wall portraits (fixed); audio trimming live |
 | 14 | `run-14-matt-shane-637-jeremiah-watkins.md` | Matt & Shane Ep 637 (Jeremiah Watkins) | 68m | 248–263 | three comedians, one wide shot; blind picks by three subagents + editor/skeptic pass; Sonnet 15 picks, 10 kept (all recut), found 10 of 16; render killed once (app launched by GURT); first run with clean post text |
+| 15 | `run-15-are-you-garbage-joey-diaz.md` | Are You Garbage (Joey Diaz) | 69m | 264–283 | cleanest transcript yet; 41 moments, 30 passed at 8+, first run over the cap (10 logged "over the cap"); Sonnet 23 picks, 15 in the final 20, 5 rejected; multi-camera, no SPLIT |
 
 ## Shapes (universal), most seen first
 Format: tally · shape · clips (score). Clip numbers match `Finished_Clips\` and the run files.
 3+ = proven, listed in `skill.md` Part B "Proven shapes".
-- `[.....................]` **Scene → twist → reaction**: the reaction is the payoff · 06 (9), 11 (8), 20 (9), 22 (8), 35 (7), 58 (8), 77 (9), 78 (9), 138 (8), 148 (9), 164 (8), 166 (9), 175 (9), 224 (8), 227 (9), 228 (9), 244 (8), 249 (8), 254 (8), 255 (8), 262 (8)
-- `[...................]` **Energy build or outrageous comparison, then a capper that tops it** · 01 (8), 17 (9), 69 (8), 76 (9), 130 (7), 134 (8), 137 (8), 141 (8), 152 (9), 161 (9), 163 (8), 167 (9), 221 (9), 231 (9), 235 (9), 236 (8), 246 (8), 248 (8), 256 (9) (in skill.md)
-- `[................]` **Absurd image → strong verdict** · 10 (8), 56 (8), 70 (8), 126 (9), 136 (8), 140 (7), 143 (8), 147 (7), 153 (8), 157 (9), 171 (9), 189 (9), 223 (8), 233 (8), 251 (8), 259 (8) (in skill.md)
+- `[.......................]` **Scene → twist → reaction**: the reaction is the payoff · 06 (9), 11 (8), 20 (9), 22 (8), 35 (7), 58 (8), 77 (9), 78 (9), 138 (8), 148 (9), 164 (8), 166 (9), 175 (9), 224 (8), 227 (9), 228 (9), 244 (8), 249 (8), 254 (8), 255 (8), 262 (8), 268 (8), 276 (9)
+- `[......................]` **Energy build or outrageous comparison, then a capper that tops it** · 01 (8), 17 (9), 69 (8), 76 (9), 130 (7), 134 (8), 137 (8), 141 (8), 152 (9), 161 (9), 163 (8), 167 (9), 221 (9), 231 (9), 235 (9), 236 (8), 246 (8), 248 (8), 256 (9), 269 (9), 280 (8), 282 (9) (in skill.md)
+- `[.................]` **Absurd image → strong verdict** · 10 (8), 56 (8), 70 (8), 126 (9), 136 (8), 140 (7), 143 (8), 147 (7), 153 (8), 157 (9), 171 (9), 189 (9), 223 (8), 233 (8), 251 (8), 259 (8), 278 (9) (in skill.md)
 - `[...............]` **Friend exposes the other's habit** · 57 (8), 66 (7), 67 (7), 128 (7), 132 (8), 133 (8), 139 (7), 145 (8), 149 (8), 169 (9), 192 (8), 215 (8), 222 (8), 237 (8), 263 (8)
-- `[..............]` **Self-roast of the past self**: delusion then, blunt truth now · 14 (7), 15 (9), 25 (8), 27 (9), 38 (7), 53 (7), 83 (8), 124 (8), 142 (8), 154 (8), 176 (8), 177 (9), 234 (8), 241 (8)
-- `[...............]` **Observational take with a quotable capper** · 04 (7), 09 (7), 28 (7), 37 (7), 44 (8), 67 (7), 73 (8), 74 (9), 131 (7), 150 (8), 173 (8), 225 (8), 230 (8), 232 (8), 250 (9)
-- `[........]` **Shameless confession, told proudly** · 19 (9), 36 (8), 64 (9), 129 (8), 165 (9), 178 (8), 193 (8), 211 (8)
+- `[...............]` **Self-roast of the past self**: delusion then, blunt truth now · 14 (7), 15 (9), 25 (8), 27 (9), 38 (7), 53 (7), 83 (8), 124 (8), 142 (8), 154 (8), 176 (8), 177 (9), 234 (8), 241 (8), 279 (8)
+- `[................]` **Observational take with a quotable capper** · 04 (7), 09 (7), 28 (7), 37 (7), 44 (8), 67 (7), 73 (8), 74 (9), 131 (7), 150 (8), 173 (8), 225 (8), 230 (8), 232 (8), 250 (9), 270 (8)
+- `[..............]` **Shameless confession, told proudly** · 19 (9), 36 (8), 64 (9), 129 (8), 165 (9), 178 (8), 193 (8), 211 (8), 264 (9), 267 (9), 271 (9), 273 (9), 277 (8), 281 (9)
 - `[..........]` **Strange true fact, explained in one breath** · 08 (8), 18 (8), 42 (8), 55 (7), 146 (7), 229 (8), 245 (9), 252 (8), 257 (8), 258 (9)
-- `[......]` **Plan meets reality**: naive expectation, then the obvious question or bad trade · 13 (8), 16 (7), 26 (8), 30 (8), 54 (8), 218 (8)
-- `[......]` **Insider rule revealed, pushed to absurd precision** · 07 (9), 29 (8), 80 (8), 123 (8), 190 (9), 243 (8) (in skill.md)
-- `[......]` **Roast in one line**: the guest's single dry reply to the host's ramble · 155 (8), 158 (8), 213 (8), 214 (8), 239 (8), 261 (8) (in skill.md)
+- `[........]` **Plan meets reality**: naive expectation, then the obvious question or bad trade · 13 (8), 16 (7), 26 (8), 30 (8), 54 (8), 218 (8), 265 (9), 275 (8)
+- `[.......]` **Insider rule revealed, pushed to absurd precision** · 07 (9), 29 (8), 80 (8), 123 (8), 190 (9), 243 (8), 272 (9) (in skill.md)
+- `[.......]` **Roast in one line**: the guest's single dry reply to the host's ramble · 155 (8), 158 (8), 213 (8), 214 (8), 239 (8), 261 (8), 266 (9) (in skill.md)
 - `[....]` **Made-up fact, caught live** · 48 (8), 95 (8), 182 (9), 219 (8) (in skill.md)
 - `[....]` **Behind-the-scenes reveal told straight** · 05 (6), 31 (9), 84 (8), 242 (8)
-- `[....]` **Proud reveal, instantly deflated** · 43 (9), 65 (8), 238 (8), 247 (8)
+- `[.....]` **Proud reveal, instantly deflated** · 43 (9), 65 (8), 238 (8), 247 (8), 283 (8)
 - `[....]` **Self-justifying logic spiral** · 12 (8), 32 (7), 240 (8), 253 (9)
 - `[..]` **Confession in the first sentence** · 02 (8), 33 (9)
 - `[..]` **Parent collides with the joke** · 21 (7), 61 (8)
@@ -69,7 +70,7 @@ Format: tally · shape · clips (score). Clip numbers match `Finished_Clips\` an
 - `[.]` **A con, and the mark finds out** · 127 (9)
 - `[.]` **Ironic PSA: "don't do it" while describing exactly how** · 135 (7)
 - `[.]` **Embarrassing message read back live** · 59 (8)
-- `[.]` **A con presented as advice** · 47 (8)
+- `[..]` **A con presented as advice** · 47 (8), 274 (8)
 - `[.]` **Absurd escalation of a crush** · 45 (8)
 - `[.]` **Crude image, then someone finds the silver lining** · 41 (8)
 - `[.]` **Code of honor stated backwards** · 49 (7)
@@ -90,11 +91,11 @@ quotable. Duo shows (Shane/Steve) run on "friend exposes the other"; one-guest s
 ## Recurring lessons, most seen first
 - `[..........]` `[universal]` Clips with zero signal support are as good as signalled ones (runs 1–10). (in skill.md)
 - `[............]` `[universal]` Whisper drops to lowercase with no punctuation (runs 2–4, 6–10). (in skill.md) Run 12: 47% of the lines. Run 13: 41:55–53:35. Run 14: most of the episode.
-- `[...........]` `[scorer]` Model scores the best clips one point low (runs 3–10, every run). Calibration added after run 9; run 10 still low (two 9s given 7–8). (in skill.md) Run 12 (first stream): with 7 = reject it submitted 3 clips; GURT found 17, and Sonnet's reject list named 7 of them as "a 7". Run 13: six strong one-liners it named were rejected as 7s or "light banter"; GURT kept all six.
+- `[............]` `[scorer]` Model scores the best clips one point low (runs 3–10, every run). Calibration added after run 9; run 10 still low (two 9s given 7–8). (in skill.md) Run 12 (first stream): with 7 = reject it submitted 3 clips; GURT found 17, and Sonnet's reject list named 7 of them as "a 7". Run 13: six strong one-liners it named were rejected as 7s or "light banter"; GURT kept all six. Run 15: of the 10 final 9s it had, 9 were 8s on its list.
 - `[.........]` `[scorer]` Model gives no-payoff, sincere or promotional talk a 6–7 instead of rejecting it (runs 3–10). Run 9: 16 picks, 4 weak; run 10: 13 picks, 2 weak, every policy segment rejected. **Biting.** Run 11: 12 of 25 picks were 7s, all failed recheck; **bar raised to 8+** (Tko). (in skill.md) **Run 13: gone.** 14 picks, every one a real payoff, with the 8+ bar.
 - `[.......]` `[universal]` The best version of a story needs more than 35s (runs 1–7). **Fixed after run 7: splicing** (`splice.py`; crematorium 77s → 32s). (in skill.md)
 - `[.....]` `[universal]` The dry run of first/last 5 words catches cut-off words (runs 2–6). (in skill.md)
-- `[......]` `[universal]` Heatmap peaks right after ad reads are skip landings (runs 1, 3, 5, 6, 7). (in skill.md) Run 14: the 1.00 peak and a 0.70.
+- `[.......]` `[universal]` Heatmap peaks right after ad reads are skip landings (runs 1, 3, 5, 6, 7). (in skill.md) Run 14: the 1.00 peak and a 0.70. Run 15: the 1.00, a 0.52 and a 0.42.
 - `[.....]` `[universal]` GURT missed clips the model found (runs 3–7, 9: 130, 140). Blind-pick, then diff, then accept finds after reading them. (in CONTEXT.md recipe)
 - `[.......]` `[universal]` The first framing try was wrong: center crop, mediapipe, tiny-face SPLIT, poster faces. Look at frames before rendering. Run 11: a pillow boxed as a face; SPLIT now needs landmarks. (in skill.md) Run 12: the webcam box from one dark clip was a shelf edge; it's found per video now. Run 13: the guest merged with the portraits on the wall beside him; grouping is 2D now and still pictures are dropped.
 - `[....]` `[universal]` A story fails the cold read when its subject is never named in the window (Post Malone, 16, 32, Sexy Red). (in skill.md)
@@ -104,19 +105,19 @@ quotable. Duo shows (Shane/Steve) run on "friend exposes the other"; one-guest s
 - `[...]` `[universal]` Fix misheard words in captions when sure (Katt, Tide man, balls, Xu, click-to-cancel); cut around them when not. (in skill.md)
 - `[......]` `[universal]` Whisper hallucinations (repeat loops, word salad) sit next to good clips (runs 5, 6, 10: "Yeah" ×20 a few seconds before 148). Check the window's own captions. (in skill.md) Run 12: "A," ×100 at 46:59. Run 13: 42:47 and 53:30. Run 14: six loops; one sat on a clip's opener (rejected).
 - `[...]` `[scorer]` Model picks the weaker version of a repeated story, or a different window of it (runs 3–5, 10: Barramundi over queefish). (selection rule 7 in skill.md; needs to reach the prompt harder)
-- `[...]` `[scorer]` Model misses escalating riffs and takes a story's flat tail (run 7: 69, 76, 84; run 9: green room payoff alone, unfuckables). Shape promoted after run 9. (in skill.md) Run 14: ran 10–18s past the payoff on three of ten kept picks; missed the bad-apples riff. **3 sightings: promote.**
-- `[..]` `[universal]` Loudness is useless on group or compressed shows (run 4: 21% spiked; run 6: 0 spikes). (in skill.md) **Not on streams:** run 12, 14 of 19 clips on a spike; the first attack is the loudest stretch of the video (+21), the second peaks at +12.
+- `[....]` `[scorer]` Model misses escalating riffs and takes a story's flat tail (run 7: 69, 76, 84; run 9: green room payoff alone, unfuckables). Shape promoted after run 9. (in skill.md) Run 14: ran 10–18s past the payoff on three of ten kept picks; missed the bad-apples riff. **3 sightings: promote.** Run 15: past the payoff on three kept picks and one over the cap (in skill.md).
+- `[...]` `[universal]` Loudness is useless on group or compressed shows (run 4: 21% spiked; run 6: 0 spikes). (in skill.md) **Not on streams:** run 12, 14 of 19 clips on a spike; the first attack is the loudest stretch of the video (+21), the second peaks at +12. Run 15: 161 of 253 lines marked.
 - `[..]` `[scorer]` Model scores race/N-word/religion bits on the payoff (runs 5, 6). Correct per Tko; it should still add a risk flag.
 - `[..]` `[scorer]` Model and "build backwards from the payoff": wrong on run 4 (30, 35), right on run 6 (59) where GURT wasn't.
 - `[...]` `[theme]` Two comedians ≈ 8 clips/hour (run 3); runs 4–6 ran 8–9/hour. Run 9 (three comedians, a costume birthday) ran 16/hour. Run 10 (comedian + politician) ran 10/hour, all from tangents. Run 14 (three comedians, no topic) ran 14/hour.
 - `[...]` `[workflow]` Restart the app after code changes (run 7); a process keeps the API key it launched with, so it's now read fresh (run 8). Run 11: the app ran 10/1 code through runs 10–11; check the process start time. Run 14: a render inside an app GURT launched from its own shell was killed mid-file (ffmpeg `0xC000013A`). **Tko starts the app.**
 - `[.]` `[universal]` Whisper's word end times aren't where the sound stops; endings are cut from the audio now (run 7). (in skill.md)
-- `[.]` `[workflow]` Blind picks by three independent subagents, then an editor and a skeptic per moment (run 14). 16 of 20 moments found by two or more pickers survived; 0 of 3 found by one. Merge candidates by payoff line, not by overlapping time: an overlap merge hid the COVID-opener clip behind Prince Eric.
+- `[..]` `[workflow]` Blind picks by three independent subagents, then an editor and a skeptic per moment (run 14). 16 of 20 moments found by two or more pickers survived; 0 of 3 found by one. Merge candidates by payoff line, not by overlapping time: an overlap merge hid the COVID-opener clip behind Prince Eric. Run 15: 29 of 32 moments found by two or more blind pickers passed at 8+; 1 of 5 found by one.
 - `[.]` `[workflow]` GURT's wait loop for the render never matched the failed state and hid a dead render for two hours (run 14). Test the loop against failure first.
 - `[.]` `[scorer]` Model picks third-party footage played on the show: a film clip and a whole interview video (run 13, its second 9). No movie clips; not theirs to clip.
 - `[.]` `[scorer]` The overlap-minute instruction made it skip a clip that sat wholly inside the overlap (run 13: Katt Williams at 39:31).
 - `[.]` `[theme]` Hosts workshopping new bits out loud is a clip farm: 7 of 20 clips from 10 minutes (run 13).
-- `[.]` `[workflow]` The 20-clip cap left out 5 clips GURT had at 8 on its first run (run 13). Logged as "over the cap".
+- `[..]` `[workflow]` The 20-clip cap left out 5 clips GURT had at 8 on its first run (run 13). Logged as "over the cap". Run 15: 30 passed, 10 over the cap; three judges on different lenses ranked them, nine of the ten dropped were the weaker of two on one sub-topic.
 - `[.]` `[scorer]` Model rejects on transcript quality (run 12: the GTA RP janitor, "a 7: the transcript is garbled"; "are peeing" = RPing is one caption fix). Misheard words are fixes, not rejects.
 - `[.]` `[scorer]` Model over-applies "needs the stream's history" to any callback (run 12: weeb line, pee story, both stood alone; the flare roast was "needs the game state").
 - `[.]` `[theme]` A friend-group stream is a podcast with a game on screen: 16 of 19 clips were voice-chat banter (run 12).
@@ -127,7 +128,7 @@ quotable. Duo shows (Shane/Steve) run on "friend exposes the other"; one-guest s
 - `[.]` `[scorer]` Chunk boundaries cut off stories that cross them (run 11: hide and seek, compression shirt). Fixed: parts overlap both sides. (in code)
 - `[.]` `[universal]` Whisper wrote fake speaker names ("Rob Markman") as spoken words for 43 minutes (run 11). Grep for repeated names; blank them with caption fixes.
 - `[.]` `[workflow]` GURT waved the scorer's 7s through without the three tests (run 11). Every pick gets checked.
-- `[.]` `[scorer]` Model misses the guest's one-line dry burn after the host's ramble (run 10: queefish, right at home).
+- `[..]` `[scorer]` Model misses the guest's one-line dry burn after the host's ramble (run 10: queefish, right at home). Run 15: it missed the hosts' own lines when the guest is the star (266, 273).
 - `[.]` `[theme]` A politician guest is mostly off-theme; clips come from the host's tangents and the guest playing straight man (run 10).
 - `[.]` `[workflow]` Review window shows the copy loaded on click; GURT's chat edits appear only after clicking the episode again (run 10).
 - `[.]` `[scorer]` Model calls quick back-and-forth "cross-talk" and rejects it (run 9: flock cameras, unfuckables). (in skill.md)
@@ -143,3 +144,9 @@ quotable. Duo shows (Shane/Steve) run on "friend exposes the other"; one-guest s
 - `[.]` `[theme]` A guest walking in mid-episode is a clip farm; every question is a setup (run 5, Willie).
 - `[.]` `[theme]` A guest plugging their own product is an ad in disguise; drop it (run 8). (in skill.md)
 - `[.]` `[theme]` Athlete storytellers fit the comedian profile when the guest tells stories deadpan (run 4).
+- `[.]` `[scorer]` Model clipped a payoff that is a sexual joke about the guest's 13-year-old and only flagged the risk (run 15). GURT ruled it out; without the line the clip is a 7. A joke like that about a child is a reject, not a flag.
+- `[.]` `[scorer]` On a clean transcript with one dominant storyteller the model is good: 18 of 23 picks passed at 8+, 15 of the final 20 (run 15, Joey Diaz).
+- `[.]` `[theme]` One legendary storyteller guest: 30 moments at 8+ in 69 minutes, 26/hour before the cap (run 15).
+- `[.]` `[workflow]` A hook written by a subagent claimed a detail the transcript doesn't have ("8 a.m. game", run 15). Check each hook's facts against the clip.
+- `[.]` `[universal]` TRACK sat on a laughing listener instead of the storyteller in 17 of 20 clips (run 15: three-person wide shot, mic over the talker's mouth). BLUR was fine. Check a frame strip of every render.
+- `[.]` `[universal]` Whisper's spaced tokens ("10 -year -old", "$3 ,000") and zero-length caption events reach the screen (run 15). Join and clamp them in code.

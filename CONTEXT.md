@@ -83,7 +83,7 @@ diffs against `review.json` (`by: sonnet` vs `by: gurt`), adds/edits clips with 
 first, last, "gurt", payoff, reason, fixes, description)` (word indices; `fixes` corrects misheard caption words),
 sets `keep`, saves, sets `status: approved`. Logs the diff in the run file's "Scorer vs GURT", updates INDEX,
 commits. Transcript health check and face check (look at frames) still come first.
-Next clip number: **264** (counted from the logs automatically: write a run's log after it renders).
+Next clip number: **284** (counted from the logs automatically: write a run's log after it renders).
 
 ## Status
 - [x] ffmpeg installed, `download` + `transcribe` produce a word-timed transcript
@@ -125,6 +125,7 @@ Next clip number: **264** (counted from the logs automatically: write a run's lo
       boundaries); 12 of its 25 were 7s, all failed recheck. Bar raised to 8+.
       Run 13 (We Might Be Drunk): 14 picks, 12 kept, no filler; found 12 of GURT's 25 (48%). 2 picks were played footage.
       Run 14 (Matt & Shane 637): 15 picks, 10 kept and all 10 recut; found 10 of 16 (63%); its 3 solo picks failed.
+      Run 15 (Are You Garbage / Joey Diaz): 23 picks, 18 passed at 8+; found 15 of the final 20 (75%); 12 of the 15 recut.
 - [ ] One local file (no heatmap) end-to-end
 - [x] Streaming type: Queue dropdown, `streamer` theme, GAME layout, type folders, Clips tree by type.
       Run 12 (Joe Bart Games `VxPBaAT13gk`) went through it: 19 clips: 18 BLUR + GAME, 193 BLUR + TRACK
@@ -153,12 +154,28 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
   the rest is the manual recipe above)
 
 ## Next step
-Left off 2026-10-05 00:55 after run 14 (Matt & Shane Ep 637 / Jeremiah Watkins, 16 clips: 248–263, BLUR + TRACK, in
-`Finished_Clips\Podcast\Matt and Shane's Secret Podcast`). Everything is committed. The app is closed.
+Left off 2026-10-05 after run 15 (Are You Garbage / Joey Diaz, 20 clips: 264–283, BLUR + TRACK, in
+`Finished_Clips\Podcast\AreYouGarbage Comedy Podcast`). Everything is committed.
 **Tko starts the app himself** (`.\.venv\Scripts\python.exe -m clipminer.gui`): a render inside an app GURT launched
 from its own shell was killed mid-file (run 14). If GURT must render, use `--render <slug>` as a background task.
 
-**Tko's queue, oldest first. GURT has listened to nothing; these need ears.**
+**Open, 2026-10-05: Tko wants a big change to the editing and video style** for YouTube's Shorts recommendation
+change (announced 2026-10-01: channels that mostly re-upload others' videos without significant changes get less
+Shorts-feed reach; voice-over describing the screen, minor technical edits and template bulk changes don't count;
+original commentary, unique editing or storytelling do). Not specified yet: what the new style is. Nothing built.
+
+**Run 15's TRACK files are wrong on 17 of 20 clips** (crop on a laughing host while Joey talks; see the run file's
+"Render check"). Post the BLUR files, or wait for the new style. Not re-rendered. Caption bugs to fix in code first:
+spaced tokens ("10 -year -old", "$3 ,000") and zero-length caption events.
+
+**Tko's queue, newest first, then oldest first. GURT has listened to nothing; these need ears.**
+0. **Run 15 clips (264–283).** Each clip's "Listen:" note is in its reason in `work\oMjBYQCHMrk
+eview.json`; the
+   short list is in the run file under "What went wrong". Most uncertain: 275 (six cuts), 279 ("hit a valve"), 265,
+   267, 281, 283. Risk calls: 279 and 281 (crude sex lines), 282 (insults Elon Musk), 268 and 271 (drug use is the
+   subject). **Ten more passed at 8 and sit unticked in Review** (over the cap): tick one only by unticking another;
+   two of them (Brooklyn guy, Szechuan beef) need a recut first. Sonnet's daughter clip is rejected: its payoff is a
+   sexual joke about his 13-year-old (GURT's call; overrule it if you disagree).
 1. **Run 14 clips (248–263).** Guessed captions: "in Austin" (249), "Husky of a mustache" (251). Endings: 257 (last
    word missing from the transcript), 261. Splice seams: 248, 254, 263. Is TRACK on the person talking? (GURT saw
    stills of 248 and 250 only.) Risk calls: 251 (Hitler mustache), 252 (crude), 255 (drunk woman joke).
@@ -182,10 +199,12 @@ from its own shell was killed mid-file (run 14). If GURT must render, use `--ren
 **GURT's work, in order**
 1. **Re-render clip 165** (family-so-big): "ROB MARKMAN" shows twice in its captions. In
    `work/MpjdkVCj5ys/review.json` delete `rendered_as` from the 165 entry, add the name-blanking fixes, untick the
-   rest, `--render` (re-downloads). It renders as 264. Tko deletes the old 165 files himself.
+   rest, `--render` (re-downloads). It renders as 284. Tko deletes the old 165 files himself.
 2. **Scorer prompt fixes owed:** (a) played footage is not clippable (run 13); (b) a clip wholly inside the overlap
    minute belongs to the part it sits in (run 13); (c) credit only the people in the clip (run 13); (d) **stop on
-   the payoff**: it ran 10–18s past it on three of ten kept picks (run 14; third sighting, promote into `skill.md`).
+   the payoff**: it ran 10–18s past it on three of ten kept picks (run 14; third sighting, promote into `skill.md`;
+   run 15 again on four); (e) a sexual joke about a child is a reject, not a risk flag (run 15); (f) the hosts' own
+   lines count when the guest is the star (run 15: it missed both host clips).
 3. **Description cleanup the clean-text pass found:** `#stavvyshalkias` in 161–166, `#markNormand` in 236, 245–247,
    `#robmarkman` on 179–180, 20–22 hashtags on seven Joe Bart files, mixed credit lines in Bad Friends and We Might
    Be Drunk. Tko said "looks good" to the report; he has not asked for this cleanup yet.
@@ -197,12 +216,14 @@ from its own shell was killed mid-file (run 14). If GURT must render, use `--ren
    transcription; webcam near the frame edge and face-bin splitting in `cam_box` (wait for a second streamer);
    `queue.json` job 6 (run 12) still says "failed" although its clips rendered from the command line.
 
-**How run 14's review was done** (repeat it if it worked for Tko): write the reading file from
+**How run 14's and 15's review was done** (repeat it if it worked for Tko): write the reading file from
 `score.reading_lines`; three blind picker agents (stories / one-liners / signals) plus a health-check agent; map
 their quotes with `score.locate`; group with Sonnet's picks **by payoff line, not by overlapping time** (the overlap
 merge hid a clip); an editor agent and then a skeptic agent per batch of five moments, working from word-indexed
 transcript rows; GURT decides, applies with `review.entry`, checks every fix word appears once in the kept words,
-runs `review.off_limits` on each description, approves. Curses in caption fixes are written as `****` directly.
+runs `review.off_limits` on each description, approves. Run 15 added: a dry-run tool for the agents (prints kept
+words with indices, so no index was off), three judges on different lenses to rank for the cap, and a frame-strip
+check of every render. Curses in caption fixes are written as `****` directly.
 **Write the run log only after the render finishes**: clip numbers are counted from the log.
 Posting: every post so far is `track` on YouTube + TikTok. Post blur variants too and log views in each run file's
 "Posted" line.
