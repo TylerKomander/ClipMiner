@@ -44,6 +44,10 @@ for, with a one-line reason per clip. Tko picks the type (Podcast / Streaming) b
 - **Captions never show a curse word** (masked `****`; audio untouched). Clips 01–67 predate the rule
   and were deleted by Tko as test runs (2026-09-30); their reasoning stays in `clip_log\`. Clip numbers
   keep counting from the log (`review.next_number`), so new clips start at 68 even with an empty folder.
+- **Post text is clean even when the clip isn't** (Tko, 2026-10-04): no curse word (masked or inside a hashtag)
+  and nothing about sex, porn or drugs in the hook or hashtags. Rule in `skill.md` "Post description";
+  `review.off_limits` refuses an approval, a render or a post with the plain words. Alcohol and toilet humor are
+  allowed (GURT's reading, Tko hasn't ruled). File names are not covered.
 - **Layouts per type:** Podcast = BLUR + TRACK, + SPLIT when both faces share the shot; Streaming = BLUR + GAME
   on gameplay clips, BLUR + TRACK when there is no gameplay. Tko posts the variants across platforms;
   performance decides which to keep.
@@ -173,6 +177,11 @@ Left off 2026-10-04 after run 13 (We Might Be Drunk / Paul Walter Hauser, 20 cli
    hosts go silent and an unnamed voice tells a polished story; (b) a clip wholly inside the overlap minute must be
    picked by the part it belongs to (Katt Williams at 39:31 was skipped by both); (c) credit only the people in the clip.
 5. **Facebook:** first real post will show whether `post.facebook`'s selectors match; fix from where it stops.
+5b. **Clean-text rule (2026-10-04):** restart the app to load the check. 16 old descriptions were rewritten; Tko reads
+   the hooks of 178, 182, 188, 191 before posting (written from the log, not the transcript). Open: Review window
+   can't edit a flagged description; curses in file names (134, 143, 161, 170); description cleanup the check found
+   (`#stavvyshalkias` in 161–166, `#markNormand` in 236, 245–247, `#robmarkman` on 179–180, 20–22 hashtags on seven
+   Joe Bart files, mixed credit lines in Bad Friends and We Might Be Drunk).
 6. Small fixes pending: Review window doesn't reload after GURT's chat edits (`gui.py` `ReviewPage`); the app could warn
    when `clipminer\*.py` is newer than its own start time; transcription should drop fake-name tokens at the source;
    webcam near the frame edge and face-bin splitting in `cam_box` (deferred until a second streamer).

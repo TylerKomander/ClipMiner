@@ -340,6 +340,12 @@ class ReviewPage(Page):
         if kept > cap:
             messagebox.showerror("Approve", f"{kept} clips ticked, the limit for this video is {cap}: untick {kept - cap}.")
             return
+        unclean = [f"  {c['name']}:  {', '.join(review.off_limits(c['description']))}" for c in self.data["clips"]
+                   if c["keep"] and not c.get("rendered_as") and review.off_limits(c["description"])]
+        if unclean:
+            messagebox.showerror("Approve", "Post descriptions can't swear or mention sex or drugs. Reword these in "
+                                            "review.json (or untick them):\n\n" + "\n".join(unclean))
+            return
         pairs = sorted({tuple(sorted((c["name"], o))) for c in self.data["clips"] for o in c.get("overlaps", [])})
         warning = ("\n\nThese ticked picks cover the same moment and would both render:\n"
                    + "\n".join(f"  {a}  ↔  {b}" for a, b in pairs)) if pairs else ""
@@ -538,6 +544,10 @@ class ClipsPage(Page):
         video = base.with_name(f"{base.name}_{layout}.mp4")
         handle = profile["socials"][platform].get("handle") or profile["name"]
         description = self.description.get("1.0", "end").strip()
+        if review.off_limits(description):
+            messagebox.showerror("Post", "The description can't swear or mention sex or drugs. Reword: "
+                                         + ", ".join(review.off_limits(description)))
+            return
         if platform in self.posted_on(base.name) and not messagebox.askyesno(
                 "Already posted", f"This clip is already marked as posted to {platform}. Post it again?"):
             return

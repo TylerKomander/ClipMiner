@@ -287,7 +287,14 @@ its own line:
    (Tko's rule): #xybca #fyp #blowthisup #viral. That makes 14–19 in the file; YouTube posting trims
    the most generic ones (#funny, #podcast, …) first, then tags from the end of the line, to stay at 15,
    and never drops the required four. **So order the line by importance: who, then this clip, then theme.**
-No emoji walls, no "wait for it", no "you won't believe". Curse words are masked in the file.
+No emoji walls, no "wait for it", no "you won't believe".
+**The post text is clean even when the clip isn't** (Tko's rule, 2026-10-04). Nowhere in the hook or the
+hashtags: a curse word or slur (a masked `****` counts, so does one inside a tag like `#tightshit`), or
+anything about sex, porn, nudity or drugs (weed included), even when that is the clip's whole subject.
+Write around it: sell the situation, not the off-limits word ("His roommate's hobby cleared the room",
+not "His roommate watched porn at dinner"). Pick clip tags from the clean parts of the subject. Alcohol
+and toilet humor are fine. `review.off_limits` refuses a render or a post that has the plain words; the
+allusions are on the writer.
 
 ## Risk flags (mention, don't auto-reject; Tko decides)
 - Rumors or accusations about named real people. Drug-use rumors about named celebrities →

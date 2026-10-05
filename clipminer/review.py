@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 
 from . import reframe, splice
-from .render import BLUR_FILL, CAPTIONS_LOW, CAPTIONS_SEAM, mask_curses, render
+from .render import BLUR_FILL, CAPTIONS_LOW, CAPTIONS_SEAM, CURSE, render
 
 # What Tko picks before pasting a link: kind -> (Finished_Clips folder, theme profile in skill.md).
 KINDS = {"podcast": ("Podcast", "comedian-podcast"), "stream": ("Streaming", "streamer")}
@@ -75,6 +75,23 @@ def with_required_tags(description: str) -> str:
     return "\n".join((lines[:-1] if tagged else lines) + [" ".join(tags)])
 
 
+# Tko's rule: a post's text is clean even when the clip isn't. No curse word, nothing about sex or drugs,
+# in the hook or in a hashtag. The rulebook carries the judgment; this only catches the plain words.
+OFF_LIMITS = re.compile(
+    r"porn\w*|sex\w*|nudes?|naked|horny|boobs?|tits?|penis\w*|vagina\w*|orgasm\w*|masturbat\w*|strippers?|"
+    r"hookers?|onlyfans|fetish\w*|kink\w*|cum|blowjobs?|handjobs?|dildos?|threesomes?|orgy|orgies|"
+    r"weed|stoned|stoners?|marijuana|cannabis|blunts?|bongs?|edibles?|cocaine|meth|heroin|shrooms|lsd|drugs?",
+    re.IGNORECASE,
+)
+# Hashtags run words together (#tightshit), so these are searched for inside a word as well.
+OFF_LIMITS_INSIDE = re.compile(r"fuck|shit|bitch|cunt|nigg|pussy|whore|slut|porn|(?<!sea)(?<!t)(?<!tumble)weed", re.IGNORECASE)
+
+
+def off_limits(description: str) -> list[str]:
+    words = re.findall(r"[A-Za-z']+|\*{2,}", description)
+    return sorted({w for w in words if w[0] == "*" or CURSE.fullmatch(w) or OFF_LIMITS.fullmatch(w) or OFF_LIMITS_INSIDE.search(w)})
+
+
 def next_number(out_dir: Path) -> int:
     # Numbers never repeat: the clip log refers to clips by number long after Tko moves or deletes the files.
     numbers = [int(m.group(1)) for f in out_dir.rglob("*.mp4") if (m := re.match(r"(\d+)_", f.name))]
@@ -92,6 +109,9 @@ def to_render(review: dict, work: Path) -> list[dict]:
     kept, cap = sum(c["keep"] for c in review["clips"]), clip_cap(work)
     if kept > cap:
         raise RuntimeError(f"{kept} clips ticked, the limit for this video is {cap}: untick {kept - cap} in Review")
+    unclean = [f"{c['name']} ({', '.join(off_limits(c['description']))})" for c in todo if off_limits(c["description"])]
+    if unclean:
+        raise RuntimeError("post descriptions can't swear or mention sex or drugs; reword in review.json: " + "; ".join(unclean))
     return todo
 
 
@@ -141,8 +161,7 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
                                reframe.split_filter(split, W, H), CAPTIONS_SEAM, caption))
         if source != video:
             source.unlink()
-        text = "\n".join(" ".join(mask_curses(word) for word in line.split(" ")) for line in with_required_tags(clip["description"]).splitlines())
-        (out_dir / f"{stem}.txt").write_text(text + "\n", encoding="utf-8")
+        (out_dir / f"{stem}.txt").write_text(with_required_tags(clip["description"]) + "\n", encoding="utf-8")
         clip["rendered_as"] = clip.pop("rendering_as")
         save(work, review)
         print(f"[render]     {stem}  ({end - start:.1f}s, {'split' if split else 'game' if game else 'no split'})", flush=True)
