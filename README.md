@@ -18,6 +18,7 @@
 
 <p align="center">
   <a href="#what-it-does">What it does</a> ·
+  <a href="#screenshots">Screenshots</a> ·
   <a href="#get-started">Get started</a> ·
   <a href="#a-run-start-to-finish">A run</a> ·
   <a href="#layouts">Layouts</a> ·
@@ -55,6 +56,28 @@ Facebook. It downloads the video from YouTube, transcribes it on your GPU, has C
 - **Keeps it clean where it counts** — curse words are masked in the captions (the audio is untouched), and a word
   filter refuses post text containing common swearing, sex or drug terms before it can render or post.
 - **Picks up where it left off** — every stage caches its result, so a crash resumes instead of starting over.
+
+## Screenshots
+
+<p align="center">
+  <img src="docs/assets/screenshots/review.png" alt="The Review page: nine picks for one episode with scores, lengths and opening and closing words, and the selected pick's payoff, reason and post text" width="100%" />
+  <br/><sub><b>Review</b> — every pick with its score, length, payoff and reason. Keep or drop, then approve.</sub>
+</p>
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/assets/screenshots/queue.png" alt="The Queue page: episodes at different stages, from queued to done" /><br/>
+      <sub><b>Queue</b> — paste links and walk away. Jobs run one at a time and wait for you in Review.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/assets/screenshots/clips.png" alt="The Clips page: finished clips grouped by type and show, with a post description and Post buttons" /><br/>
+      <sub><b>Clips</b> — finished clips by show, best score first, with the post text and where each was posted.</sub>
+    </td>
+  </tr>
+</table>
+
+<p align="center"><sub>The shows, clips and account in these screenshots are made-up demo data.</sub></p>
 
 ## Get started
 

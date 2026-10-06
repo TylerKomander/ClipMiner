@@ -5,6 +5,7 @@
 | `clipminer-wordmark.png` | README hero | Generated — `openai/gpt-image-2.5-sunburst` via OpenRouter, 2304×768, high. Prompt below. |
 | `pipeline.png` | README "What it does" banner | Generated, 1920×640, high. Text-free icons for download → transcribe → score → review → render. |
 | `social-preview.png` | Repo **Settings → General → Social preview** (1280×640) | Generated. **Not** referenced by the README — upload it by hand. |
+| `screenshots/*.png` | README "Screenshots" section | Captured from the real app showing made-up demo data. See `screenshots/README.md`. |
 
 Brand tokens: phosphor green `#00FF88` (the app's own accent, `GREEN` in `clipminer/gui.py`), bright core
 `#7DFFC0`, dim ink `#9BF5C4`, background `#000000`.
