@@ -134,10 +134,143 @@ def speaker_segments(video: Path, start: float, end: float, faces, hold: float =
     return segments
 
 
-def plan(video: Path, start: float, end: float, solo: bool = False) -> tuple[list[tuple[float, tuple | None]], list | None]:
+LOOK_EVERY = 4.0   # seconds between the frames an episode is searched for close-ups
+CLOSE_UP = 0.08    # a face this wide (of the frame) alone in the shot is a close-up; a wide shot's are 0.05-0.07
+SAME_FACE = 0.45   # SFace cosine: the same person scores 0.9, different people under 0.2 (2026-10-06 trial)
+MIN_LOOKS = 5      # close-up samples needed before a voice gets a face
+BACKGROUND = 3     # a face this many times smaller than the one beside it is a photo on the wall
+MIN_TURN = 1.0     # a line shorter than this is an interjection: the picture stays where it is
+LEAD = 0.12        # the cut lands just before a turn's first word
+
+
+def _faceprints(detector, recognizer, frame) -> list[tuple[int, int, int, np.ndarray]]:
+    """(cx, cy, width, SFace embedding) for every face in a frame."""
+    _, found = detector.detect(frame)
+    prints = []
+    for row in (found if found is not None else []):
+        v = recognizer.feature(recognizer.alignCrop(frame, row)).flatten()
+        prints.append((int(row[0] + row[2] / 2), int(row[1] + row[3] / 2), int(row[2]), v / np.linalg.norm(v)))
+    return prints
+
+
+def known_faces(video: Path, work: Path, words: list[dict]) -> dict[int, np.ndarray]:
+    """Whose face goes with which voice (`speakers.label` numbers), learned from the show's own close-ups: a
+    shot of one person while one voice talks is that voice's face. Mouth movement can't make the match, a mic
+    hides the talker's mouth (2026-10-06 trial: it put the guest's voice on a laughing host). A voice that
+    never gets a close-up has no face here. Worked out once per episode and kept in `faces.json`."""
+    cache = work / "faces.json"
+    if cache.exists():
+        return {int(k): np.array(v) for k, v in json.loads(cache.read_text(encoding="utf-8")).items()}
+    W, H = frame_size(video)
+    detector = _detector(W, H)
+    recognizer = cv2.FaceRecognizerSF.create(str(MODELS / "face_recognition_sface_2021dec.onnx"), "")
+    spoken = [w for w in words if w.get("speaker") is not None]
+    looks, k = {}, 0
+    for n, frame in enumerate(_frames(video, 0, words[-1]["end"], 1 / LOOK_EVERY)):
+        t = n * LOOK_EVERY + LOOK_EVERY / 2  # ffmpeg's fps filter hands back the frame from the middle of each step
+        while k < len(spoken) and spoken[k]["end"] < t:
+            k += 1
+        if k == len(spoken):
+            break
+        if spoken[k]["start"] > t:
+            continue
+        prints = _faceprints(detector, recognizer, frame)
+        big = [p for p in prints if p[2] * BACKGROUND >= max(q[2] for q in prints)]
+        if len(big) == 1 and big[0][2] >= W * CLOSE_UP:
+            looks.setdefault(spoken[k]["speaker"], []).append(big[0][3])
+    faces = {}
+    # A close-up sometimes shows a listener, so a voice's face is the one most of its close-ups show: the
+    # print with the most look-alikes, and those look-alikes. An average of all of them is a blend of two
+    # people once the listener is a third of the shots. And one face can't belong to two voices: it goes to
+    # the voice seen with it most.
+    for who, seen in sorted(looks.items(), key=lambda item: -len(item[1])):
+        seen = np.array(seen)
+        alike = seen @ seen.T >= SAME_FACE
+        agree = seen[alike[alike.sum(axis=1).argmax()]]
+        if len(agree) >= MIN_LOOKS and len(agree) * 2 > len(seen):
+            face = agree.mean(axis=0)
+            face /= np.linalg.norm(face)
+            if all(float(face @ other) < SAME_FACE for other in faces.values()):
+                faces[who] = face
+    cache.write_text(json.dumps({who: face.tolist() for who, face in faces.items()}), encoding="utf-8")
+    return faces
+
+
+def _who(video: Path, start: float, end: float, faces, known: dict[int, np.ndarray]) -> dict[int, int]:
+    """Speaker number -> index into `faces`, for the people in this shot whose face is known."""
+    W, H = frame_size(video)
+    detector = _detector(W, H)
+    recognizer = cv2.FaceRecognizerSF.create(str(MODELS / "face_recognition_sface_2021dec.onnx"), "")
+    seen = [[] for _ in faces]
+    cap = cv2.VideoCapture(str(video))
+    for part in (0.25, 0.5, 0.75):
+        cap.set(cv2.CAP_PROP_POS_MSEC, (start + (end - start) * part) * 1000)
+        ok, frame = cap.read()
+        if not ok:
+            continue
+        for cx, cy, w, v in _faceprints(detector, recognizer, frame):
+            near = min(range(len(faces)), key=lambda i: abs(faces[i][0] - cx) + abs(faces[i][1] - cy))
+            # Same place and about the same size: a framed photo beside the guest's head is neither.
+            if abs(faces[near][0] - cx) < faces[near][2] and abs(faces[near][1] - cy) < faces[near][2] and w * BACKGROUND >= faces[near][2]:
+                seen[near].append(v)
+    cap.release()
+    alike = sorted(((float(np.mean(vs, axis=0) @ face), who, i) for i, vs in enumerate(seen) if vs for who, face in known.items()), reverse=True)
+    who_is, taken = {}, set()
+    for score, who, i in alike:
+        if score >= SAME_FACE and who not in who_is and i not in taken:
+            who_is[who] = i
+            taken.add(i)
+    return who_is
+
+
+def _follow(video: Path, start: float, a: float, b: float, faces, said, known: dict[int, np.ndarray]) -> list[tuple[float, int]]:
+    """(clip time, face index) through one shot of several people: the picture goes to whoever starts a real
+    turn and stays put through interjections. A voice that has no face on record is one of the people left
+    over: whichever of them moves their jaw most while it talks, one person per voice for the whole shot.
+    Empty when no one in the shot is known."""
+    who_is = _who(video, start + a, start + b, faces, known)
+    if not who_is:
+        return []
+    turns = []
+    for began, ended, who in said:
+        if ended <= a or began >= b:
+            continue
+        if turns and (who is None or who == turns[-1][2]):
+            turns[-1][1] = min(ended, b)
+        elif who is not None:
+            turns.append([max(began, a), min(ended, b), who])
+    turns = [turn for turn in turns if turn[1] - turn[0] >= MIN_TURN]
+    spare = [i for i in range(len(faces)) if i not in who_is.values()]
+    # A voice whose face is on record but not in this shot is off camera; it doesn't get someone else's face.
+    faceless = {who for _, _, who in turns if who not in known}
+    if len(spare) == 1:
+        who_is.update({who: spare[0] for who in faceless})
+    elif spare:
+        moved = {}
+        for began, ended, who in turns:
+            if who in faceless:
+                held = speaker_segments(video, start + began, start + ended, [faces[i] for i in spare])
+                for (since, i), until in zip(held, [since for since, _ in held[1:]] + [ended - began]):
+                    moved[who, spare[i]] = moved.get((who, spare[i]), 0) + until - since
+        for (who, i), _ in sorted(moved.items(), key=lambda item: -item[1]):
+            if who not in who_is and i not in who_is.values():
+                who_is[who] = i
+    cuts = []
+    for began, _, who in turns:
+        if who in who_is and (not cuts or cuts[-1][1] != who_is[who]):
+            cuts.append((max(began - LEAD, a) if cuts else a, who_is[who]))
+    # Nobody with a face here has a real turn in the shot: hold on someone known rather than guess by jaw.
+    return cuts or [(a, min(who_is.values()))]
+
+
+def plan(video: Path, start: float, end: float, solo: bool = False, said: list[tuple] = (),
+         known: dict[int, np.ndarray] | None = None) -> tuple[list[tuple[float, tuple | None]], list | None]:
     """TRACK segments as (clip-relative time, face as (cx, cy, width) or None), plus the two faces for SPLIT, or None
     when SPLIT can't work (camera cuts, not exactly two people in the one shot, or faces too small).
-    `solo`: one person on camera (a streamer), so TRACK stays on the biggest face; anything else is a poster."""
+    `solo`: one person on camera (a streamer), so TRACK stays on the biggest face; anything else is a poster.
+    `said` is (start, end, speaker) per caption word on the clip's clock and `known` is `known_faces`: with
+    them a shot of several people follows the voice; without, or when nobody talking has a known face, it
+    falls back to jaw movement."""
     W, H = frame_size(video)
     bounds = [0.0, *shot_cuts(video, start, end), end - start]
     segments, shots = [], []
@@ -155,8 +288,9 @@ def plan(video: Path, start: float, end: float, solo: bool = False) -> tuple[lis
         elif len(faces) == 1:
             segments.append((a, faces[0]))
         else:
-            for t, i in speaker_segments(video, start + a, start + b, faces):
-                segments.append((a + t, faces[i]))
+            heard = _follow(video, start, a, b, faces, said, known) if known else []
+            for t, i in heard or [(a + t, i) for t, i in speaker_segments(video, start + a, start + b, faces)]:
+                segments.append((t, faces[i]))
     split = shots[0] if len(shots) == 1 and len(shots[0]) == 2 else None
     # A 960px panel is ~6 face-widths tall; below H*0.45 the upscale turns to mush (run 4 wide shot: 4x).
     if split and min(w for _, _, w in split) * 6 < H * 0.45:

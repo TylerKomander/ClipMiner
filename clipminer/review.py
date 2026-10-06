@@ -4,7 +4,7 @@ import json
 import re
 from pathlib import Path
 
-from . import reframe, splice
+from . import reframe, speakers, splice
 from .render import BLUR_FILL, CAPTIONS_LOW, CAPTIONS_MID, CAPTIONS_SEAM, CURSE, render
 
 # What Tko picks before pasting a link: kind -> (Finished_Clips folder, theme profile in skill.md).
@@ -119,6 +119,10 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
     review = load(work)
     todo = to_render(review, work)
     words = transcript_words(work)
+    if not (work / "speakers.json").exists():
+        print("[speakers]   working out who says what (a few minutes, once per video)", flush=True)
+    # Streams too: friends on voice chat are separate voices even with one face on camera.
+    words = [{**w, "speaker": who} for w, who in zip(words, speakers.label(video, work, words), strict=True)]
     W, H = reframe.frame_size(video)
     # A clip that died before its first file was written holds its number in review.json only.
     number = max([next_number(out_dir)] + [int(c["rendering_as"].split("_")[0]) + 1 for c in review["clips"] if "rendering_as" in c])
@@ -129,6 +133,10 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
     out_dir.mkdir(parents=True, exist_ok=True)
     # `facecam` in review.json overrides a wrong box; check work/<slug>/facecam.jpg before approving.
     cam = review.get("facecam") or (reframe.cam_box(video, work) if kind == "stream" else None)
+    # A stream has one person on camera, in a corner: there are no close-ups to learn faces from.
+    if kind != "stream" and not (work / "faces.json").exists():
+        print("[faces]      looking for each voice's face in the close-ups", flush=True)
+    known = {} if kind == "stream" else reframe.known_faces(video, work, words)
     done = []
     for clip in todo:
         # A render that died partway (run 12: a blocked DLL) resumes under the number it was given, not a
@@ -153,7 +161,8 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
             done.append(render(source, work, out_dir / f"{stem}_game.mp4", start, end,
                                reframe.game_filter(cam, W, H, zoomed), where, caption))
         else:
-            segments, split = reframe.plan(source, start, end, solo=kind == "stream")
+            said = [(w["start"] - start, w["end"] - start, w["speaker"]) for w in caption]
+            segments, split = reframe.plan(source, start, end, solo=kind == "stream", said=said, known=known)
             breaks = [w["end"] - start for w in caption if w["word"].rstrip().endswith((".", ",", "?", "!"))]
             shots = reframe.track_shots(segments, W, H, end - start, breaks)
             where = (CAPTIONS_MID[0], reframe.track_caption_y(shots, W, H, CAPTIONS_MID[1], CAPTIONS_LOW[1]))

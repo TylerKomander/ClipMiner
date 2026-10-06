@@ -7,3 +7,4 @@ nvidia-cublas-cu12==12.9.2.10
 nvidia-cudnn-cu12==9.27.0.42
 anthropic==1.9.0
 playwright==1.63.0
+sherpa-onnx==1.13.8

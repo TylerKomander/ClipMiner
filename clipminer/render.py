@@ -24,6 +24,9 @@ FIT_CHARS = 14    # the longest line that fits 1080px at FONT_SIZE through the p
 PAUSE = 0.6       # a gap this long between words ends the line
 LINGER = 0.12     # a line stays this long after its last word
 MIN_SHOWN, MAX_SHOWN = 0.18, 1.2  # Whisper stretches a word's end across the pause after it
+# One colour per speaker, the one who talks most first (ASS writes colours as BGR). Unknown speakers stay white.
+SPEAKER_COLOURS = ["&H0003FEFC&", "&H0054FB01&", "&H00FBFC56&", "&H00038FFC&"]
+WHITE = "&H00FFFFFF&"
 
 
 def pop(scale: int) -> str:
@@ -65,8 +68,8 @@ def ass_time(t: float) -> str:
     return f"{cs // 360000}:{cs // 6000 % 60:02}:{cs // 100 % 60:02}.{cs % 100:02}"
 
 
-def caption_lines(words: list[dict], start: float, max_words: int = 2, max_chars: int = 12) -> list[tuple[float, float, str]]:
-    """One or two words at a time, one after another, gone in pauses."""
+def caption_lines(words: list[dict], start: float, max_words: int = 2, max_chars: int = 12) -> list[tuple[float, float, str, int | None]]:
+    """(start, end, text, speaker): one or two words at a time, one after another, gone in pauses."""
     tokens = []
     for w in words:
         text = w["word"].strip()
@@ -78,7 +81,8 @@ def caption_lines(words: list[dict], start: float, max_words: int = 2, max_chars
     lines, chunk = [], []
     for w in tokens:
         if chunk and (len(chunk) == max_words or len(" ".join(c["word"] for c in chunk)) + 1 + len(w["word"]) > max_chars
-                      or chunk[-1]["word"].endswith((".", ",", "?", "!")) or w["start"] - chunk[-1]["end"] > PAUSE):
+                      or chunk[-1]["word"].endswith((".", ",", "?", "!")) or w["start"] - chunk[-1]["end"] > PAUSE
+                      or w.get("speaker") != chunk[-1].get("speaker")):
             lines.append(chunk)
             chunk = []
         chunk.append(w)
@@ -91,7 +95,7 @@ def caption_lines(words: list[dict], start: float, max_words: int = 2, max_chars
         b = min(max(c[-1]["end"] - start + LINGER, a + MIN_SHOWN), a + MAX_SHOWN)
         if i + 1 < len(lines):
             b = max(min(b, lines[i + 1][0]["start"] - start), a + MIN_SHOWN)
-        out.append((a, b, " ".join(mask_curses(w["word"]) for w in c).upper()))
+        out.append((a, b, " ".join(mask_curses(w["word"]) for w in c).upper(), c[0].get("speaker")))
         free = b
     return out
 
@@ -106,8 +110,11 @@ def render(video: Path, work: Path, out: Path, start: float, end: float,
         words = [w for w in every if w["start"] >= start - 0.05 and w["end"] <= end + 0.05]
     ass = work / f"{out.stem}.ass"
     place = rf"\an{captions[0]}\pos(540,{captions[1]})"
-    events = [f"Dialogue: 0,{ass_time(a)},{ass_time(b)},Cap,{{{place}{pop(min(100, round(100 * FIT_CHARS / len(text))))}}}{text}"
-              for a, b, text in caption_lines(words, start)]
+    events = []
+    for a, b, text, speaker in caption_lines(words, start):
+        colour = SPEAKER_COLOURS[speaker] if speaker is not None and speaker < len(SPEAKER_COLOURS) else WHITE
+        look = rf"{place}\c{colour}{pop(min(100, round(100 * FIT_CHARS / len(text))))}"
+        events.append(f"Dialogue: 0,{ass_time(a)},{ass_time(b)},Cap,{{{look}}}{text}")
     ass.write_text(ASS_HEADER.format(size=FONT_SIZE) + "\n".join(events) + "\n", encoding="utf-8")
 
     out.parent.mkdir(parents=True, exist_ok=True)

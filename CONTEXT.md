@@ -11,7 +11,9 @@ for, with a one-line reason per clip. Tko picks the type (Podcast / Streaming) b
 - Language: Python 3.12
 - Where it runs: manual, Windows, RTX 2080 Super (local Whisper on GPU)
 - Deps: ffmpeg (winget), yt-dlp, faster-whisper, av (pinned), CUDA libs, mediapipe +
-  opencv-contrib (layouts), `anthropic` (score), `playwright` (fills upload pages; drives installed Chrome).
+  opencv-contrib (layouts), `sherpa-onnx` (who is talking; Tko's yes 2026-10-06), `anthropic` (score),
+  `playwright` (fills upload pages; drives installed Chrome). Model files live in `models\`, fonts in `fonts\`.
+- **Downloads stay at 1080p** (Tko, 2026-10-06: "1080p is fine for shorts"). Don't raise `download.py`'s cap.
   Confirm before adding more.
 - Inputs / outputs: YouTube URL or local file → `Finished_Clips\NN_<name>.mp4`
 - Failure mode — each stage caches to `work/<slug>/`; a crash resumes, not restarts
@@ -66,8 +68,10 @@ for, with a one-line reason per clip. Tko picks the type (Podcast / Streaming) b
 2. `transcribe` — faster-whisper, word-level timestamps
 3. `signals` — loudness per second (ebur128) done; ad detection, heatmap peak filter next
 4. `score` — picks clips by `skill.md` rules. Run 1 was judged by GURT by hand.
-5. `render` — ffmpeg cut, burned word-timed captions, layout BLUR / SPLIT / TRACK
-   (`reframe.py`: YuNet face detection + mediapipe jawOpen for active speaker;
+5. `render` — ffmpeg cut, burned word-timed captions coloured per speaker, layout BLUR / SPLIT / TRACK.
+   First: `speakers.py` labels every word with its speaker from the audio (`speakers.json`, about 4 min per
+   episode, once) and `reframe.known_faces` learns each voice's face from close-ups (`faces.json`, about 1 min).
+   (`reframe.py`: YuNet face detection, SFace to match faces to voices, mediapipe jawOpen as the fallback;
    model files in `models\`)
 
 `skill.md` is the source of truth for how clips get picked. Update it after every run.
@@ -139,7 +143,7 @@ reasoning effort once Sonnet matches GURT's blind picks, tested against them; (3
 from the output once it stops teaching; (4) cut ads/intro/outro from the transcript sent; (5) local model.
 Prompt caching is already on (~90k cached input tokens saved per episode).
 
-**Later (not v1):** face-tracked crop · gameplay/visual signals · local model · app/agent wrapper.
+**Later (not v1):** gameplay/visual signals · local model · app/agent wrapper.
 
 **Reference:** github.com/mutonby/openshorts (MIT). Worth taking: SPLIT layout (two speakers
 stacked, captions on the seam; mediapipe), PySceneDetect to avoid cutting across shot changes,
@@ -167,29 +171,31 @@ without significant changes get less reach) and what other clip channels now pos
 - **Captions, every layout:** Lilita One, 1-2 words, pop-in, gone in pauses. Run 15's caption bugs are fixed with
   it (split tokens like "10 -year -old", lines that never showed or sat on top of each other).
 - **TRACK:** crop sized to the face, punch-in mid-hold and on the payoff, slow push-in, captions mid-frame.
-- Tested on four clips (Theo Von / Saban 18:30, run 15's 264, 267, 283) through the real render code, plus a
-  three-reviewer pass: 20 defects confirmed, fixed except item 5 below. **Not yet run through the app on a whole
-  job, and SPLIT and GAME were not rendered in the tests. Tko has seen sample C from the test script, not a
-  render from this code.** The next real run is the first.
+- **Who is talking, from the audio** (same day, after Tko's yes to `sherpa-onnx`): captions are coloured per
+  speaker and a wide shot follows the voice instead of jaw movement. How it works is in `skill.md` "Render".
+- Tested through the real render code on two shows (Theo Von / Saban, and run 15's Joey Diaz episode: clips
+  264-267, 273, 278, 281, 283), plus two throwaway picks through `review.render_approved` end to end. Two
+  reviewer passes confirmed 35 defects; all fixed except the two listed under "Still open". On seven test clips
+  the crop was on the wrong person for 0-3s each (was most of the clip). **Not yet run through the app on a
+  whole job, and SPLIT, GAME and a stream were not rendered in the tests. Tko has seen sample C from the test
+  script, not a render from this code. Nobody has listened to a test clip.** The next real run is the first.
+- **Restart the app** before the next job, and expect the first render of a video to sit for about 5 minutes
+  on `[speakers]` and `[faces]` before the first clip.
 
 **Still open on style C**
-1. **Who is talking.** Unchanged, and now worse to look at: the punch-in tightens on whoever the code picked.
-   Run 15's TRACK files are wrong on 17 of 20 clips (crop on a laughing host while Joey talks) and a re-render
-   would be wrong the same way. Post run 15's BLUR files.
-   **A fix was trialled and works, waiting on Tko's yes for a new dependency:** `sherpa-onnx` (28 MB) plus two
-   model files in `models\` (46 MB). It finds the voices once per episode (about 3s per audio minute on CPU),
-   then labels each transcript sentence with its speaker: 108 of 108 words right on the Theo test clip (settings
-   were tuned on that clip), and plausible labels on three Joey Diaz clips given 15 minutes of context (a 30s
-   clip alone is not enough audio). Matching a voice to a face by mouth movement failed (mics hide mouths); what
-   worked is taking the face from a close-up of whoever is talking and finding it in the wide shot with OpenCV's
-   face recogniser (one more 39 MB model). One episode section tested. Trial code was in the session scratchpad
-   (not kept); the method: diarize for voice centroids (TitaNet-small, cluster 0.9, drop voices under 3s, merge
-   centroids over 0.75), then give each Whisper sentence to the nearest centroid, margin under 0.15 = unknown.
-2. **Subtitle colour per speaker** (part of sample C): needs item 1.
-3. **Source quality:** tight crops from a 1080p download are soft. Sample C was cut from 4K. Raising
-   `download.py`'s 1080 cap means bigger files and slower face detection; Tko hasn't decided.
-4. **On-screen joke caption:** Tko's idea, in samples E and F, not in C. Not built.
-5. `half-assed` and other compounds not in `render.CURSE` show unmasked (already so before style C).
+1. **Run 15's TRACK files are still the old wrong ones.** A re-render would now follow Joey (tested on eight of
+   its clips) but re-rendering 20 posted-or-postable files is Tko's call: it means deleting `rendered_as` in
+   `work\oMjBYQCHMrk\review.json` and the new files take new numbers (284+). Until then post the BLUR files.
+2. **Unsure lines are white**, so one speaker's captions can flip to white for a line (a last line under
+   laughter, a short "Did you?"). Filling them in would paint real interjections in the wrong colour. Tko hasn't
+   seen it yet; ask after the first real run.
+3. **Hosts who never get a close-up** are matched by jaw movement among whoever is left over. Right on the test
+   clips; it is the old weak method, kept only for them.
+4. Labelling was tuned on two episodes. Unknown: a show with two similar voices, four or more people, music
+   under speech, a stream (game audio may get its own colour).
+5. **On-screen joke caption:** Tko's idea, in samples E and F, not in C. Not built.
+6. `half-assed` and other compounds not in `render.CURSE` show unmasked (already so before style C).
+7. The app shows one "render" stage for the whole job; the new first-render wait has no stage of its own.
 
 **Tko's queue, newest first, then oldest first. GURT has listened to nothing; these need ears.**
 0. **Run 15 clips (264–283).** Each clip's "Listen:" note is in its reason in `work\oMjBYQCHMrk
