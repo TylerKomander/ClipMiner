@@ -159,7 +159,10 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
 
 ## Next step
 Left off 2026-10-06 (style C work) after run 15 (Are You Garbage / Joey Diaz, 20 clips: 264–283, BLUR + TRACK, in
-`Finished_Clips\Podcast\AreYouGarbage Comedy Podcast`). Everything is committed.
+`Finished_Clips\Podcast\AreYouGarbage Comedy Podcast`). Everything is committed and pushed. Tko is back the evening
+of 2026-10-06 to keep working on style C. **Start there with one real job through the app** (restart it first): it is
+the first whole-job test of the new captions, speaker colours and voice-following. Then ask Tko about the white
+"unsure" lines and whether to re-render run 15's TRACK files.
 **Tko starts the app himself** (`.\.venv\Scripts\python.exe -m clipminer.gui`): a render inside an app GURT launched
 from its own shell was killed mid-file (run 14). If GURT must render, use `--render <slug>` as a background task.
 
