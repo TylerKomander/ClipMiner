@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 
 from . import reframe, splice
-from .render import BLUR_FILL, CAPTIONS_LOW, CAPTIONS_SEAM, CURSE, render
+from .render import BLUR_FILL, CAPTIONS_LOW, CAPTIONS_MID, CAPTIONS_SEAM, CURSE, render
 
 # What Tko picks before pasting a link: kind -> (Finished_Clips folder, theme profile in skill.md).
 KINDS = {"podcast": ("Podcast", "comedian-podcast"), "stream": ("Streaming", "streamer")}
@@ -149,13 +149,16 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
             game = True
             zoomed = reframe.zooms(source, start, end, cam)
             # On the seam the caption would sit across the streamer's face once the camera goes full screen.
-            where = CAPTIONS_LOW if zoomed else (8, reframe.cam_height(cam) - 48)
+            where = CAPTIONS_LOW if zoomed else (5, reframe.cam_height(cam))
             done.append(render(source, work, out_dir / f"{stem}_game.mp4", start, end,
                                reframe.game_filter(cam, W, H, zoomed), where, caption))
         else:
             segments, split = reframe.plan(source, start, end, solo=kind == "stream")
+            breaks = [w["end"] - start for w in caption if w["word"].rstrip().endswith((".", ",", "?", "!"))]
+            shots = reframe.track_shots(segments, W, H, end - start, breaks)
+            where = (CAPTIONS_MID[0], reframe.track_caption_y(shots, W, H, CAPTIONS_MID[1], CAPTIONS_LOW[1]))
             done.append(render(source, work, out_dir / f"{stem}_track.mp4", start, end,
-                               reframe.track_filter(segments, W, H), CAPTIONS_LOW, caption))
+                               reframe.track_filter(shots, W, H), where, caption))
         if split:
             done.append(render(source, work, out_dir / f"{stem}_split.mp4", start, end,
                                reframe.split_filter(split, W, H), CAPTIONS_SEAM, caption))

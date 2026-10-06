@@ -154,30 +154,42 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
   the rest is the manual recipe above)
 
 ## Next step
-Left off 2026-10-05 after run 15 (Are You Garbage / Joey Diaz, 20 clips: 264–283, BLUR + TRACK, in
+Left off 2026-10-06 (style C work) after run 15 (Are You Garbage / Joey Diaz, 20 clips: 264–283, BLUR + TRACK, in
 `Finished_Clips\Podcast\AreYouGarbage Comedy Podcast`). Everything is committed.
 **Tko starts the app himself** (`.\.venv\Scripts\python.exe -m clipminer.gui`): a render inside an app GURT launched
 from its own shell was killed mid-file (run 14). If GURT must render, use `--render <slug>` as a background task.
 
-**Open, 2026-10-05: new video style, not built yet.** Why: YouTube's Shorts recommendation change (announced
-2026-10-01: channels that mostly re-upload others' videos without significant changes get less reach; minor
-technical edits and template bulk changes don't count). Tko dropped the fake-tweet idea and wants "subtle changes"
-modelled on three references (`7nz19kyX164` Slice Comedy, `mTJXBdaj8tk` The Podcast Archives, `nJsK00XAoz0`
-LifeofLogos; two predate the change, so they prove nothing about the new filter):
-1. **Face tracking and camera switching:** tight single on whoever is talking, hard cut on the first word of each
-   turn, reaction shots or a two-panel stack on laughs and fast exchanges, a smoothed crop that follows the face.
-   The Podcast Archives builds all of it from one locked wide shot. **Blocked on knowing who is talking**: the
-   `jawOpen` pick put run 15's TRACK on a listener in 17 of 20 clips. Fix and test that first, against run 15.
-2. **Subtitles:** 1-2 words, all caps, mid-frame (y about 0.5), cap height about 70px, heavy display font
-   (references: Montserrat Black, Komika Axis, VCR OSD Mono), black outline, pop-in scale over about 0.15s, gone in
-   pauses; two references colour the text per speaker. Curses masked as now.
-3. **On-screen joke caption:** Tko's own addition. **None of the three references has one** (two have a channel
-   watermark at y about 0.8). Written per clip with the pick; top band; same clean rules as captions.
-Full measured specs were in the session scratchpad (not kept). Nothing decided on font or caption placement.
+**Style C is built (2026-10-06), Tko's pick from six samples** (`Finished_Clips\_style_tests\`, sample C). Why:
+YouTube's Shorts recommendation change (announced 2026-10-01: channels that mostly re-upload others' videos
+without significant changes get less reach) and what other clip channels now post. Reference shorts:
+`7nz19kyX164`, `mTJXBdaj8tk`, `nJsK00XAoz0`. What changed, all in code (`render.py`, `reframe.py`, `review.py`,
+`fonts\`); the rule text is in `skill.md` "Render":
+- **Captions, every layout:** Lilita One, 1-2 words, pop-in, gone in pauses. Run 15's caption bugs are fixed with
+  it (split tokens like "10 -year -old", lines that never showed or sat on top of each other).
+- **TRACK:** crop sized to the face, punch-in mid-hold and on the payoff, slow push-in, captions mid-frame.
+- Tested on four clips (Theo Von / Saban 18:30, run 15's 264, 267, 283) through the real render code, plus a
+  three-reviewer pass: 20 defects confirmed, fixed except item 5 below. **Not yet run through the app on a whole
+  job, and SPLIT and GAME were not rendered in the tests. Tko has seen sample C from the test script, not a
+  render from this code.** The next real run is the first.
 
-**Run 15's TRACK files are wrong on 17 of 20 clips** (crop on a laughing host while Joey talks; see the run file's
-"Render check"). Post the BLUR files, or wait for the new style. Not re-rendered. Caption bugs to fix in code first:
-spaced tokens ("10 -year -old", "$3 ,000") and zero-length caption events.
+**Still open on style C**
+1. **Who is talking.** Unchanged, and now worse to look at: the punch-in tightens on whoever the code picked.
+   Run 15's TRACK files are wrong on 17 of 20 clips (crop on a laughing host while Joey talks) and a re-render
+   would be wrong the same way. Post run 15's BLUR files.
+   **A fix was trialled and works, waiting on Tko's yes for a new dependency:** `sherpa-onnx` (28 MB) plus two
+   model files in `models\` (46 MB). It finds the voices once per episode (about 3s per audio minute on CPU),
+   then labels each transcript sentence with its speaker: 108 of 108 words right on the Theo test clip (settings
+   were tuned on that clip), and plausible labels on three Joey Diaz clips given 15 minutes of context (a 30s
+   clip alone is not enough audio). Matching a voice to a face by mouth movement failed (mics hide mouths); what
+   worked is taking the face from a close-up of whoever is talking and finding it in the wide shot with OpenCV's
+   face recogniser (one more 39 MB model). One episode section tested. Trial code was in the session scratchpad
+   (not kept); the method: diarize for voice centroids (TitaNet-small, cluster 0.9, drop voices under 3s, merge
+   centroids over 0.75), then give each Whisper sentence to the nearest centroid, margin under 0.15 = unknown.
+2. **Subtitle colour per speaker** (part of sample C): needs item 1.
+3. **Source quality:** tight crops from a 1080p download are soft. Sample C was cut from 4K. Raising
+   `download.py`'s 1080 cap means bigger files and slower face detection; Tko hasn't decided.
+4. **On-screen joke caption:** Tko's idea, in samples E and F, not in C. Not built.
+5. `half-assed` and other compounds not in `render.CURSE` show unmasked (already so before style C).
 
 **Tko's queue, newest first, then oldest first. GURT has listened to nothing; these need ears.**
 0. **Run 15 clips (264–283).** Each clip's "Listen:" note is in its reason in `work\oMjBYQCHMrk

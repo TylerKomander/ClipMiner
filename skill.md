@@ -316,10 +316,18 @@ NN keeps counting up across runs, from the clip log, even after clips are delete
   between single close-ups (run 3, JRE) can't do SPLIT. Skip it and say so; don't fake it.
   Faces must also be big enough: a wide couch shot with ~40px faces would be a 4x upscale
   (run 4). `reframe.plan` skips SPLIT when a face is under ~H/13.
-- **TRACK:** 9:16 full-height crop. The clip is split into camera shots first (ffmpeg `scdet`,
-  threshold 10; real cuts score ~22–24). Per shot: 1 face → center on it; 2+ faces → follow
-  the talker by mediapipe `jawOpen` (switch only if clearly higher, hold ≥ 1.5s); 0 faces →
-  center of frame.
+- **TRACK** (style C, Tko's pick 2026-10-06 from six samples; modelled on what other clip channels post):
+  a 9:16 crop that follows the talker with hard cuts. The clip is split into camera shots first (ffmpeg
+  `scdet`, threshold 10; real cuts score ~22–24). Per shot: 1 face → frame it; 2+ faces → follow the talker
+  by mediapipe `jawOpen` (switch only if clearly higher, hold ≥ 1.5s); 0 faces → center of frame. The crop is
+  sized by the face (about a fifth of the frame's height, eyes a third of the way down), never tighter than
+  1.6x from the source height. **A hold over 4.5s gets a punch-in (the crop tightens to 80%) at a sentence
+  break near its middle, the last shot (the payoff) is a punch-in, and every shot pushes in slowly (5%).**
+  A small face in a wide shot is already at the 1.6x limit, so it gets the cuts and the push-in but no
+  punch-in; so does a clip that is one unbroken shot with no sentence break. All of it is code
+  (`reframe.track_shots`, `track_filter`); the picker does nothing for it.
+  **Known fault:** on a wide shot the talker pick is wrong when a mic hides the talker's mouth and the others
+  laugh (run 15: 17 of 20 clips sat on a listener). Check a frame strip of every TRACK file.
 - **GAME** (Streaming only): webcam across the top at full width (~1/3 of the frame for a 16:9
   cam), gameplay under it, captions on the seam. Replaces TRACK and SPLIT on gameplay clips, so
   those render BLUR + GAME. Decided per clip: a stream clip with no gameplay gets BLUR + TRACK on the
@@ -333,7 +341,12 @@ NN keeps counting up across runs, from the clip log, even after clips are delete
 - Face detection is OpenCV YuNet. mediapipe's short-range detector failed on wide shots
   (boxed hands, a plant pot, a belt buckle). **Draw boxes on one frame per show and look
   before rendering.**
-- Captions: burned in, up to 3 words per line, word-timed. BLUR/TRACK low third; SPLIT on the seam.
+- Captions (style C): burned in, **1–2 words at a time** (two words only when they fit 12 characters), all
+  caps, Lilita One (`fonts\`), white with a black outline, each one popping in over 0.15s, on screen 0.18–1.2s
+  and gone in pauses. A line over 14 characters is scaled down to fit. TRACK: mid-frame on the chest (y 1100
+  of 1920, lower when a close-up's chin would reach it); BLUR: under the picture; SPLIT and GAME: on the seam.
+  The picker's caption `fixes` work as before. **Not built yet: a colour per speaker** (needs to know who
+  says each word).
 - **No curse word readable on screen** (Tko's rule). `render.mask_curses` turns it into `****`;
   the audio stays as spoken. Includes slurs. Add words to `render.CURSE` if one slips through.
 - Delete `work\<slug>\source.mp4` after rendering.

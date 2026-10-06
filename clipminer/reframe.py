@@ -49,7 +49,9 @@ def shot_cuts(video: Path, start: float, end: float) -> list[float]:
          "-vf", "scdet=threshold=10", "-an", "-f", "null", "-"],
         capture_output=True, text=True, encoding="utf-8", errors="replace",
     )
-    return [float(t) for t in re.findall(r"lavfi\.scd\.time: ([\d.]+)", proc.stderr) if float(t) > 0.3]
+    # The time is the new shot's first frame. A hair earlier, so rounding it for a filter can't leave that
+    # frame in the shot before (2026-10-06 test: one frame of the next camera in the old crop at every cut).
+    return [float(t) - 0.01 for t in re.findall(r"lavfi\.scd\.time: ([\d.]+)", proc.stderr) if float(t) > 0.3]
 
 
 def _frames(video: Path, start: float, end: float, fps: float, keyframes: bool = False):
@@ -132,8 +134,8 @@ def speaker_segments(video: Path, start: float, end: float, faces, hold: float =
     return segments
 
 
-def plan(video: Path, start: float, end: float, solo: bool = False) -> tuple[list[tuple[float, int]], list | None]:
-    """TRACK segments as (clip-relative time, face center x), plus the two faces for SPLIT, or None
+def plan(video: Path, start: float, end: float, solo: bool = False) -> tuple[list[tuple[float, tuple | None]], list | None]:
+    """TRACK segments as (clip-relative time, face as (cx, cy, width) or None), plus the two faces for SPLIT, or None
     when SPLIT can't work (camera cuts, not exactly two people in the one shot, or faces too small).
     `solo`: one person on camera (a streamer), so TRACK stays on the biggest face; anything else is a poster."""
     W, H = frame_size(video)
@@ -143,14 +145,18 @@ def plan(video: Path, start: float, end: float, solo: bool = False) -> tuple[lis
         faces = find_faces(video, start + a, start + b)
         if solo:
             faces = sorted(faces, key=lambda f: -f[2])[:1]
+        # YuNet boxed a guest's clasped hands as a second face and TRACK cut to them on the payoff (2026-10-06
+        # test). A box straight under a face is that person's hands or lap. Not a landmark check: it failed
+        # on a real face behind a microphone.
+        faces = [f for f in faces if not any(abs(f[0] - o[0]) < 1.5 * o[2] and f[1] - o[1] > 1.5 * o[2] for o in faces)]
         shots.append(faces)
         if not faces:
-            segments.append((a, W // 2))
+            segments.append((a, None))
         elif len(faces) == 1:
-            segments.append((a, faces[0][0]))
+            segments.append((a, faces[0]))
         else:
             for t, i in speaker_segments(video, start + a, start + b, faces):
-                segments.append((a + t, faces[i][0]))
+                segments.append((a + t, faces[i]))
     split = shots[0] if len(shots) == 1 and len(shots[0]) == 2 else None
     # A 960px panel is ~6 face-widths tall; below H*0.45 the upscale turns to mush (run 4 wide shot: 4x).
     if split and min(w for _, _, w in split) * 6 < H * 0.45:
@@ -332,11 +338,77 @@ def split_filter(faces, W: int, H: int) -> str:
     return "[0:v]split[p0][p1];" + ";".join(panels) + ";[s0][s1]vstack"
 
 
-def track_filter(segments, W: int, H: int) -> str:
-    """9:16 full-height crop that follows the talking face, cutting when the camera or speaker changes."""
-    cw = int(H * 9 / 16) // 2 * 2
-    xs = [min(max(cx - cw // 2, 0), W - cw) for _, cx in segments]
-    expr = str(xs[-1])
-    for k in reversed(range(len(segments) - 1)):
-        expr = f"if(lt(t\\,{segments[k + 1][0]:.2f})\\,{xs[k]}\\,{expr})"
-    return f"[0:v]crop={cw}:{H}:{expr}:0,scale=1080:1920"
+# TRACK framing (Tko's pick, 2026-10-06: style C).
+FACE = 0.205        # a face fills this much of the crop's height; YuNet boxes run about FACE_ASPECT taller than wide
+FACE_ASPECT = 1.3
+EYE_LINE = 0.36     # the face's centre sits this far down the crop
+PUNCH = 0.8         # a punch-in crops to this much of the shot's normal crop
+MAX_ZOOM = 1.6      # never crop tighter than this from the source height: a 1080p source is already upscaled 1.8x
+PUSH = 0.05         # slow push-in over a shot
+MIN_PUSH = 1.2      # shots shorter than this are over before a push-in reads
+LONG_HOLD = 4.5     # a shot held longer than this gets a punch-in at a sentence break near its middle
+BREAK_MARGIN = 1.8  # a punch-in leaves at least this much of the hold on either side
+FLASH = 0.04        # a shot this short is one frame: it joins the shot before it
+
+
+def _crop(face, punch: float, W: int, H: int) -> tuple[int, int, int, int]:
+    """The 9:16 window (w, h, x, y) for one face, or the full-height centre when there is none."""
+    if face is None:
+        cw = int(H * 9 / 16) // 2 * 2
+        return cw, H, (W - cw) // 2, 0
+    cx, cy, w = face
+    ch = max(min(H, w * FACE_ASPECT / FACE) * punch, H / MAX_ZOOM)
+    cw = ch * 9 / 16
+    return int(cw) // 2 * 2, int(ch) // 2 * 2, int(min(max(cx - cw / 2, 0), W - cw)), int(min(max(cy - ch * EYE_LINE, 0), H - ch))
+
+
+def _punches(face, W: int, H: int) -> bool:
+    # A small face is already at MAX_ZOOM: a "punch-in" there would only restart the push-in, a jump outwards.
+    return face is not None and _crop(face, PUNCH, W, H)[1] < 0.9 * _crop(face, 1, W, H)[1]
+
+
+def track_shots(segments, W: int, H: int, length: float, breaks: list[float] = ()) -> list[tuple]:
+    """(start, end, face, punch) per output shot: a cut when the camera or the speaker changes, a punch-in
+    partway through a long hold and on the last shot (the payoff). `breaks` are clip-relative times where a
+    sentence or clause ends; punch-ins land on those."""
+    held = []
+    for (a, face), b in zip(segments, [t for t, _ in segments[1:]] + [length]):
+        if held and b - a <= FLASH:
+            held[-1] = (held[-1][0], b, held[-1][2])
+        else:
+            held.append((a, b, face))
+    shots = []
+    for a, b, face in held:
+        marks = [m for m in breaks if a + BREAK_MARGIN < m < b - BREAK_MARGIN]
+        if b - a > LONG_HOLD and marks and _punches(face, W, H):
+            mid = min(marks, key=lambda m: abs(m - (a + b) / 2))
+            shots += [(a, mid, face, 1), (mid, b, face, PUNCH)]
+        else:
+            shots.append((a, b, face, 1))
+    if len(shots) > 1 and _punches(shots[-1][2], W, H):
+        shots[-1] = (*shots[-1][:3], PUNCH)
+    return shots
+
+
+def track_filter(shots, W: int, H: int) -> str:
+    """9:16 crops, one per shot from `track_shots`, each with a slow push-in."""
+    parts = []
+    for n, (a, b, face, punch) in enumerate(shots):
+        cw, ch, x, y = _crop(face, punch, W, H)
+        crop = f"[0:v]trim={a:.3f}:{b:.3f},setpts=PTS-STARTPTS,crop={cw}:{ch}:{x}:{y}"
+        if b - a > MIN_PUSH:
+            k = PUSH / (b - a)
+            grow = f"(1+{k:.5f}*t)"
+            # crop centres on the first frame's size unless told otherwise, so the offsets grow with the frame.
+            parts.append(f"{crop},scale=w='trunc(1080*{grow}/2)*2':h='trunc(1920*{grow}/2)*2':eval=frame,"
+                         f"crop=1080:1920:'{540 * k:.5f}*t':'{960 * k:.5f}*t',setsar=1[t{n}]")
+        else:
+            parts.append(f"{crop},scale=1080:1920,setsar=1[t{n}]")
+    return ";".join(parts) + ";" + "".join(f"[t{n}]" for n in range(len(parts))) + f"concat=n={len(parts)}:v=1:a=0"
+
+
+def track_caption_y(shots, W: int, H: int, least: int, most: int) -> int:
+    """Where captions clear every chin in the clip: a close-up fills the frame and its mouth sits lower."""
+    chins = [(cy + FACE_ASPECT * w / 2 - y) / ch * 1920
+             for _, _, face, punch in shots if face for cx, cy, w in [face] for _, ch, _, y in [_crop(face, punch, W, H)]]
+    return int(min(max([least] + [c + 150 for c in chins]), most))
