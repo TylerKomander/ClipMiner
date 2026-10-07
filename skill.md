@@ -183,8 +183,10 @@ Post Malone doesn't work if the name is never said in the window. (Later: a titl
   repeats text that was just said.
 - **No punctuation/casing:** Whisper can drop into all-lowercase, unpunctuated output and
   stay there. Run 2 was like that throughout; run 3 switched at 1:28:52 and recovered at
-  1:47:42. Judge sentence boundaries by meaning there. Fix to try: `condition_on_previous_text
-  =False` in `transcribe.py` so one bad stretch can't carry forward **(guess)**.
+  1:47:42. Judge sentence boundaries by meaning there. Such a stretch has also lost whole spoken lines, not
+  only curses (run 16), so a "garbled" candidate there may be clean in the audio. Since run 16 `transcribe.py`
+  runs with conditioning off and a style hint, which fixed it on that episode; if a transcript still comes out
+  lowercase, re-transcribe before picking.
 - **Hallucinated loops and word salad** can sit right beside a good clip (run 6: "he's in the
   neighborhood" x40 at 1:11:34, clip 61 starts 20s later). Read the clip's own captions.
 - **Misheard names:** fix the caption when you're sure (Cat → Katt Williams); otherwise cut around it.

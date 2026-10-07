@@ -87,7 +87,7 @@ diffs against `review.json` (`by: sonnet` vs `by: gurt`), adds/edits clips with 
 first, last, "gurt", payoff, reason, fixes, description)` (word indices; `fixes` corrects misheard caption words),
 sets `keep`, saves, sets `status: approved`. Logs the diff in the run file's "Scorer vs GURT", updates INDEX,
 commits. Transcript health check and face check (look at frames) still come first.
-Next clip number: **284** (counted from the logs automatically: write a run's log after it renders).
+Next clip number: **302** (counted from the logs automatically: write a run's log after it renders).
 
 ## Status
 - [x] ffmpeg installed, `download` + `transcribe` produce a word-timed transcript
@@ -101,13 +101,13 @@ Next clip number: **284** (counted from the logs automatically: write a run's lo
 - [x] Run 3: JRE #2187 Sandler (2h17m) → 18 clips (11–28), BLUR + TRACK; SPLIT n/a
       (multi-camera). TRACK now shot-aware (ffmpeg scdet). Tko: spot-checked, all good.
 - [x] `queue.txt`: batch download + transcribe + loudness, so episodes are ready to judge
-- [ ] Try `condition_on_previous_text=False` in `transcribe.py` (Whisper went lowercase
-      mid-episode in runs 2 and 3)
+- [x] Whisper's lowercase stretches: `transcribe.py` now runs with `condition_on_previous_text=False` and a cased,
+      punctuated style hint (`hotwords`). Run 16, same audio: cased all the way, 234 curse words instead of 104, no
+      loops, 6 min instead of 12. **One episode behind it**: check the next run's transcript before trusting it.
 - [x] Splicing (`splice.py`): story cuts from review (`cuts`, Sonnet proposes them), dead air shortened only where the audio is quiet (2026-10-04; not on
       transcript gaps, no kept stretch under 1s; **untested on a podcast**, check run 13's cuts by ear),
       endings cut from the audio. Tested on run 7's crematorium story (77s → 32s)
-- [ ] Transcribe speed: run 2 took 634s for 76 min (goal ~5 min). Degraded output (no
-      punctuation, a hallucinated repeat) may be related. Investigate before automating.
+- [x] Transcribe speed: 67 min in about 6 min with the run 16 settings (was 12; run 2 took 634s for 76 min).
 - [ ] `signals` ad detection + heatmap ad-skip filter in code
 - [x] `score.py` (Claude API): 20-min pieces, structured output, length/dedupe in code. Run 3:
       Haiku 4.5 found 9/18 (too small); Sonnet 5.5 found 16/18. Sonnet is the scorer.
@@ -130,6 +130,7 @@ Next clip number: **284** (counted from the logs automatically: write a run's lo
       Run 13 (We Might Be Drunk): 14 picks, 12 kept, no filler; found 12 of GURT's 25 (48%). 2 picks were played footage.
       Run 14 (Matt & Shane 637): 15 picks, 10 kept and all 10 recut; found 10 of 16 (63%); its 3 solo picks failed.
       Run 15 (Are You Garbage / Joey Diaz): 23 picks, 18 passed at 8+; found 15 of the final 20 (75%); 12 of the 15 recut.
+      Run 16 (Matt & Shane 542 / Druski): 13 picks on a broken transcript, 10 kept and all 10 recut; found 10 of 18 (56%).
 - [ ] One local file (no heatmap) end-to-end
 - [x] Streaming type: Queue dropdown, `streamer` theme, GAME layout, type folders, Clips tree by type.
       Run 12 (Joe Bart Games `VxPBaAT13gk`) went through it: 19 clips: 18 BLUR + GAME, 193 BLUR + TRACK
@@ -158,11 +159,17 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
   the rest is the manual recipe above)
 
 ## Next step
-Left off 2026-10-06 (style C work) after run 15 (Are You Garbage / Joey Diaz, 20 clips: 264–283, BLUR + TRACK, in
-`Finished_Clips\Podcast\AreYouGarbage Comedy Podcast`). Everything is committed and pushed. Tko is back the evening
-of 2026-10-06 to keep working on style C. **Start there with one real job through the app** (restart it first): it is
-the first whole-job test of the new captions, speaker colours and voice-following. Then ask Tko about the white
-"unsure" lines and whether to re-render run 15's TRACK files.
+Left off 2026-10-07 after run 16 (Matt & Shane Ep 542 / Druski, 18 clips: 284–301, BLUR + TRACK, in
+`Finished_Clips\Podcast\Matt and Shane's Secret Podcast`): the first whole job through the app on style C.
+**What it showed:** captions and speaker colours work (one colour per voice, same voice across clips, masked curses,
+no spaced tokens). **TRACK does not on this show**: one wide shot, no close-ups, so no faces were learned
+(`faces.json` is empty) and the crop parks on the middle seat. Post run 16's BLUR files, not the TRACK ones.
+**Next: fix TRACK for single-wide-shot shows.** GURT's proposal, not yet agreed with Tko: seats instead of faces.
+Either learn each voice's seat from jaw movement summed over the whole episode, or let the reviewer set it in
+`review.json` the way `facecam` works (`"seats": {"0": x, ...}`; GURT can read who sits where from a frame and who
+says what from the transcript). Then re-render run 16's TRACK files (Tko's call: new numbers, 302+).
+Also still to ask Tko: the white "unsure" lines (he has now a real run to look at), and run 15's TRACK re-render.
+**Restart the app before the next job**: it is still running the old `transcribe.py`.
 **Tko starts the app himself** (`.\.venv\Scripts\python.exe -m clipminer.gui`): a render inside an app GURT launched
 from its own shell was killed mid-file (run 14). If GURT must render, use `--render <slug>` as a background task.
 
@@ -193,7 +200,7 @@ without significant changes get less reach) and what other clip channels now pos
    laughter, a short "Did you?"). Filling them in would paint real interjections in the wrong colour. Tko hasn't
    seen it yet; ask after the first real run.
 3. **Hosts who never get a close-up** are matched by jaw movement among whoever is left over. Right on the test
-   clips; it is the old weak method, kept only for them.
+   clips; **wrong on run 16**, where nobody gets a close-up (see Next step).
 4. Labelling was tuned on two episodes. Unknown: a show with two similar voices, four or more people, music
    under speech, a stream (game audio may get its own colour).
 5. **On-screen joke caption:** Tko's idea, in samples E and F, not in C. Not built.
@@ -201,6 +208,11 @@ without significant changes get less reach) and what other clip channels now pos
 7. The app shows one "render" stage for the whole job; the new first-render wait has no stage of its own.
 
 **Tko's queue, newest first, then oldest first. GURT has listened to nothing; these need ears.**
+00. **Run 16 clips (284–301).** "Listen:" notes are in each reason in `work\ByDpG7QzNTQ\review.json`. Most uncertain:
+   286 (brand captioned "Karhus" is a guess), 290 (four cuts), 289 (ending), 285 and 288 (three cuts each), 297.
+   Risk calls: 296 (opens on "Did you ever meet Diddy?", aimed at Druski), 288 (the N-word is audible), 290 (MLK
+   voice), 284 (religion), 297 (race), 299 and 300 ("midget"), 292 (LA fire victims). No second reader checked this
+   run: the editor and skeptic passes were skipped. "Good night to a guy" sits unticked in Review as a swap for 294.
 0. **Run 15 clips (264–283).** Each clip's "Listen:" note is in its reason in `work\oMjBYQCHMrk
 eview.json`; the
    short list is in the run file under "What went wrong". Most uncertain: 275 (six cuts), 279 ("hit a valve"), 265,
@@ -231,19 +243,21 @@ eview.json`; the
 **GURT's work, in order**
 1. **Re-render clip 165** (family-so-big): "ROB MARKMAN" shows twice in its captions. In
    `work/MpjdkVCj5ys/review.json` delete `rendered_as` from the 165 entry, add the name-blanking fixes, untick the
-   rest, `--render` (re-downloads). It renders as 284. Tko deletes the old 165 files himself.
+   rest, `--render` (re-downloads). It renders as 302. Tko deletes the old 165 files himself.
 2. **Scorer prompt fixes owed:** (a) played footage is not clippable (run 13); (b) a clip wholly inside the overlap
    minute belongs to the part it sits in (run 13); (c) credit only the people in the clip (run 13); (d) **stop on
    the payoff**: it ran 10–18s past it on three of ten kept picks (run 14; third sighting, promote into `skill.md`;
    run 15 again on four); (e) a sexual joke about a child is a reject, not a risk flag (run 15); (f) the hosts' own
-   lines count when the guest is the star (run 15: it missed both host clips).
+   lines count when the guest is the star (run 15: it missed both host clips); (g) the credit line needs the show's
+   name, taken from the channel when the title has none (run 16); (h) a dodge caught live or a one-question roast is
+   a payoff (run 16: it rejected two 9s as "no payoff" and "a mild answer").
 3. **Description cleanup the clean-text pass found:** `#stavvyshalkias` in 161–166, `#markNormand` in 236, 245–247,
    `#robmarkman` on 179–180, 20–22 hashtags on seven Joe Bart files, mixed credit lines in Bad Friends and We Might
    Be Drunk. Tko said "looks good" to the report; he has not asked for this cleanup yet.
 4. **Review window can't edit a description.** A pick flagged by `review.off_limits` has to be reworded in
    `review.json` or by GURT in chat. Also still pending: the window doesn't reload after GURT's chat edits.
-5. **Transcript quality:** run 14 lost most curse words and went lowercase again. Try
-   `condition_on_previous_text=False` in `transcribe.py` on this episode's audio before the next run.
+5. **Transcript quality:** fixed in `transcribe.py` during run 16 (see Status). Watch the next run's health numbers;
+   if the style hint ever writes curses nobody said, drop the hint and keep conditioning off.
 6. Smaller: the app could warn when `clipminer\*.py` is newer than its start time; drop fake-name tokens at
    transcription; webcam near the frame edge and face-bin splitting in `cam_box` (wait for a second streamer);
    `queue.json` job 6 (run 12) still says "failed" although its clips rendered from the command line.
