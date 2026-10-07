@@ -223,12 +223,28 @@ def _who(video: Path, start: float, end: float, faces, known: dict[int, np.ndarr
     return who_is
 
 
-def _follow(video: Path, start: float, a: float, b: float, faces, said, known: dict[int, np.ndarray]) -> list[tuple[float, int]]:
+SEAT_REACH = 0.15   # a face this far (of the frame's width) from a seat is someone else
+
+
+def _seated(faces, seats: dict[int, float], W: int) -> dict[int, int]:
+    """Speaker number -> index into `faces`, by where each voice sits."""
+    near = sorted((abs(faces[i][0] / W - x), who, i) for who, x in seats.items() for i in range(len(faces)))
+    who_is, taken = {}, set()
+    for far, who, i in near:
+        if far <= SEAT_REACH and who not in who_is and i not in taken:
+            who_is[who] = i
+            taken.add(i)
+    return who_is
+
+
+def _follow(video: Path, start: float, a: float, b: float, faces, said, known: dict[int, np.ndarray],
+            seats: dict[int, float] | None = None) -> list[tuple[float, int]]:
     """(clip time, face index) through one shot of several people: the picture goes to whoever starts a real
     turn and stays put through interjections. A voice that has no face on record is one of the people left
     over: whichever of them moves their jaw most while it talks, one person per voice for the whole shot.
+    With `seats` nobody is guessed: a voice is the face at its seat, or stays off camera.
     Empty when no one in the shot is known."""
-    who_is = _who(video, start + a, start + b, faces, known)
+    who_is = _seated(faces, seats, frame_size(video)[0]) if seats else _who(video, start + a, start + b, faces, known)
     if not who_is:
         return []
     turns = []
@@ -242,7 +258,7 @@ def _follow(video: Path, start: float, a: float, b: float, faces, said, known: d
     turns = [turn for turn in turns if turn[1] - turn[0] >= MIN_TURN]
     spare = [i for i in range(len(faces)) if i not in who_is.values()]
     # A voice whose face is on record but not in this shot is off camera; it doesn't get someone else's face.
-    faceless = {who for _, _, who in turns if who not in known}
+    faceless = set() if seats else {who for _, _, who in turns if who not in known}
     if len(spare) == 1:
         who_is.update({who: spare[0] for who in faceless})
     elif spare:
@@ -264,13 +280,15 @@ def _follow(video: Path, start: float, a: float, b: float, faces, said, known: d
 
 
 def plan(video: Path, start: float, end: float, solo: bool = False, said: list[tuple] = (),
-         known: dict[int, np.ndarray] | None = None) -> tuple[list[tuple[float, tuple | None]], list | None]:
+         known: dict[int, np.ndarray] | None = None,
+         seats: dict[int, float] | None = None) -> tuple[list[tuple[float, tuple | None]], list | None]:
     """TRACK segments as (clip-relative time, face as (cx, cy, width) or None), plus the two faces for SPLIT, or None
     when SPLIT can't work (camera cuts, not exactly two people in the one shot, or faces too small).
     `solo`: one person on camera (a streamer), so TRACK stays on the biggest face; anything else is a poster.
     `said` is (start, end, speaker) per caption word on the clip's clock and `known` is `known_faces`: with
     them a shot of several people follows the voice; without, or when nobody talking has a known face, it
-    falls back to jaw movement."""
+    falls back to jaw movement. `seats` (speaker -> x as a share of the width) replaces `known` on a show
+    filmed as one wide shot: nobody gets a close-up there, so there are no faces to learn (run 16)."""
     W, H = frame_size(video)
     bounds = [0.0, *shot_cuts(video, start, end), end - start]
     segments, shots = [], []
@@ -288,7 +306,7 @@ def plan(video: Path, start: float, end: float, solo: bool = False, said: list[t
         elif len(faces) == 1:
             segments.append((a, faces[0]))
         else:
-            heard = _follow(video, start, a, b, faces, said, known) if known else []
+            heard = _follow(video, start, a, b, faces, said, known, seats) if known or seats else []
             for t, i in heard or [(a + t, i) for t, i in speaker_segments(video, start + a, start + b, faces)]:
                 segments.append((t, faces[i]))
     split = shots[0] if len(shots) == 1 and len(shots[0]) == 2 else None

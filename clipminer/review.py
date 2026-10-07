@@ -137,6 +137,9 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
     if kind != "stream" and not (work / "faces.json").exists():
         print("[faces]      looking for each voice's face in the close-ups", flush=True)
     known = {} if kind == "stream" else reframe.known_faces(video, work, words)
+    # `seats` in review.json says where each voice sits ({"0": 0.09, ...}: speaker number -> x as a share of the
+    # width) for a show that is one wide shot; without close-ups no face is learned and TRACK guesses (run 16).
+    seats = {int(who): x for who, x in review.get("seats", {}).items()}
     done = []
     for clip in todo:
         # A render that died partway (run 12: a blocked DLL) resumes under the number it was given, not a
@@ -162,7 +165,7 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
                                reframe.game_filter(cam, W, H, zoomed), where, caption))
         else:
             said = [(w["start"] - start, w["end"] - start, w["speaker"]) for w in caption]
-            segments, split = reframe.plan(source, start, end, solo=kind == "stream", said=said, known=known)
+            segments, split = reframe.plan(source, start, end, solo=kind == "stream", said=said, known=known, seats=seats)
             breaks = [w["end"] - start for w in caption if w["word"].rstrip().endswith((".", ",", "?", "!"))]
             shots = reframe.track_shots(segments, W, H, end - start, breaks)
             where = (CAPTIONS_MID[0], reframe.track_caption_y(shots, W, H, CAPTIONS_MID[1], CAPTIONS_LOW[1]))

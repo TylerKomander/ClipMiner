@@ -336,7 +336,13 @@ NN keeps counting up across runs, from the clip log, even after clips are delete
   their first word; a line under 1s is an interjection and the picture stays put. A voice that never gets a
   close-up has no face on record: it is given whichever leftover person moves their jaw most while it talks.
   When nobody in the shot is known, the old jaw-movement pick is used. First render of a video takes about
-  5 minutes longer for this. **Still check a frame strip of every TRACK file**: seven test clips came out
+  5 minutes longer for this.
+  **A show filmed as one wide shot has no close-ups, so no face is learned and jaw movement parks the crop on
+  one seat (run 16: most clips wrong).** Before approving such a show, put `"seats"` at the top of
+  `review.json`: speaker number → where that voice sits, as x over the frame's width
+  (`{"0": 0.105, "1": 0.452, "2": 0.863}`). Get the numbers from `speakers.json` on lines whose speaker is
+  certain from the text, and the positions from one wide frame. With seats nobody is guessed: a voice is the
+  face at its seat. Tested on four of run 16's clips: the framed person matched the caption colour throughout. **Still check a frame strip of every TRACK file**: seven test clips came out
   right for all but 2-3 seconds each, on two shows.
 - **GAME** (Streaming only): webcam across the top at full width (~1/3 of the frame for a 16:9
   cam), gameplay under it, captions on the seam. Replaces TRACK and SPLIT on gameplay clips, so
