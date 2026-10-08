@@ -267,7 +267,17 @@ eview.json`; the
    transcription; webcam near the frame edge and face-bin splitting in `cam_box` (wait for a second streamer);
    `queue.json` job 6 (run 12) still says "failed" although its clips rendered from the command line.
 
-**How run 14's and 15's review was done** (repeat it if it worked for Tko): write the reading file from
+**Review budget (Tko, 2026-10-07: run 16 "ran through a lot of tokens… that number can't stay that high").**
+The scoring API is about $1 an episode; the spend was GURT's own session. Agreed for every run from now on:
+1. Blind pickers run on Sonnet, not Opus (`model: "sonnet"` on the agent).
+2. Transcript health check first; re-transcribe before anything is picked or cut, so cuts are built once.
+3. TRACK is checked in code (is the crop's seat the speaker's seat, per shot), with one image sheet per run as a
+   sanity check, not one per three clips. **The code check isn't written yet.**
+4. Full blind review only on a show that hasn't been run before. On a repeat show GURT reviews Sonnet's picks
+   directly. Known cost: Sonnet missed 8 of run 16's 18 clips. (Tko said "sounds good" to all four.)
+No GPT subscription as the scorer: a ChatGPT plan has no API access, and the scorer isn't where the cost is.
+
+**How run 14's and 15's review was done** (the full version, for a new show; see the budget above): write the reading file from
 `score.reading_lines`; three blind picker agents (stories / one-liners / signals) plus a health-check agent; map
 their quotes with `score.locate`; group with Sonnet's picks **by payoff line, not by overlapping time** (the overlap
 merge hid a clip); an editor agent and then a skeptic agent per batch of five moments, working from word-indexed
