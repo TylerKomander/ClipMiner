@@ -134,6 +134,17 @@ conversation" is not a clip. Ask: *would I send this to a friend?*
   **The story's ending stays.** Splice the middle, never the end: run 8's Gronk story was cut to 34s
   but stopped before "somebody told me that was the head of William Morris". Cut more of the middle
   instead (the fixed version kept 38s of 2m09s with 7 cuts). Estimate ~2.5–3 words per second.
+- **Tell the whole story; cut what isn't the story** (Tko, 2026-10-08: "don't be afraid to use larger stories and
+  just clip non useful parts out… your whole goal is to portray stories and jokes to be as funny as possible by
+  keeping what's relevant and funny"). The job is the funniest version of the story or joke, not the tidiest
+  20 seconds of it. So before rejecting or trimming a long story, splice it:
+  - Someone cuts the teller off with something unrelated or unfunny: cut the interruption, keep the story.
+  - The teller starts a story, branches off to something else, and comes back: cut the branch, join the two halves.
+  - A listener's line stays only when it adds to the story (a question that sets up the next beat, a reaction that
+    is part of the payoff, a topper).
+  A story that reads as "three ideas in 35s" is usually one story with two things to cut, not a reject (run 19:
+  GURT unticked two picks that way without trying the splice). Reject only when it still fails the three tests
+  after the best splice.
 - **Endings** are set from the audio (`splice.tail_end`), not Whisper's word end: it waits for the
   voice to drop, or cuts at the quietest seam 0.25–0.8s after the last word.
 - **Opening line:** must make sense on its own and pull you in: a claim, a surprising fact,
@@ -333,11 +344,14 @@ NN keeps counting up across runs, from the clip log, even after clips are delete
   `scdet`, threshold 10; real cuts score ~22–24). Per shot: 1 face → frame it; 2+ faces → follow the voice
   (below); 0 faces → center of frame. The crop is
   sized by the face (about a fifth of the frame's height, eyes a third of the way down), never tighter than
-  1.6x from the source height. **A hold over 4.5s gets a punch-in (the crop tightens to 80%) at a sentence
-  break near its middle, the last shot (the payoff) is a punch-in, and every shot pushes in slowly (5%).**
-  A small face in a wide shot is already at the 1.6x limit, so it gets the cuts and the push-in but no
-  punch-in; so does a clip that is one unbroken shot with no sentence break. All of it is code
-  (`reframe.track_shots`, `track_filter`); the picker does nothing for it.
+  1.6x from the source height. **No shot runs longer than 4.5s: through a hold on one person the framing
+  switches between normal and punched-in (80%) about every 3 seconds, on a sentence break when one is in
+  reach; the last shot (the payoff) is a punch-in, and every shot pushes in slowly (5%).** A small face in a
+  wide shot can't go past 1.6x, so its punch-in is the 1.6x framing and its normal framing is wider.
+  **Why (Tko, 2026-10-08):** under YouTube's Shorts rule a clip has to be edited enough to count as changed,
+  not reposted, "even if a clip doesn't really need it"; a clip where one person talks for 18s used to be one
+  static shot. The render line prints each clip's shot count and longest shot (`reframe.edit_report`): read it.
+  All of it is code (`reframe.track_shots`, `track_filter`); the picker does nothing for it.
   **Who is talking comes from the audio, not the picture** (built 2026-10-06; jaw movement put run 15's
   crop on a laughing listener in 17 of 20 clips, because a mic hides the talker's mouth). Once per video
   `speakers.label` finds the voices and gives every transcript sentence a speaker number (0 talks most; none

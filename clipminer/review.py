@@ -159,7 +159,7 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
         caption = [w for w in caption if w["word"].strip()]
         done.append(render(source, work, out_dir / f"{stem}_blur.mp4", start, end, BLUR_FILL, CAPTIONS_LOW, caption))
         # A stream switches between gameplay and talking to the camera, so the layout is decided per clip.
-        split, game = None, False
+        split, game, edits = None, False, ""
         if cam and reframe.shows_cam(source, start, end, cam):
             game = True
             zoomed = reframe.zooms(source, start, end, cam)
@@ -172,6 +172,7 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
             segments, split = reframe.plan(source, start, end, solo=kind == "stream", said=said, known=known, seats=seats)
             breaks = [w["end"] - start for w in caption if w["word"].rstrip().endswith((".", ",", "?", "!"))]
             shots = reframe.track_shots(segments, W, H, end - start, breaks)
+            edits = f", track: {reframe.edit_report(shots)}"
             where = (CAPTIONS_MID[0], reframe.track_caption_y(shots, W, H, CAPTIONS_MID[1], CAPTIONS_LOW[1]))
             done.append(render(source, work, out_dir / f"{stem}_track.mp4", start, end,
                                reframe.track_filter(shots, W, H), where, caption))
@@ -183,7 +184,7 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
         (out_dir / f"{stem}.txt").write_text(with_required_tags(clip["description"]) + "\n", encoding="utf-8")
         clip["rendered_as"] = clip.pop("rendering_as")
         save(work, review)
-        print(f"[render]     {stem}  ({end - start:.1f}s, {'split' if split else 'game' if game else 'no split'})", flush=True)
+        print(f"[render]     {stem}  ({end - start:.1f}s, {'split' if split else 'game' if game else 'no split'}{edits})", flush=True)
         number += not partial
     review["status"] = "rendered"
     save(work, review)

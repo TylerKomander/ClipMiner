@@ -505,7 +505,8 @@ PUNCH = 0.8         # a punch-in crops to this much of the shot's normal crop
 MAX_ZOOM = 1.6      # never crop tighter than this from the source height: a 1080p source is already upscaled 1.8x
 PUSH = 0.05         # slow push-in over a shot
 MIN_PUSH = 1.2      # shots shorter than this are over before a push-in reads
-LONG_HOLD = 4.5     # a shot held longer than this gets a punch-in at a sentence break near its middle
+LONG_HOLD = 4.5     # no shot is held longer than this: the framing switches at a sentence break before it
+BEAT = 3.2          # how long a framing is held when there is a choice of sentence breaks
 BREAK_MARGIN = 1.8  # a punch-in leaves at least this much of the hold on either side
 FLASH = 0.04        # a shot this short is one frame: it joins the shot before it
 
@@ -516,20 +517,25 @@ def _crop(face, punch: float, W: int, H: int) -> tuple[int, int, int, int]:
         cw = int(H * 9 / 16) // 2 * 2
         return cw, H, (W - cw) // 2, 0
     cx, cy, w = face
-    ch = max(min(H, w * FACE_ASPECT / FACE) * punch, H / MAX_ZOOM)
+    # Every face has two framings so a hold can always be cut: the punch-in is the tighter one. A small face
+    # in a wide shot can't go past MAX_ZOOM, so its punch-in sits at the limit and its normal framing is wider.
+    tight = max(min(H, w * FACE_ASPECT / FACE) * PUNCH, H / MAX_ZOOM)
+    ch = tight if punch < 1 else min(H, max(w * FACE_ASPECT / FACE, tight / PUNCH))
     cw = ch * 9 / 16
     return int(cw) // 2 * 2, int(ch) // 2 * 2, int(min(max(cx - cw / 2, 0), W - cw)), int(min(max(cy - ch * EYE_LINE, 0), H - ch))
 
 
 def _punches(face, W: int, H: int) -> bool:
-    # A small face is already at MAX_ZOOM: a "punch-in" there would only restart the push-in, a jump outwards.
+    # A face that already fills the frame has one framing only.
     return face is not None and _crop(face, PUNCH, W, H)[1] < 0.9 * _crop(face, 1, W, H)[1]
 
 
 def track_shots(segments, W: int, H: int, length: float, breaks: list[float] = ()) -> list[tuple]:
-    """(start, end, face, punch) per output shot: a cut when the camera or the speaker changes, a punch-in
-    partway through a long hold and on the last shot (the payoff). `breaks` are clip-relative times where a
-    sentence or clause ends; punch-ins land on those."""
+    """(start, end, face, punch) per output shot: a cut when the camera or the speaker changes, and through a
+    hold the framing switches between normal and punched-in about every `BEAT` seconds, so no shot runs past
+    `LONG_HOLD` (Tko, 2026-10-08: every clip needs enough editing to count as changed, not reposted, even where
+    the clip doesn't need it). The last shot (the payoff) is a punch-in. `breaks` are clip-relative times
+    where a sentence or clause ends; switches land on those when one is in reach."""
     held = []
     for (a, face), b in zip(segments, [t for t, _ in segments[1:]] + [length]):
         if held and b - a <= FLASH:
@@ -538,15 +544,21 @@ def track_shots(segments, W: int, H: int, length: float, breaks: list[float] = (
             held.append((a, b, face))
     shots = []
     for a, b, face in held:
-        marks = [m for m in breaks if a + BREAK_MARGIN < m < b - BREAK_MARGIN]
-        if b - a > LONG_HOLD and marks and _punches(face, W, H):
-            mid = min(marks, key=lambda m: abs(m - (a + b) / 2))
-            shots += [(a, mid, face, 1), (mid, b, face, PUNCH)]
-        else:
-            shots.append((a, b, face, 1))
-    if len(shots) > 1 and _punches(shots[-1][2], W, H):
+        t, punch = a, 1
+        while b - t > LONG_HOLD and _punches(face, W, H):
+            marks = [m for m in breaks if t + BREAK_MARGIN < m < min(t + LONG_HOLD, b - BREAK_MARGIN)]
+            cut = min(marks, key=lambda m: abs(m - t - BEAT)) if marks else min(t + BEAT, b - BREAK_MARGIN)
+            shots.append((t, cut, face, punch))
+            t, punch = cut, PUNCH if punch == 1 else 1
+        shots.append((t, b, face, punch))
+    if len(shots) > 1 and _punches(shots[-1][2], W, H) and shots[-2][2:] != (shots[-1][2], PUNCH):
         shots[-1] = (*shots[-1][:3], PUNCH)
     return shots
+
+
+def edit_report(shots) -> str:
+    """What a reviewer needs to see that a TRACK clip is edited enough: how many shots, and the longest one."""
+    return f"{len(shots)} shots, longest {max(b - a for a, b, *_ in shots):.1f}s"
 
 
 def track_filter(shots, W: int, H: int) -> str:
