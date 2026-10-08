@@ -570,9 +570,12 @@ def track_filter(shots, W: int, H: int) -> str:
         if b - a > MIN_PUSH:
             k = PUSH / (b - a)
             grow = f"(1+{k:.5f}*t)"
-            # crop centres on the first frame's size unless told otherwise, so the offsets grow with the frame.
-            parts.append(f"{crop},scale=w='trunc(1080*{grow}/2)*2':h='trunc(1920*{grow}/2)*2':eval=frame,"
-                         f"crop=1080:1920:'{540 * k:.5f}*t':'{960 * k:.5f}*t',setsar=1[t{n}]")
+            # The push-in is done at twice the size and cropped with exact=1. Without `exact`, crop rounds its
+            # offsets to even pixels while the frame grows two at a time, and the picture jerked back about
+            # 1.4px every third frame: "the camera shakes like there's an earthquake" (Tko, 2026-10-08, once
+            # shots got short and the push-in fast). At double size a step is half a pixel.
+            parts.append(f"{crop},scale=w='trunc(2160*{grow}/2)*2':h='trunc(3840*{grow}/2)*2':eval=frame,"
+                         f"crop=2160:3840:'(iw-2160)/2':'(ih-3840)/2':exact=1,scale=1080:1920,setsar=1[t{n}]")
         else:
             parts.append(f"{crop},scale=1080:1920,setsar=1[t{n}]")
     return ";".join(parts) + ";" + "".join(f"[t{n}]" for n in range(len(parts))) + f"concat=n={len(parts)}:v=1:a=0"
