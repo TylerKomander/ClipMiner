@@ -160,7 +160,16 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
   the rest is the manual recipe above)
 
 ## Next step
-**Latest (2026-10-07, night): run 19, Matt & Shane Ep 636 / Sam Tallent, 14 clips: 332–345, BLUR + TRACK, through
+**Tko's two directions, 2026-10-08 (both in `skill.md` and in memory):** (1) tell the whole story and splice out
+interruptions and branches instead of rejecting or shrinking it; (2) every clip needs enough editing to pass
+YouTube's Shorts rule. For (2) TRACK now never holds a shot past 4.5s (`reframe.track_shots`; the render line
+prints shots and longest shot). Run 19's 14 TRACK files re-rendered that way: 5–13 shots each, longest 4.4s (they
+had 1–7). **Waiting on Tko:** overwrite 332–345's `_track.mp4` with them (the renders are in that session's
+scratchpad; if it is gone, re-render); whether a finished clip may pass 40s for a strong story (GURT suggested 60s
+for a 9; `score.locate` refuses over 40 today); whether BLUR and GAME, still static, get the same treatment.
+**The app must be restarted** to render with any of this.
+
+**2026-10-07, night: run 19, Matt & Shane Ep 636 / Sam Tallent, 14 clips: 332–345, BLUR + TRACK, through
 the app.** Budget review of a repeat show: Sonnet's 23 picks read directly, 14 kept, no blind pass. Seats were set
 before approving and TRACK is right in 13 of 14; **334 (Chili's Uber Eats) is unsure** (spoken mostly by a
 split-off voice with no seat): post it as BLUR unless it looks right. "Muddy kid thinks it's cake" is left
