@@ -163,14 +163,16 @@ Left off 2026-10-07 after run 16 (Matt & Shane Ep 542 / Druski, 18 clips: 284–
 `Finished_Clips\Podcast\Matt and Shane's Secret Podcast`): the first whole job through the app on style C.
 **What it showed:** captions and speaker colours work (one colour per voice, same voice across clips, masked curses,
 no spaced tokens). **TRACK does not on this show**: one wide shot, no close-ups, so no faces were learned
-(`faces.json` is empty) and the crop parks on the middle seat. Post run 16's BLUR files, not the TRACK ones.
+(`faces.json` is empty) and the crop parked on the middle seat.
 **Fixed the same day with seats** (Tko, 2026-10-07: "most the tracking clips don't track the correct person"):
 `"seats"` in `review.json` maps each speaker number to where that voice sits (`reframe._seated`; how to fill it is
 in `skill.md` "Render"). Run 16's are set: 0 Druski 0.105, 1 Shane 0.452, 2 Matt 0.863. Tested through the real
 render code on four clips: the framed person matches the caption colour throughout. **GURT fills `seats` before
 approving any show with no close-ups; this needs an app restart to take effect in the app.**
-Corrected TRACK files for all 18 clips were rendered to the session scratchpad, not into `Finished_Clips`:
-whether they replace the wrong `_track.mp4` files under the same numbers is Tko's call (asked, see chat).
+**All 18 `_track.mp4` files of run 16 were replaced with seated renders under the same numbers** (Tko's yes,
+2026-10-07). 17 match the caption colour in every sampled frame; **297 opens with about 6s on Matt while Druski
+talks** (those lines are mislabelled by `speakers.label`, so the caption colour is wrong there too): post 297 as
+BLUR, or fix the labels and re-render it. Nobody has listened to them.
 Also still to ask Tko: the white "unsure" lines (he has now a real run to look at), and run 15's TRACK re-render.
 **Restart the app before the next job**: it is still running the old `transcribe.py`.
 **Tko starts the app himself** (`.\.venv\Scripts\python.exe -m clipminer.gui`): a render inside an app GURT launched

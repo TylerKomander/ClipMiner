@@ -112,6 +112,11 @@ No close-ups, so `faces.json` came out empty and TRACK fell back to jaw movement
   to match to voices, and jaw movement parks the crop on Shane in the middle seat: Druski's lines play over Shane in
   286, 291 and 299, Matt's over Shane in 284 and 291 and over Druski in 300. 289 and 292 (Shane talking throughout)
   and 301 (Matt's story) look right. Judged from caption colour against who is framed, not from audio.
+- **Fixed the same day with `seats`** (speaker 0 Druski 0.105, 1 Shane 0.452, 2 Matt 0.863 in `review.json`). All
+  18 TRACK files were re-rendered through the real render code and replaced under the same numbers (Tko's yes). In
+  10-frame strips, 17 show the person whose colour the caption has in every frame; 297 opens with about 6s on Matt
+  while Druski talks, because `speakers.label` got those lines wrong. The voice labels themselves were right on all
+  ten lines checked against the text.
 - **Captions (style C) look right in both layouts:** Lilita One, 1–2 words, masked curses, one colour per voice that
   stays the same voice across clips (yellow Druski, green Shane, cyan Matt), white on short interjections. The spaced
   tokens of run 15 are gone ("37% OF").
