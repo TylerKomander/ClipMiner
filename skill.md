@@ -86,6 +86,16 @@ clip on the transcript alone: put it in `rejected` with "visual, check the frame
 mod setup, sub/donation thank-yous, sponsor reads, stream scheduling, and sincere drama about another
 creator (run 12: the debate rant; named person, no joke).
 
+**A streamer reviewing other people's clips** (run 18, Jynxzi): the footage he watches isn't his. A moment counts
+only when the payoff is his own line (a rating with a reason, a roast of the sender, a rant) and it lands for
+someone who can't see the clip he is reacting to. That was 10 clips in 46 minutes.
+
+**Before approving a stream, set these in `review.json` when they apply:**
+- `"facecam": [x, y, w, h]` when the camera is a cut-out over the game with no border (`cam_box` finds nothing
+  and `facecam.jpg` is never written). Draw the box on a frame and look.
+- `"one_voice": true` when one person is on the mic. The voice labelling splits a shouting, whispering voice into
+  several and the captions change colour mid-sentence. Not for friends on voice chat.
+
 **Transcript traps:** every voice is one stream of words, with nothing to say who spoke; game
 characters' lines are transcribed too. Long screaming stretches come out as a few words or a
 hallucinated loop ("A, A, A" ×100).

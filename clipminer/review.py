@@ -123,6 +123,10 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
         print("[speakers]   working out who says what (a few minutes, once per video)", flush=True)
     # Streams too: friends on voice chat are separate voices even with one face on camera.
     words = [{**w, "speaker": who} for w, who in zip(words, speakers.label(video, work, words), strict=True)]
+    # `one_voice` in review.json: a streamer alone on the mic. The labelling split one shouting, whispering
+    # voice into three and left half his words unsure, so his captions changed colour mid-sentence (run 18).
+    if review.get("one_voice"):
+        words = [{**w, "speaker": 0} for w in words]
     W, H = reframe.frame_size(video)
     # A clip that died before its first file was written holds its number in review.json only.
     number = max([next_number(out_dir)] + [int(c["rendering_as"].split("_")[0]) + 1 for c in review["clips"] if "rendering_as" in c])

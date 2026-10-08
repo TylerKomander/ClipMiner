@@ -87,7 +87,7 @@ diffs against `review.json` (`by: sonnet` vs `by: gurt`), adds/edits clips with 
 first, last, "gurt", payoff, reason, fixes, description)` (word indices; `fixes` corrects misheard caption words),
 sets `keep`, saves, sets `status: approved`. Logs the diff in the run file's "Scorer vs GURT", updates INDEX,
 commits. Transcript health check and face check (look at frames) still come first.
-Next clip number: **302** (counted from the logs automatically: write a run's log after it renders).
+Next clip number: **332** (counted from the logs automatically: write a run's log after it renders).
 
 ## Status
 - [x] ffmpeg installed, `download` + `transcribe` produce a word-timed transcript
@@ -135,7 +135,8 @@ Next clip number: **302** (counted from the logs automatically: write a run's lo
 - [x] Streaming type: Queue dropdown, `streamer` theme, GAME layout, type folders, Clips tree by type.
       Run 12 (Joe Bart Games `VxPBaAT13gk`) went through it: 19 clips: 18 BLUR + GAME, 193 BLUR + TRACK
 - [ ] Sonnet matches GURT on streams. Run 12: found 1 of GURT's 17; it rated 7 of the other 16 a 7, and a 7 is a reject.
-- [ ] First 3 stream runs logged (1 of 3) (`**Theme:** \`streamer\`` in the run file) so the profile stops being guesses
+      Run 18 (Jynxzi, solo clip review): 10 picks, 9 kept (5 recut), missed 1. Good on one clear voice.
+- [ ] First 3 stream runs logged (2 of 3) (`**Theme:** \`streamer\`` in the run file) so the profile stops being guesses
 
 **Cost plan (Tko 2026-09-30: fine for now, must get cheaper as it scales).** Today ~$1–1.50 per 2h
 episode, mostly Sonnet's output (~9k tokens per 20-min piece, flat across runs; logs don't shrink it).
@@ -159,6 +160,19 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
   the rest is the manual recipe above)
 
 ## Next step
+**Latest (2026-10-07, late): run 18, Jynxzi "I Hate Clips..." (stream), 10 clips: 322–331, BLUR + GAME, in
+`Finished_Clips\Streaming\Jynxzi`.** First run on the review budget. Rendered from the command line because the app
+was on older code; **the app's queue still shows that job at "review" (cosmetic), and the app needs a restart
+before the next job** to pick up the cut-out webcam fix and `one_voice`. Nobody has listened: least sure are 325
+(short, about 8s without words in the middle), 330 (the name "Balls" is a guess), 326 ("Copper 5"). Risk calls:
+327 (a sex toy named in the first 3s), 325 (crude opener).
+**Run 17 (Theo Von #661, clips 302–321) was never reviewed by GURT**: Tko approved Sonnet's 20 in the app. Its log
+was written afterwards from `review.json`. Watch those before posting; every reviewed run recut most of Sonnet's picks.
+**Owed next, in order:** (1) the in-code TRACK/GAME check from the budget (rule 3), still not written; (2) the
+voice labels behind 297's first 6 seconds; (3) Tko's calls on the white "unsure" lines and run 15's TRACK re-render;
+(4) the scorer prompt fixes listed under "GURT's work", now including: take the creator's name from the channel
+field (runs 16 and 18 both got the credit line wrong).
+
 Left off 2026-10-07 after run 16 (Matt & Shane Ep 542 / Druski, 18 clips: 284–301, BLUR + TRACK, in
 `Finished_Clips\Podcast\Matt and Shane's Secret Podcast`): the first whole job through the app on style C.
 **What it showed:** captions and speaker colours work (one colour per voice, same voice across clips, masked curses,

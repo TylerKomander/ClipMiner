@@ -43,6 +43,8 @@ universal) and note "(in skill.md)" here.
 | 14 | `run-14-matt-shane-637-jeremiah-watkins.md` | Matt & Shane Ep 637 (Jeremiah Watkins) | 68m | 248–263 | three comedians, one wide shot; blind picks by three subagents + editor/skeptic pass; Sonnet 15 picks, 10 kept (all recut), found 10 of 16; render killed once (app launched by GURT); first run with clean post text |
 | 15 | `run-15-are-you-garbage-joey-diaz.md` | Are You Garbage (Joey Diaz) | 69m | 264–283 | cleanest transcript yet; 41 moments, 30 passed at 8+, first run over the cap (10 logged "over the cap"); Sonnet 23 picks, 15 in the final 20, 5 rejected; multi-camera, no SPLIT |
 | 16 | `run-16-matt-shane-542-druski.md` | Matt & Shane Ep 542 (Druski) | 67m | 284–301 | first whole job on style C; transcript lowercase for 44 min, fixed by re-transcribing (conditioning off + style hint); Sonnet 13 picks, 10 kept (all recut), found 10 of 18; one wide shot, TRACK on the wrong person |
+| 17 | `run-17-this-past-weekend-661-kiriakou.md` | This Past Weekend #661 (John Kiriakou) | 139m | 302–321 | **not reviewed by GURT**: Tko approved Sonnet's 20 in the app; log written afterwards from `review.json` |
+| 18 | `run-18-jynxzi-i-hate-clips.md` | Jynxzi "I Hate Clips..." (stream, solo, Siege clip review) | 46m | 322–331 | second `streamer` run, first on the review budget; Sonnet 10 picks, 9 kept (5 recut), missed 1; cut-out webcam set by hand; `one_voice` |
 
 ## Shapes (universal), most seen first
 Format: tally · shape · clips (score). Clip numbers match `Finished_Clips\` and the run files.
@@ -152,5 +154,9 @@ quotable. Duo shows (Shane/Steve) run on "friend exposes the other"; one-guest s
 - `[.]` `[universal]` TRACK sat on a laughing listener instead of the storyteller in 17 of 20 clips (run 15: three-person wide shot, mic over the talker's mouth). BLUR was fine. Check a frame strip of every render. Run 16 (style C, voice-following): a show with one wide shot and no close-ups has no faces to learn, falls back to jaw movement and parks on the middle seat.
 - `[.]` `[scorer]` Model rejects a dodge caught live and a one-question roast as "no payoff" / "a mild answer" (run 16: 287, 299; both 9s for all three blind pickers).
 - `[.]` `[scorer]` Three of the model's rejections were "garbled" clips that are clean on a good transcript (run 16: 286, 292, 297). A broken transcript costs picks, not just captions.
-- `[.]` `[scorer]` Model's credit line drops the show's name when the video title has none (run 16: "From Ep 542 - Indulgences with Druski.").
+- `[..]` `[scorer]` Model's credit line drops the show's name when the video title has none (run 16: "From Ep 542 - Indulgences with Druski."). Run 18: no streamer name or "Jinxy", and #jinxy tags, on all 10. The name is in the channel field.
+- `[.]` `[scorer]` On a solo streamer who delivers verdicts in words the model is good: 9 of 10 picks kept (run 18), against 1 of 17 on a four-friend stream (run 12). It still ran past the payoff on four.
+- `[.]` `[universal]` A cut-out webcam (no border, big face) isn't found by `cam_box` and failed the face-size test for a boxed webcam (run 18). Set `facecam` by hand; the limit now scales with a wide box.
+- `[.]` `[universal]` One person on the mic is labelled as three voices with half the words unsure (run 18). Set `one_voice` in `review.json`.
+- `[.]` `[theme]` A solo streamer rating viewers' clips: 13 clips/hour, every payoff his own line (run 18).
 - `[.]` `[universal]` Whisper's spaced tokens ("10 -year -old", "$3 ,000") and zero-length caption events reach the screen (run 15). Join and clamp them in code.

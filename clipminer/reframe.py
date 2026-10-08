@@ -398,6 +398,12 @@ def cam_box(video: Path, work: Path) -> list[int] | None:
     return box
 
 
+def _boxed_face(box: list[int], W: int) -> float:
+    """The widest a face can be and still be the streamer inside the webcam box. A cut-out camera over the
+    game is far bigger than a boxed one (run 18, Jynxzi: face 193px, up to 443 leaning in, box 720 wide)."""
+    return box[2] * 0.65 if box[2] > W * 0.3 else W * CAM_FACE
+
+
 def shows_cam(video: Path, start: float, end: float, box: list[int]) -> bool:
     """True when this clip is gameplay with the webcam in its box (not the camera cut to full screen)."""
     # Counted straight from the detections: `find_faces` groups people by x alone, and a character portrait
@@ -409,7 +415,7 @@ def shows_cam(video: Path, start: float, end: float, box: list[int]) -> bool:
     for frame in _frames(video, start, end, 2):
         _, found = det.detect(frame)
         seen += 1
-        inside += any(x < fx + fw / 2 < x + w and y < fy + fh / 2 < y + h and fw < W * CAM_FACE
+        inside += any(x < fx + fw / 2 < x + w and y < fy + fh / 2 < y + h and fw < _boxed_face(box, W)
                       for fx, fy, fw, fh, *_ in (found if found is not None else []))
     return inside >= max(1, seen // 4)
 
@@ -424,9 +430,10 @@ def zooms(video: Path, start: float, end: float, box: list[int]) -> list[tuple[f
     for frame in _frames(video, start, end, 2):
         _, found = det.detect(frame)
         found = [(int(x + w / 2), int(y + h / 2), int(w)) for x, y, w, h, *_ in (found if found is not None else [])]
-        big = [(w, cx) for cx, cy, w in found if w >= box[2] / 4]
+        # A cut-out camera's face already passes a quarter of its box: there a zoom has to outgrow the box's limit.
+        big = [(w, cx) for cx, cy, w in found if w >= (_boxed_face(box, W) if box[2] > W * 0.3 else box[2] / 4)]
         # A big face in the game (a character select screen) isn't a zoom: the webcam is still in its box then.
-        boxed = any(box[0] < cx < box[0] + box[2] and box[1] < cy < box[1] + box[3] and w < W * CAM_FACE for cx, cy, w in found)
+        boxed = any(box[0] < cx < box[0] + box[2] and box[1] < cy < box[1] + box[3] and w < _boxed_face(box, W) for cx, cy, w in found)
         faces.append(max(big)[1] if big and not boxed else None)
     # One stray sample (a face in the game, a missed detection) doesn't make or break a stretch.
     for k in range(1, len(faces) - 1):
