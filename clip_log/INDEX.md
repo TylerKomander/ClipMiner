@@ -45,6 +45,7 @@ universal) and note "(in skill.md)" here.
 | 16 | `run-16-matt-shane-542-druski.md` | Matt & Shane Ep 542 (Druski) | 67m | 284–301 | first whole job on style C; transcript lowercase for 44 min, fixed by re-transcribing (conditioning off + style hint); Sonnet 13 picks, 10 kept (all recut), found 10 of 18; one wide shot, TRACK on the wrong person |
 | 17 | `run-17-this-past-weekend-661-kiriakou.md` | This Past Weekend #661 (John Kiriakou) | 139m | 302–321 | **not reviewed by GURT**: Tko approved Sonnet's 20 in the app; log written afterwards from `review.json` |
 | 18 | `run-18-jynxzi-i-hate-clips.md` | Jynxzi "I Hate Clips..." (stream, solo, Siege clip review) | 46m | 322–331 | second `streamer` run, first on the review budget; Sonnet 10 picks, 9 kept (5 recut), missed 1; cut-out webcam set by hand; `one_voice` |
+| 19 | `run-19-matt-shane-636-sam-tallent.md` | Matt & Shane Ep 636 (Sam Tallent) | 73m | 332–345 | budget review of a repeat show: no blind pass, Sonnet's 23 read directly, 14 kept; seats set before approving, right in 13 of 14 |
 
 ## Shapes (universal), most seen first
 Format: tally · shape · clips (score). Clip numbers match `Finished_Clips\` and the run files.

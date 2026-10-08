@@ -87,7 +87,7 @@ diffs against `review.json` (`by: sonnet` vs `by: gurt`), adds/edits clips with 
 first, last, "gurt", payoff, reason, fixes, description)` (word indices; `fixes` corrects misheard caption words),
 sets `keep`, saves, sets `status: approved`. Logs the diff in the run file's "Scorer vs GURT", updates INDEX,
 commits. Transcript health check and face check (look at frames) still come first.
-Next clip number: **332** (counted from the logs automatically: write a run's log after it renders).
+Next clip number: **346** (counted from the logs automatically: write a run's log after it renders).
 
 ## Status
 - [x] ffmpeg installed, `download` + `transcribe` produce a word-timed transcript
@@ -160,7 +160,15 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
   the rest is the manual recipe above)
 
 ## Next step
-**Latest (2026-10-07, late): run 18, Jynxzi "I Hate Clips..." (stream), 10 clips: 322–331, BLUR + GAME, in
+**Latest (2026-10-07, night): run 19, Matt & Shane Ep 636 / Sam Tallent, 14 clips: 332–345, BLUR + TRACK, through
+the app.** Budget review of a repeat show: Sonnet's 23 picks read directly, 14 kept, no blind pass. Seats were set
+before approving and TRACK is right in 13 of 14; **334 (Chili's Uber Eats) is unsure** (spoken mostly by a
+split-off voice with no seat): post it as BLUR unless it looks right. "Muddy kid thinks it's cake" is left
+unticked for Tko (the joke is about a slow child). Nobody has listened.
+**Seats recipe that worked:** run `speakers.label` before approving (it caches for the render), read each voice's
+longest turns to name it, measure faces with `reframe.find_faces` on a wide frame.
+
+**Earlier the same night: run 18, Jynxzi "I Hate Clips..." (stream), 10 clips: 322–331, BLUR + GAME, in
 `Finished_Clips\Streaming\Jynxzi`.** First run on the review budget. Rendered from the command line because the app
 was on older code; **the app's queue still shows that job at "review" (cosmetic), and the app needs a restart
 before the next job** to pick up the cut-out webcam fix and `one_voice`. Nobody has listened: least sure are 325
