@@ -1,5 +1,6 @@
 import json
 import re
+import subprocess
 from pathlib import Path
 
 from yt_dlp import YoutubeDL
@@ -14,6 +15,13 @@ def fetch(source: str, work_root: Path) -> tuple[Path, Path]:
     if local.is_file():
         work = work_root / slugify(local.stem)
         work.mkdir(parents=True, exist_ok=True)
+        meta = work / "info.json"
+        if not meta.exists():
+            duration = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
+                                       str(local)], capture_output=True, text=True, check=True).stdout
+            # `path` marks Tko's own file: the render reads it in place and never deletes it.
+            meta.write_text(json.dumps({"id": work.name, "title": local.stem, "channel": "",
+                                        "duration": float(duration), "path": str(local.resolve())}, indent=2), encoding="utf-8")
         return work, local
 
     with YoutubeDL({"quiet": True}) as ydl:

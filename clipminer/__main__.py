@@ -33,15 +33,20 @@ def prepare(source: str, model: str, kind: str) -> Path:
 
 
 def finish(work: Path) -> list[Path]:
-    """Render the approved picks, then drop the source: Tko's rule is no full videos kept."""
-    video = work / "source.mp4"
+    """Render the approved picks, then drop a downloaded source: Tko's rule is no full videos kept.
+    A local file is Tko's own and stays where it is."""
+    info = json.loads((work / "info.json").read_text(encoding="utf-8"))
+    local = info.get("path")
+    video = Path(local) if local else work / "source.mp4"
     review.to_render(review.load(work), work)
+    if local and not video.exists():
+        raise RuntimeError(f"{local} has moved or been deleted: put it back to render")
     if not video.exists():
         # A second batch after the source was deleted: fetch it again (info.json has the id).
-        info = json.loads((work / "info.json").read_text(encoding="utf-8"))
         fetch(f"https://www.youtube.com/watch?v={info['id']}", ROOT / "work")
     clips = review.render_approved(work, video, FINISHED)
-    video.unlink()
+    if not local:
+        video.unlink()
     return clips
 
 

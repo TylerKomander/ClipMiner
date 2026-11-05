@@ -10,6 +10,7 @@ DEAD_AIR = 0.6       # pauses longer than this get shortened, but only where the
 QUIET_DB = 18        # "quiet" = this far under the clip's speech level
 MIN_KEEP = 1.0       # a kept stretch shorter than this is a flash on screen: leave the pause beside it alone
 MIN_TAIL, MAX_TAIL = 0.25, 0.8
+LONG_WINDOW = 600    # past this, the audio is read per kept run instead of for the whole window
 
 
 def kept_runs(first: int, last: int, cuts: list[list[int]]) -> list[tuple[int, int]]:
@@ -111,27 +112,35 @@ def tail_end(video: Path, t: float) -> float:
 
 def build(video: Path, work: Path, words: list[dict], clip: dict, stem: str) -> tuple[Path, float, float, list[dict]]:
     """Source file, start, end and caption words (on that file's clock) for one clip."""
-    sound = envelope(video, max(words[clip["first"]]["start"] - 1, 0), words[clip["last"]]["end"] + 1)
-    spans = stretches(words, clip["first"], clip["last"], clip.get("cuts", []), sound)
-    spans[-1] = (spans[-1][0], tail_end(video, words[clip["last"]]["end"]))
-    kept = [w for a, b in kept_runs(clip["first"], clip["last"], clip.get("cuts", [])) for w in words[a:b + 1]]
+    first, last, cuts = clip["first"], clip["last"], clip.get("cuts", [])
+    runs = kept_runs(first, last, cuts)
+    if words[last]["end"] - words[first]["start"] <= LONG_WINDOW:
+        sound = envelope(video, max(words[first]["start"] - 1, 0), words[last]["end"] + 1)
+        spans = stretches(words, first, last, cuts, sound)
+    else:
+        # A movie recap's moments sit up to two hours apart: read the audio around each one, not the whole film.
+        spans = [s for a, b in runs
+                 for s in stretches(words, a, b, [], envelope(video, max(words[a]["start"] - 1, 0), words[b]["end"] + 1))]
+    spans[-1] = (spans[-1][0], tail_end(video, words[last]["end"]))
+    kept = [w for a, b in runs for w in words[a:b + 1]]
     if len(spans) == 1:
         return video, spans[0][0], spans[0][1], kept
 
-    offset, shifted, filters, labels = 0.0, [], [], []
-    base = max(spans[0][0] - 1, 0)  # seek close to the clip; trims are measured from here
+    offset, shifted, inputs, filters, labels = 0.0, [], [], [], []
     for n, (a, b) in enumerate(spans):
         length = b - a
         shifted += [{**w, "start": w["start"] - a + offset, "end": w["end"] - a + offset}
                     for w in kept if a <= w["start"] < b]
-        filters.append(f"[0:v]trim={a - base:.3f}:{b - base:.3f},setpts=PTS-STARTPTS[v{n}];"
-                       f"[0:a]atrim={a - base:.3f}:{b - base:.3f},asetpts=PTS-STARTPTS,"
+        # One seek per stretch: ffmpeg decodes only the stretches, however far apart they are.
+        inputs += ["-ss", f"{a:.3f}", "-t", f"{length:.3f}", "-i", str(video.resolve())]
+        filters.append(f"[{n}:v:0]setpts=PTS-STARTPTS[v{n}];"
+                       f"[{n}:a:0]asetpts=PTS-STARTPTS,"
                        f"afade=t=in:d=0.012,afade=t=out:st={max(length - 0.012, 0):.3f}:d=0.012[a{n}]")
         labels.append(f"[v{n}][a{n}]")
         offset += length
     cut = work / f"{stem}_spliced.mp4"
     subprocess.run(
-        ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-ss", f"{base:.3f}", "-i", str(video.resolve()),
+        ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", *inputs,
          "-filter_complex", ";".join(filters) + ";" + "".join(labels) + f"concat=n={len(spans)}:v=1:a=1[v][a]",
          "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-crf", "14", "-preset", "veryfast",
          "-c:a", "aac", "-b:a", "192k", str(cut.resolve())],

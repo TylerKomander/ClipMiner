@@ -15,6 +15,7 @@ ScaledBorderAndShadow: yes
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, OutlineColour, BackColour, Bold, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV
 Style: Cap,Lilita One,{size},&H00FFFFFF,&H00000000,&H96000000,0,1,6,4,5,40,40,0
+Style: Sub,Cambria,76,&H00FFFFFF,&H00000000,&H80000000,0,1,2,2,2,140,140,0
 
 [Events]
 Format: Layer, Start, End, Style, Text
@@ -40,10 +41,21 @@ BLUR_FILL = (
     "[b]scale=1080:-2[fg];"
     "[bg][fg]overlay=(W-w)/2:(H-h)/2"
 )
+BAND_H = 1380  # the movie picture fills ~72% of the height, black above and below (the reference shorts)
+
+
+def band_filter(x: float = 0.5) -> str:
+    """`x` is where the crop sits across the scaled picture: 0 = left edge, 1 = right edge."""
+    return (f"[0:v]scale=1080:{BAND_H}:force_original_aspect_ratio=increase,"
+            f"crop=1080:{BAND_H}:(iw-1080)*{x}:(ih-{BAND_H})/2,setsar=1,"
+            f"pad=1080:1920:0:{(1920 - BAND_H) // 2}:black")
+
+
 # Where a caption sits: (ASS alignment, y of that anchor in the 1920-high frame).
 CAPTIONS_LOW = (2, 1400)
 CAPTIONS_SEAM = (5, 960)
 CAPTIONS_MID = (5, 1100)
+SUBTITLES = (2, 1470)  # bottom of the text, inside the band
 
 
 # Tko's rule: no curse word may be readable on screen. The audio stays; only the caption is masked.
@@ -100,9 +112,33 @@ def caption_lines(words: list[dict], start: float, max_words: int = 2, max_chars
     return out
 
 
+def subtitle_lines(words: list[dict], start: float, max_chars: int = 80) -> list[tuple[float, float, str]]:
+    """(start, end, text): a sentence at a time, like a film's own subtitles; libass wraps it to two lines."""
+    lines, chunk = [], []
+    for w in words:
+        text = w["word"].strip()
+        if not text:
+            continue
+        if chunk and (chunk[-1]["word"].endswith((".", "?", "!")) or w["start"] - chunk[-1]["end"] > PAUSE
+                      or len(" ".join(c["word"] for c in chunk)) + 1 + len(text) > max_chars):
+            lines.append(chunk)
+            chunk = []
+        chunk.append({**w, "word": text})
+    if chunk:
+        lines.append(chunk)
+    out = []
+    for i, c in enumerate(lines):
+        a = max(c[0]["start"] - start, out[-1][1] if out else 0.0)
+        b = c[-1]["end"] - start + 0.4
+        if i + 1 < len(lines):
+            b = min(b, lines[i + 1][0]["start"] - start)
+        out.append((a, max(b, a + 0.5), " ".join(mask_curses(w["word"]) for w in c)))
+    return out
+
+
 def render(video: Path, work: Path, out: Path, start: float, end: float,
            video_filter: str = BLUR_FILL, captions: tuple[int, int] = CAPTIONS_LOW,
-           words: list[dict] | None = None) -> Path:
+           words: list[dict] | None = None, subtitles: bool = False) -> Path:
     """`words` are the exact words to caption; the dry run picks them. Selecting by time instead
     pulls in neighbours that share a timestamp with the first word (run 4: a stray "ON.")."""
     if words is None:
@@ -110,11 +146,15 @@ def render(video: Path, work: Path, out: Path, start: float, end: float,
         words = [w for w in every if w["start"] >= start - 0.05 and w["end"] <= end + 0.05]
     ass = work / f"{out.stem}.ass"
     place = rf"\an{captions[0]}\pos(540,{captions[1]})"
-    events = []
-    for a, b, text, speaker in caption_lines(words, start):
-        colour = SPEAKER_COLOURS[speaker] if speaker is not None and speaker < len(SPEAKER_COLOURS) else WHITE
-        look = rf"{place}\c{colour}{pop(min(100, round(100 * FIT_CHARS / len(text))))}"
-        events.append(f"Dialogue: 0,{ass_time(a)},{ass_time(b)},Cap,{{{look}}}{text}")
+    if subtitles:
+        events = [rf"Dialogue: 0,{ass_time(a)},{ass_time(b)},Sub,{{{place}\q0}}{text}"
+                  for a, b, text in subtitle_lines(words, start)]
+    else:
+        events = []
+        for a, b, text, speaker in caption_lines(words, start):
+            colour = SPEAKER_COLOURS[speaker] if speaker is not None and speaker < len(SPEAKER_COLOURS) else WHITE
+            look = rf"{place}\c{colour}{pop(min(100, round(100 * FIT_CHARS / len(text))))}"
+            events.append(f"Dialogue: 0,{ass_time(a)},{ass_time(b)},Cap,{{{look}}}{text}")
     ass.write_text(ASS_HEADER.format(size=FONT_SIZE) + "\n".join(events) + "\n", encoding="utf-8")
 
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -124,7 +164,7 @@ def render(video: Path, work: Path, out: Path, start: float, end: float,
             "-ss", f"{start:.2f}", "-to", f"{end:.2f}", "-i", str(video.resolve()),
             "-filter_complex", f"{video_filter},subtitles={ass.name}:fontsdir={Path(os.path.relpath(FONTS, work)).as_posix()}",
             "-c:v", "libx264", "-crf", "20", "-preset", "veryfast",
-            "-c:a", "aac", "-b:a", "160k",
+            "-c:a", "aac", "-b:a", "160k", "-ac", "2",
             str(out.resolve()),
         ],
         cwd=work, check=True,

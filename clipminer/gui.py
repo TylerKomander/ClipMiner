@@ -429,11 +429,12 @@ class ClipsPage(Page):
         # Show folders from before the type folders sit straight under Finished_Clips: all podcasts.
         # Clips from before per-show folders sit loose there (or in Used-Clips).
         shows: dict[tuple[str, str], list[Path]] = {}
-        for video in FINISHED.rglob("*_blur.mp4"):
+        # Every clip has a BLUR file except a movie recap, which only has its BAND file.
+        for video in [*FINISHED.rglob("*_blur.mp4"), *FINISHED.rglob("*_band.mp4")]:
             parts = video.parent.relative_to(FINISHED).parts
             category, parts = (parts[0], parts[1:]) if parts and parts[0] in CATEGORIES else (CATEGORIES[0], parts)
             show = "Older clips" if parts in ((), ("Used-Clips",)) else "\\".join(parts)
-            shows.setdefault((category, show), []).append(video.with_name(video.name.removesuffix("_blur.mp4")))
+            shows.setdefault((category, show), []).append(video.with_name(video.name.rsplit("_", 1)[0]))
         return shows
 
     def refresh(self, force: bool = False) -> None:
@@ -487,7 +488,7 @@ class ClipsPage(Page):
                             foreground=INK if entries else MUTED)
         for child in self.layouts.winfo_children():
             child.destroy()
-        available = [name for name in ("game", "track", "blur", "split") if base.with_name(f"{base.name}_{name}.mp4").exists()]
+        available = [name for name in ("game", "track", "blur", "split", "band") if base.with_name(f"{base.name}_{name}.mp4").exists()]
         if self.layout.get() not in available:
             self.layout.set(available[0])
         for name in available:
@@ -539,6 +540,10 @@ class ClipsPage(Page):
         folder = ROOT / profile["folder"]
         if str(folder) in self.busy:
             messagebox.showinfo("Post", "That account's browser is already open. Close it first.")
+            return
+        if base.relative_to(FINISHED).parts[0] == review.KINDS["movie"][0]:
+            messagebox.showinfo("Post", "Movie recaps go on their own channel, never this one, and posting them "
+                                        "from the app isn't set up yet. Upload this one by hand.")
             return
         layout = self.layout.get()
         video = base.with_name(f"{base.name}_{layout}.mp4")

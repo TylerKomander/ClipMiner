@@ -15,7 +15,7 @@ Two parts:
 # Part A — Theme profile
 
 One profile per video type. Tko picks the type in the app before pasting the link (Podcast →
-`comedian-podcast`, Streaming → `streamer`); the prompt names the profile in force. Ignore the others.
+`comedian-podcast`, Streaming → `streamer`, Movie → `movie-recap`); the prompt names the profile in force. Ignore the others.
 
 ## Theme: `comedian-podcast`
 Long-form podcasts hosted by (or featuring) stand-up comedians. Hosts riff, commit to bits,
@@ -101,6 +101,37 @@ characters' lines are transcribed too. Long screaming stretches come out as a fe
 hallucinated loop ("A, A, A" ×100).
 
 **Theme-specific tolerance:** same as `comedian-podcast`.
+
+## Theme: `movie-recap`
+A whole feature film or show episode, from a local file. **Not clips: one recap short per film** that tells the
+whole story as a supercut of the film's own dialogue (reference shorts `UTBAKThAmI4` *42*, `ZY4qS0KewuI`
+*10 Things I Hate About You*: 59s, 16–17 moments, film order, ending included). No runs yet: all of this is a
+**(guess)** taken from the two references.
+
+**Audience:** people who scroll for a story. The bar is not "funny" but "I understood the film and want to watch it".
+
+**What the recap must carry, in film order:** who the main character is and what they want; who or what stands in
+the way; the turn; how it ends. One or two lines per moment (about 2–6s), 12–18 moments, 45–62s in total.
+
+**Where the good lines hide:** lines that *state* the situation ("I didn't pay you to take out Kat so some little
+punk could snake me"), a relationship ("You are so not who I thought you were"), the threat ("there's gonna be
+trouble") and the last line of a scene. A line that only works with the picture (a look, an action, a reveal) can't
+carry the story on its own; at most one or two of those per recap.
+
+**Off-theme here:** exposition about side plots, jokes that need the scene before, songs, crowd noise, and any
+moment from a character the recap hasn't introduced.
+
+**Score** (1–10, the recap as a whole): can a stranger tell what the film is about, who it is about and how it
+ends from these lines alone? 8+ = yes, with a line that hooks in the first 3s.
+
+**Post text:** the hook is a teaser question or a quote twist on the film ("An offer he can't refuse?", "His savage
+reply to all the doubters!"), never the ending. Credit: "From <Film> (<year>)." Hashtags: the film, its stars, the
+genre, #movie #movieclips #filmtok. The clean-text rule applies as everywhere.
+
+**Transcript traps:** music and effects under the dialogue; Whisper drops lines spoken over a score and writes song
+lyrics as speech. A moment whose quote isn't found is dropped in code, so quote exactly.
+
+**Tolerance:** films carry slurs and violence in context; caption masking still applies. Score on the story.
 
 ## Writing a new theme profile (when Tko adds a video type)
 Add the type to `review.KINDS` (app label, folder, profile name), then copy a block above and fill the same fields: name, what the content is, audience, what the
@@ -328,12 +359,16 @@ allusions are on the writer.
 
 ## Render — the layouts a clip's type calls for
 **Podcast: BLUR + TRACK, + SPLIT when both faces share the shot. Streaming: BLUR + GAME on
-gameplay clips, BLUR + TRACK when there is no gameplay.** Tko posts the variants across
+gameplay clips, BLUR + TRACK when there is no gameplay. Movie: BAND only.** Tko posts the variants across
 platforms and lets performance decide. Output:
 `Finished_Clips\<Podcast|Streaming>\<show>\NN_s<score>_<name>_{blur,split,track,game}.mp4`
 (e.g. `Podcast\Flagrant\64_s9_bouncer-every-id-works_track.mp4`).
 NN keeps counting up across runs, from the clip log, even after clips are deleted.
 - **BLUR:** full 16:9 frame centered, blurred copy fills top and bottom. Never cuts anyone out.
+- **BAND** (movies, from the reference shorts): the picture scaled to 1380px high and center-cropped to 1080 wide,
+  black bars above and below, white Cambria subtitles a sentence at a time near the bottom of the picture, curses
+  masked. One crop for the whole recap: when the speakers sit off-center, set `"crop_x"` (0 = left, 1 = right) on
+  the clip in `review.json` and re-render. Check a frame sheet of every recap before approving it as done.
 - **SPLIT:** two faces stacked (1080x960 each), captions on the seam. Top = left person.
   Needs both people *in the same shot for the whole clip*. Multi-camera shows that cut
   between single close-ups (run 3, JRE) can't do SPLIT. Skip it and say so; don't fake it.

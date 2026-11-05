@@ -41,6 +41,22 @@ CLIP_SCHEMA = _object({
 })
 
 
+RECAP_SCHEMA = _object({
+    "name": {"type": "string", "description": "short kebab-case name for the file"},
+    "score": {"type": "integer", "description": "1-10: how well these moments tell the film to someone who hasn't seen it"},
+    "reason": {"type": "string", "description": "one line: why this score"},
+    "description": {"type": "string", "description": "the post text, following the rulebook's movie-recap profile"},
+    "moments": {"type": "array", "items": _object({
+        "approx_start": {"type": "string", "description": "h:mm:ss of the reading line the moment is in"},
+        "first_words": {"type": "string", "description": "the moment's first 4+ words, copied exactly"},
+        "last_words": {"type": "string", "description": "the moment's last 4+ words, copied exactly"},
+        "why": {"type": "string", "description": "which beat of the story this carries"},
+    })},
+})
+RECAP_LEN = (45, 62)
+RECAP_MOMENTS = (12, 18)
+
+
 def hms(t: float) -> str:
     t = int(t)
     return f"{t // 3600}:{t // 60 % 60:02d}:{t % 60:02d}"
@@ -194,12 +210,12 @@ def api_key() -> str | None:
         return os.environ.get("ANTHROPIC_API_KEY")
 
 
-def ask(client, model: str, system: list, messages: list, part: int) -> tuple[str, dict]:
+def ask(client, model: str, system: list, messages: list, part: int, schema: dict = CLIP_SCHEMA) -> tuple[str, dict]:
     with client.messages.stream(
         model=model,
         max_tokens=64000,
         system=system,
-        output_config={"format": {"type": "json_schema", "schema": CLIP_SCHEMA}},
+        output_config={"format": {"type": "json_schema", "schema": schema}},
         messages=messages,
     ) as stream:
         response = stream.get_final_message()
@@ -220,11 +236,93 @@ def retry_prompt(long: list[tuple[dict, str]], words_per_second: float) -> str:
     )
 
 
-def recent_runs(theme: str, count: int = 3) -> list[str]:
+def recent_runs(theme: str, count: int = 3, fallback: bool = True) -> list[str]:
     runs = sorted((ROOT / "clip_log").glob("run-*.md"))
     # A new theme has no runs yet: the other theme's runs still show the universal rules applied.
     own = [p for p in runs if f"**Theme:** `{theme}`" in p.read_text(encoding="utf-8")]
-    return [p.name for p in (own or runs)[-count:]]
+    return [p.name for p in (own or (runs if fallback else []))[-count:]]
+
+
+def recap_prompt(info: dict, lines: list[str], words_per_second: float) -> str:
+    return (
+        f"Film: {info.get('title')}\nLength: {hms(info.get('duration') or 0)}\n\n"
+        "Make ONE recap short that tells this whole film's story as a supercut of its own dialogue, in film order: "
+        "who the main character is and what they want, the conflict, the turn, and how it ends. "
+        f"Pick {RECAP_MOMENTS[0]}-{RECAP_MOMENTS[1]} moments of one or two lines each (about 2-6s). A stranger must "
+        "follow the story from these lines alone, so prefer lines that state the situation or a relationship over "
+        "lines that need the picture. The ending may be spoiled. "
+        f"Together they must run {RECAP_LEN[0]}-{RECAP_LEN[1]}s of speech: about "
+        f"{RECAP_LEN[0] * words_per_second:.0f}-{RECAP_LEN[1] * words_per_second:.0f} words at this film's pace. "
+        "Count before you submit. first_words and last_words must be copied exactly from the text; a moment never "
+        "runs past the reading line after the one it starts in.\n\n"
+        f"Reading file: one line per ~{LINE_SECONDS}s as `h:mm:ss text`.\n\n" + "\n".join(lines)
+    )
+
+
+def place_moments(picks: dict, words: list[dict], norm: list[str]) -> tuple[list[list[int]], str | None]:
+    """Word ranges for each moment, in film order, and what is wrong with them (None if nothing)."""
+    ranges = []
+    for m in picks["moments"]:
+        head = re.findall(r"[a-z0-9']+", m["first_words"].lower())[:4]
+        tail = re.findall(r"[a-z0-9']+", m["last_words"].lower())[-4:]
+        i = snap(words, norm, seconds(m["approx_start"]), head, 60)
+        j = None if i is None else first_after(norm, tail, i, min(i + 80, len(words) - len(tail)))
+        if j is None:
+            return [], f"moment \"{m['first_words']}\" … \"{m['last_words']}\" not found near {m['approx_start']}"
+        ranges.append([i, j + len(tail) - 1])
+    ranges.sort()
+    if any(b[0] <= a[1] for a, b in zip(ranges, ranges[1:])):
+        return [], "two moments overlap"
+    if not RECAP_MOMENTS[0] - 2 <= len(ranges) <= RECAP_MOMENTS[1] + 2:
+        return ranges, f"{len(ranges)} moments, asked for {RECAP_MOMENTS[0]}-{RECAP_MOMENTS[1]}"
+    return ranges, None
+
+
+def as_cuts(ranges: list[list[int]]) -> list[list[int]]:
+    return [[a[1] + 1, b[0] - 1] for a, b in zip(ranges, ranges[1:]) if b[0] - 1 >= a[1] + 1]
+
+
+def recap(work: Path, model: str, theme: str) -> Path:
+    """A movie: one call over the whole film, since the story arc has to be seen at once. The moments land in
+    review.json as one clip whose cuts are everything between them."""
+    info = json.loads((work / "info.json").read_text(encoding="utf-8"))
+    transcript = json.loads((work / "transcript.json").read_text(encoding="utf-8"))
+    words = [w for s in transcript["segments"] for w in s["words"]]
+    norm = [re.sub(r"[^a-z0-9']", "", w["word"].lower()) for w in words]
+    words_per_second = len(words) / transcript["duration"]
+    out = work / f"recap-{model}.json"
+    if out.exists():
+        picks = json.loads(out.read_text(encoding="utf-8"))
+    else:
+        client = anthropic.Anthropic(api_key=api_key())
+        # Only movie runs teach a recap; podcast runs would cost tokens and teach the wrong shape.
+        system = [{"type": "text", "text": system_prompt(recent_runs(theme, fallback=False), theme)}]
+        messages = [{"role": "user", "content": recap_prompt(info, [text for _, text in reading_lines(work)], words_per_second)}]
+        text, usage = ask(client, model, system, messages, 1, RECAP_SCHEMA)
+        picks = json.loads(text)
+        ranges, problem = place_moments(picks, words, norm)
+        length = splice.seconds(words, ranges[0][0], ranges[-1][1], as_cuts(ranges)) if ranges else 0
+        if problem or not RECAP_LEN[0] <= length <= RECAP_LEN[1]:
+            # Same as the clip retry: show it what was measured once, instead of code throwing the recap away.
+            messages += [{"role": "assistant", "content": text}, {"role": "user", "content": (
+                f"Measured from the word timestamps: {problem or f'the moments run {length:.0f}s'}. Revise and "
+                f"resubmit the whole recap: {RECAP_LEN[0]}-{RECAP_LEN[1]}s of speech, quotes copied exactly.")}]
+            text, retry = ask(client, model, system, messages, 1, RECAP_SCHEMA)
+            picks = json.loads(text)
+            usage = {key: usage[key] + retry[key] for key in usage}
+        picks["usage"] = usage
+        out.write_text(json.dumps(picks, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    ranges, problem = place_moments(picks, words, norm)
+    if not ranges:
+        raise RuntimeError(f"recap unusable: {problem}; delete {out.name} to ask again")
+    entry = review.entry(words, picks["name"], picks["score"], ranges[0][0], ranges[-1][1], model, "",
+                         picks["reason"] + (f" Check: {problem}." if problem else ""),
+                         description=picks["description"], cuts=as_cuts(ranges))
+    if not (work / "review.json").exists():
+        review.save(work, {"status": "awaiting", "model": model, "kind": "movie", "clips": [entry]})
+    print(f"[score]      recap: {len(ranges)} moments, {entry['seconds']:.0f}s")
+    return out
 
 
 def score(work: Path, model: str = MODEL, examples: list[str] | None = None,
@@ -235,6 +333,8 @@ def score(work: Path, model: str = MODEL, examples: list[str] | None = None,
         if scored_as != kind:
             raise RuntimeError(f"{work.name} was scored as {scored_as}; remove work/{work.name}/review.json "
                                f"to rescore it as {kind}")
+    if kind == "movie":
+        return recap(work, model, theme)
     examples = examples or recent_runs(theme)
     info = json.loads((work / "info.json").read_text(encoding="utf-8"))
     transcript = json.loads((work / "transcript.json").read_text(encoding="utf-8"))

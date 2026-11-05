@@ -5,10 +5,10 @@ import re
 from pathlib import Path
 
 from . import reframe, speakers, splice
-from .render import BLUR_FILL, CAPTIONS_LOW, CAPTIONS_MID, CAPTIONS_SEAM, CURSE, render
+from .render import BLUR_FILL, CAPTIONS_LOW, CAPTIONS_MID, CAPTIONS_SEAM, CURSE, SUBTITLES, band_filter, render
 
 # What Tko picks before pasting a link: kind -> (Finished_Clips folder, theme profile in skill.md).
-KINDS = {"podcast": ("Podcast", "comedian-podcast"), "stream": ("Streaming", "streamer")}
+KINDS = {"podcast": ("Podcast", "comedian-podcast"), "stream": ("Streaming", "streamer"), "movie": ("Movies", "movie-recap")}
 
 
 def clip_cap(work: Path) -> int:
@@ -119,10 +119,13 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
     review = load(work)
     todo = to_render(review, work)
     words = transcript_words(work)
-    if not (work / "speakers.json").exists():
-        print("[speakers]   working out who says what (a few minutes, once per video)", flush=True)
-    # Streams too: friends on voice chat are separate voices even with one face on camera.
-    words = [{**w, "speaker": who} for w, who in zip(words, speakers.label(video, work, words), strict=True)]
+    kind = review.get("kind", "podcast")
+    # A movie's subtitles are white and its one layout doesn't follow anyone: no voices or faces needed.
+    if kind != "movie":
+        if not (work / "speakers.json").exists():
+            print("[speakers]   working out who says what (a few minutes, once per video)", flush=True)
+        # Streams too: friends on voice chat are separate voices even with one face on camera.
+        words = [{**w, "speaker": who} for w, who in zip(words, speakers.label(video, work, words), strict=True)]
     # `one_voice` in review.json: a streamer alone on the mic. The labelling split one shouting, whispering
     # voice into three and left half his words unsure, so his captions changed colour mid-sentence (run 18).
     if review.get("one_voice"):
@@ -132,15 +135,14 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
     number = max([next_number(out_dir)] + [int(c["rendering_as"].split("_")[0]) + 1 for c in review["clips"] if "rendering_as" in c])
     info = json.loads((work / "info.json").read_text(encoding="utf-8")) if (work / "info.json").exists() else {}
     show = re.sub(r'[<>:"/\\|?*]+', "", info.get("channel") or info.get("title") or "").strip()[:60] or "Local files"
-    kind = review.get("kind", "podcast")
     out_dir = out_dir / KINDS[kind][0] / show
     out_dir.mkdir(parents=True, exist_ok=True)
     # `facecam` in review.json overrides a wrong box; check work/<slug>/facecam.jpg before approving.
     cam = review.get("facecam") or (reframe.cam_box(video, work) if kind == "stream" else None)
     # A stream has one person on camera, in a corner: there are no close-ups to learn faces from.
-    if kind != "stream" and not (work / "faces.json").exists():
+    if kind == "podcast" and not (work / "faces.json").exists():
         print("[faces]      looking for each voice's face in the close-ups", flush=True)
-    known = {} if kind == "stream" else reframe.known_faces(video, work, words)
+    known = reframe.known_faces(video, work, words) if kind == "podcast" else {}
     # `seats` in review.json says where each voice sits ({"0": 0.09, ...}: speaker number -> x as a share of the
     # width) for a show that is one wide shot; without close-ups no face is learned and TRACK guesses (run 16).
     seats = {int(who): x for who, x in review.get("seats", {}).items()}
@@ -157,34 +159,38 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
         # A fix to "" drops the word: Whisper wrote fake speaker names as spoken words in run 11.
         caption = [{**w, "word": " ".join(fixes.get(x, x) for x in w["word"].split())} for w in kept]
         caption = [w for w in caption if w["word"].strip()]
-        done.append(render(source, work, out_dir / f"{stem}_blur.mp4", start, end, BLUR_FILL, CAPTIONS_LOW, caption))
-        # A stream switches between gameplay and talking to the camera, so the layout is decided per clip.
         split, game, edits = None, False, ""
-        if cam and reframe.shows_cam(source, start, end, cam):
-            game = True
-            zoomed = reframe.zooms(source, start, end, cam)
-            # On the seam the caption would sit across the streamer's face once the camera goes full screen.
-            where = CAPTIONS_LOW if zoomed else (5, reframe.cam_height(cam))
-            done.append(render(source, work, out_dir / f"{stem}_game.mp4", start, end,
-                               reframe.game_filter(cam, W, H, zoomed), where, caption))
+        if kind == "movie":
+            done.append(render(source, work, out_dir / f"{stem}_band.mp4", start, end,
+                               band_filter(clip.get("crop_x", 0.5)), SUBTITLES, caption, subtitles=True))
         else:
-            said = [(w["start"] - start, w["end"] - start, w["speaker"]) for w in caption]
-            segments, split = reframe.plan(source, start, end, solo=kind == "stream", said=said, known=known, seats=seats)
-            breaks = [w["end"] - start for w in caption if w["word"].rstrip().endswith((".", ",", "?", "!"))]
-            shots = reframe.track_shots(segments, W, H, end - start, breaks)
-            edits = f", track: {reframe.edit_report(shots)}"
-            where = (CAPTIONS_MID[0], reframe.track_caption_y(shots, W, H, CAPTIONS_MID[1], CAPTIONS_LOW[1]))
-            done.append(render(source, work, out_dir / f"{stem}_track.mp4", start, end,
-                               reframe.track_filter(shots, W, H), where, caption))
-        if split:
-            done.append(render(source, work, out_dir / f"{stem}_split.mp4", start, end,
-                               reframe.split_filter(split, W, H), CAPTIONS_SEAM, caption))
+            done.append(render(source, work, out_dir / f"{stem}_blur.mp4", start, end, BLUR_FILL, CAPTIONS_LOW, caption))
+            # A stream switches between gameplay and talking to the camera, so the layout is decided per clip.
+            if cam and reframe.shows_cam(source, start, end, cam):
+                game = True
+                zoomed = reframe.zooms(source, start, end, cam)
+                # On the seam the caption would sit across the streamer's face once the camera goes full screen.
+                where = CAPTIONS_LOW if zoomed else (5, reframe.cam_height(cam))
+                done.append(render(source, work, out_dir / f"{stem}_game.mp4", start, end,
+                                   reframe.game_filter(cam, W, H, zoomed), where, caption))
+            else:
+                said = [(w["start"] - start, w["end"] - start, w["speaker"]) for w in caption]
+                segments, split = reframe.plan(source, start, end, solo=kind == "stream", said=said, known=known, seats=seats)
+                breaks = [w["end"] - start for w in caption if w["word"].rstrip().endswith((".", ",", "?", "!"))]
+                shots = reframe.track_shots(segments, W, H, end - start, breaks)
+                edits = f", track: {reframe.edit_report(shots)}"
+                where = (CAPTIONS_MID[0], reframe.track_caption_y(shots, W, H, CAPTIONS_MID[1], CAPTIONS_LOW[1]))
+                done.append(render(source, work, out_dir / f"{stem}_track.mp4", start, end,
+                                   reframe.track_filter(shots, W, H), where, caption))
+            if split:
+                done.append(render(source, work, out_dir / f"{stem}_split.mp4", start, end,
+                                   reframe.split_filter(split, W, H), CAPTIONS_SEAM, caption))
         if source != video:
             source.unlink()
         (out_dir / f"{stem}.txt").write_text(with_required_tags(clip["description"]) + "\n", encoding="utf-8")
         clip["rendered_as"] = clip.pop("rendering_as")
         save(work, review)
-        print(f"[render]     {stem}  ({end - start:.1f}s, {'split' if split else 'game' if game else 'no split'}{edits})", flush=True)
+        print(f"[render]     {stem}  ({end - start:.1f}s, {'band' if kind == 'movie' else 'split' if split else 'game' if game else 'no split'}{edits})", flush=True)
         number += not partial
     review["status"] = "rendered"
     save(work, review)

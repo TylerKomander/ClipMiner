@@ -5,7 +5,9 @@
 ## Goal
 `clipminer <url-or-file>` turns a long comedian podcast or a stream into every clip worth posting
 (variable count, scored 1–10), each 10–35s, 9:16, burned-in captions, in the layouts its type calls
-for, with a one-line reason per clip. Tko picks the type (Podcast / Streaming) before pasting the link. Scoring moves from GURT-by-hand → Claude API → small local model.
+for, with a one-line reason per clip. Tko picks the type (Podcast / Streaming / Movie) before pasting the link.
+A **movie** is different: a local film file in → **one ~60s recap short** that tells the whole story as a supercut of
+12–18 dialogue moments (style of `UTBAKThAmI4`, `ZY4qS0KewuI`). Scoring moves from GURT-by-hand → Claude API → small local model.
 
 ## Constraints
 - Language: Python 3.12
@@ -20,11 +22,15 @@ for, with a one-line reason per clip. Tko picks the type (Podcast / Streaming) b
 - **Delete `work/<slug>/source.mp4` once the clips are rendered.** Tko's rule: no full videos kept.
   Keep the small text files (transcript, info, loudness); the `clip_log\` run files refer to them.
   Re-cutting a clip later means re-downloading.
-- **Two video types** (`review.KINDS`, picked in the Queue dropdown or `--kind`; stored as `kind` on the
+- **Video types** (`review.KINDS`, picked in the Queue dropdown or `--kind`; stored as `kind` on the
   job and in `review.json`): `podcast` → theme `comedian-podcast`, `stream` → theme `streamer` (added
   2026-10-04, all guesses until runs are logged). The type sets the theme profile the scorer uses, the
   layouts, and the clips folder. A new type = one line in `KINDS` + a profile in `skill.md` Part A.
-  Posting: the app fills the upload page, Tko clicks Post (never auto-publish). No movie clips (copyright).
+  Posting: the app fills the upload page, Tko clicks Post (never auto-publish).
+- **Movies post to a separate channel, never Comedian-House-TV** (Tko, 2026-11-05; replaces "no movie clips").
+  Studios run Content ID: expect claims on most recaps. The arc edit is the change to the footage; the app
+  refuses to post a Movies clip until that channel exists. The input is Tko's own file: **ClipMiner never deletes
+  or moves it** (`info.json` `path`; the no-full-videos rule covers downloaded `source.mp4` only).
 - **Stream layouts:** a gameplay clip renders BLUR + GAME (webcam on top, game under it, switching to a
   full-height crop on the face for shots where the editor cuts to the camera full screen); a clip with no gameplay
   renders BLUR + TRACK on the streamer. Decided per clip. The webcam box is found once per
@@ -51,7 +57,8 @@ for, with a one-line reason per clip. Tko picks the type (Podcast / Streaming) b
   `review.off_limits` refuses an approval, a render or a post with the plain words. Alcohol and toilet humor are
   allowed (GURT's reading, Tko hasn't ruled). File names are not covered.
 - **Layouts per type:** Podcast = BLUR + TRACK, + SPLIT when both faces share the shot; Streaming = BLUR + GAME
-  on gameplay clips, BLUR + TRACK when there is no gameplay. Tko posts the variants across platforms;
+  on gameplay clips, BLUR + TRACK when there is no gameplay; Movie = BAND only (center crop in a 72%-high band,
+  black bars, white Cambria sentence subtitles; `crop_x` 0–1 on the clip shifts the crop). Tko posts the variants across platforms;
   performance decides which to keep.
 - **No automatic judgment database.** GURT keeps the guidance by hand, and owns both files:
   `skill.md` = the rulebook, read in full every run (keep it tight).
@@ -137,6 +144,12 @@ Next clip number: **346** (counted from the logs automatically: write a run's lo
 - [ ] Sonnet matches GURT on streams. Run 12: found 1 of GURT's 17; it rated 7 of the other 16 a 7, and a 7 is a reject.
       Run 18 (Jynxzi, solo clip review): 10 picks, 9 kept (5 recut), missed 1. Good on one clear voice.
 - [ ] First 3 stream runs logged (2 of 3) (`**Theme:** \`streamer\`` in the run file) so the profile stops being guesses
+- [x] Movie type built (2026-11-05): `--kind movie` / "Movies" in the Queue, local file in, `score.recap` (one Sonnet
+      call over the whole film → 12–18 moments, 45–62s, one clip whose `cuts` are everything between them), BAND render.
+      Tested on a reference short as a stand-in film: splice output identical to the old code, BAND + subtitles render,
+      the source file survives. **`recap()` has never called the API and no real film has been run.**
+- [ ] First movie recap end to end, Tko watches it next to the references
+- [ ] Separate channel for movies in Accounts; then let the app post Movies clips to it (blocked today)
 
 **Cost plan (Tko 2026-09-30: fine for now, must get cheaper as it scales).** Today ~$1–1.50 per 2h
 episode, mostly Sonnet's output (~9k tokens per 20-min piece, flat across runs; logs don't shrink it).
@@ -160,6 +173,13 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
   the rest is the manual recipe above)
 
 ## Next step
+**Movie recaps (new type, 2026-11-05).** Code is in; nothing real has run. Next: Tko drops one film he owns,
+`.\.venv\Scripts\python.exe -m clipminer "<film path>" --kind movie` (or Movies in the app, after a restart). GURT
+reads `review.json`'s one clip: do the moments tell the story cold? Then render, frame-sheet check (faces inside the
+crop? set `crop_x` if not), and Tko compares it with `UTBAKThAmI4` / `ZY4qS0KewuI`. Known limits: one crop for the
+whole recap (per-moment crop or face centring if the sheet shows misses); Whisper under film music is untested
+(fallback: read the film's own subtitle track); Content ID will still claim most recaps.
+
 **Tko's two directions, 2026-10-08 (both in `skill.md` and in memory):** (1) tell the whole story and splice out
 interruptions and branches instead of rejecting or shrinking it; (2) every clip needs enough editing to pass
 YouTube's Shorts rule. For (2) TRACK now never holds a shot past 4.5s (`reframe.track_shots`; the render line
