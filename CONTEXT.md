@@ -26,7 +26,8 @@ A **movie** is different: a local film file in → **one ~60s recap short** that
   job and in `review.json`): `podcast` → theme `comedian-podcast`, `stream` → theme `streamer` (added
   2026-10-04, all guesses until runs are logged). The type sets the theme profile the scorer uses, the
   layouts, and the clips folder. A new type = one line in `KINDS` + a profile in `skill.md` Part A.
-  Posting: the app fills the upload page, Tko clicks Post (never auto-publish).
+  Posting: the app fills the upload page, Tko clicks Post (never auto-publish). **Auto-post** (Tko, 2026-11-09) only
+  opens and fills on a timer: opt-in per clip (Ready tick, `ready.json`), only while the app is open, off at every start.
 - **Movies post to a separate channel, never Comedian-House-TV** (Tko, 2026-11-05; replaces "no movie clips").
   Studios run Content ID: expect claims on most recaps. The arc edit is the change to the footage; the app
   refuses to post a Movies clip until that channel exists. The input is Tko's own file: **ClipMiner never deletes
@@ -161,6 +162,11 @@ Next clip number: **346** (counted from the logs automatically: write a run's lo
 - [x] Splice stretches are whole frames (`splice.frame_rate`): spliced clips drifted ~1 frame per stretch, 0.37s by
       the end of 348, so captions and BAND moves ran early. Applies to podcast splices too.
 - [ ] Separate channel for movies in Accounts; then let the app post Movies clips to it (blocked today)
+- [ ] Auto-post (2026-11-09): Clips page "Ready for auto-post" tick + AUTO-POST "Turn on…" (accounts, platforms,
+      kinds, times of day; saved in `autopost.json`). At each time, per account: best-scored Ready clip not yet in
+      `posts.json` for that account+platform, TRACK else BLUR, one tab per platform in one browser, stops before Post.
+      Skips a time while any post browser or "Posted?" question is open. Movies never picked. **Live 2026-11-09:**
+      fired at 16:44, picked 281, YouTube filled, Tko posted. Not yet tried: two platforms in one window (YT + TikTok).
 
 **Cost plan (Tko 2026-09-30: fine for now, must get cheaper as it scales).** Today ~$1–1.50 per 2h
 episode, mostly Sonnet's output (~9k tokens per 20-min piece, flat across runs; logs don't shrink it).
@@ -184,6 +190,9 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
   the rest is the manual recipe above)
 
 ## Next step
+**Auto-post works live on YouTube (2026-11-09, clip 281).** Next fire: tick YouTube + TikTok together and watch
+both tabs fill in one window. Only tick Ready on clips you've seen: runs 17–19 are still unwatched.
+
 **Movie recaps: dry run passed (Atlanta S02E01 -> 348, Tko: "really good", 2026-11-09).** Next: a real film,
 same recipe (GURT cuts by hand from the transcript + SDH, funny lines carry the main story, ~95s). Clip 348 in
 `Finished_Clips\Movies\Atlanta\` is the reference for what good looks like.

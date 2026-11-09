@@ -125,23 +125,29 @@ def facebook(page: Page, video: Path, hook: str, body: str, step: Callable[[str]
 FILLERS = {"TikTok": tiktok, "YouTube": youtube, "Instagram": instagram, "Facebook": facebook}
 
 
-def prepare(folder: Path, platform: str, video: Path, description: str, step: Callable[[str], None]) -> None:
-    """Blocks until Tko closes the browser. If a step fails the browser stays open where it stopped,
-    so the post can be finished by hand; the error is re-raised for the app to show."""
-    hook, _, body = description.strip().partition("\n")
+def prepare(folder: Path, posts: list[tuple[str, Path, str]], step: Callable[[str], None]) -> None:
+    """Fills one tab per (platform, video, description), all in this account's browser: Chrome locks a
+    profile folder, so one session per account. Blocks until every tab is closed. A tab whose step fails
+    stays open where it stopped, so that post can be finished by hand; the first error is re-raised."""
     with sync_playwright() as p:
         context = p.chromium.launch_persistent_context(
             folder, channel="chrome", headless=False, no_viewport=True,
             ignore_default_args=["--enable-automation"], args=["--disable-blink-features=AutomationControlled"])
-        page = context.pages[0] if context.pages else context.new_page()
-        failure = None
-        try:
-            FILLERS[platform](page, video, hook, body.strip(), step)
-            step("ready: check it and click Post")
-        except Exception as e:
-            failure = e
-            step("stopped: finish by hand (caption is on the clipboard)")
-        page.wait_for_event("close", timeout=0)
+        failures = []
+        pages = []
+        for platform, video, description in posts:
+            page = context.pages[0] if not pages and context.pages else context.new_page()
+            pages.append(page)
+            hook, _, body = description.strip().partition("\n")
+            try:
+                FILLERS[platform](page, video, hook, body.strip(), lambda text, pl=platform: step(f"{pl}: {text}"))
+                step(f"{platform}: ready: check it and click Post")
+            except Exception as e:
+                failures.append(e)
+                step(f"{platform}: stopped: finish by hand (Copy description in the app has the caption)")
+        for page in pages:
+            if not page.is_closed():
+                page.wait_for_event("close", timeout=0)
         context.close()
-        if failure:
-            raise failure
+        if failures:
+            raise failures[0]
