@@ -119,6 +119,10 @@ def subtitle_lines(words: list[dict], start: float, max_chars: int = 80) -> list
         text = w["word"].strip()
         if not text:
             continue
+        # Whisper's split tokens ("Y 'all", "two -piece"), glued as in caption_lines.
+        if chunk and (text[:1] in "-'" and len(text) > 1 or text in {"%", ".", ",", "?", "!"}):
+            chunk[-1] = {**chunk[-1], "word": chunk[-1]["word"] + text, "end": w["end"]}
+            continue
         if chunk and (chunk[-1]["word"].endswith((".", "?", "!")) or w["start"] - chunk[-1]["end"] > PAUSE
                       or len(" ".join(c["word"] for c in chunk)) + 1 + len(text) > max_chars):
             lines.append(chunk)
