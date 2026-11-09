@@ -108,10 +108,22 @@ whole story as a supercut of the film's own dialogue (reference shorts `UTBAKThA
 *10 Things I Hate About You*: 59s, 16–17 moments, film order, ending included). No runs yet: all of this is a
 **(guess)** taken from the two references.
 
-**Audience:** people who scroll for a story. The bar is not "funny" but "I understood the film and want to watch it".
+**Audience:** people who scroll to be entertained. **The goal is the most entertaining short that still tells the
+story** (Tko, 2026-11-09, after the first recap told the plot but was flat): "I understood it" is the floor, not the bar.
 
 **What the recap must carry, in film order:** who the main character is and what they want; who or what stands in
-the way; the turn; how it ends. One or two lines per moment (about 2–6s), 12–18 moments, 45–62s in total.
+the way; the turn; how it ends. One or two lines per moment (about 2–6s), 14–24 moments, 50–90s in total.
+
+**Entertainment is half the pick.** Every funny line, roast, absurd exchange or character moment that a stranger
+gets without the scene before is a candidate, not filler; the best recaps are mostly lines you'd quote. Don't drop
+a great story beat to save seconds: drop a plain plot line instead, or use the length.
+**Let the funny lines tell the story** (Tko on clip 347): follow the main story only (Atlanta: the alligator man,
+not the storage unit, Tara or Tracy). A serious line or a side plot that isn't essential goes, even if it is good;
+when a beat can be carried by a laugh or a straight line, take the laugh.
+
+**Every scene change is set up.** When the next moment drops the viewer somewhere new or with new people, a moment
+before it must say why (a call, "go over to Willie's", "they coming"). Check every cut between scenes: would a
+stranger know why we're here now? If not, add the line that sends us there or drop the new scene.
 
 **Where the good lines hide:** lines that *state* the situation ("I didn't pay you to take out Kat so some little
 punk could snake me"), a relationship ("You are so not who I thought you were"), the threat ("there's gonna be

@@ -53,8 +53,8 @@ RECAP_SCHEMA = _object({
         "why": {"type": "string", "description": "which beat of the story this carries"},
     })},
 })
-RECAP_LEN = (45, 62)
-RECAP_MOMENTS = (12, 18)
+RECAP_LEN = (50, 90)
+RECAP_MOMENTS = (14, 24)
 
 
 def hms(t: float) -> str:
