@@ -105,14 +105,16 @@ hallucinated loop ("A, A, A" ×100).
 ## Theme: `movie-recap`
 A whole feature film or show episode, from a local file. **Not clips: one recap short per film** that tells the
 whole story as a supercut of the film's own dialogue (reference shorts `UTBAKThAmI4` *42*, `ZY4qS0KewuI`
-*10 Things I Hate About You*: 59s, 16–17 moments, film order, ending included). No runs yet: all of this is a
-**(guess)** taken from the two references.
+*10 Things I Hate About You*: 59s, 16–17 moments, film order, ending included). **One run so far: run 20, Atlanta
+S02E01 → clip 348, Tko: "That's really good."** `clip_log\run-20-atlanta-s02e01-recap.md` is the worked example:
+read its moment table before picking. Rules from that one run are marked **(run 20)**; one film is one data point.
 
 **Audience:** people who scroll to be entertained. **The goal is the most entertaining short that still tells the
 story** (Tko, 2026-11-09, after the first recap told the plot but was flat): "I understood it" is the floor, not the bar.
 
 **What the recap must carry, in film order:** who the main character is and what they want; who or what stands in
-the way; the turn; how it ends. One or two lines per moment (about 2–6s), 14–24 moments, 50–90s in total.
+the way; the turn; how it ends. One whole exchange per moment (a line and its reply, about 3–12s), 14–24 moments, 50–90s of
+speech in total.
 
 **Entertainment is half the pick.** Every funny line, roast, absurd exchange or character moment that a stranger
 gets without the scene before is a candidate, not filler; the best recaps are mostly lines you'd quote. Don't drop
@@ -135,6 +137,77 @@ moment from a character the recap hasn't introduced.
 
 **Score** (1–10, the recap as a whole): can a stranger tell what the film is about, who it is about and how it
 ends from these lines alone? 8+ = yes, with a line that hooks in the first 3s.
+
+### How to build a recap, step by step
+Do these in order and write each step's result down before the next. In the blind test (two small models, run 20's
+film, 3/10 each) every failure came from steps 5–7 done loosely. **If your notes call anything a weakness, you are
+not done: fix it or swap the moment.**
+1. **Read everything once before picking.** The SDH subtitles (`subs_sdh.srt`, if there is one) for names and who
+   speaks (`WILLY:` before a line); the reading file end to end for the story. Quote text and times come from the
+   reading file (it is Whisper's transcript), never the subtitles: the code matches your words against Whisper's.
+   An SDH `NAME:` names only the cue it starts; never borrow one from another cue. Otherwise a speaker is known only
+   from the dialogue (a reply comes from the person just addressed), or "speaker unknown". Never drop a line over a
+   speaker you guessed.
+2. **Write the main thread in one sentence:** "<main character> has to <goal>, but <obstacle>; <turn>; <ending>."
+   Back each clause with a quoted line and its time; the ending is the line in the main thread's last scene that
+   shows the result (read the lines after any standoff: "Where's X?" / "Not in jail" means X got away). If you can't
+   quote it, it isn't in the sentence; say in one clause how the conflict resolved (gave up, escaped, won). For an
+   episode, the main thread is the plot the title names. Everything the sentence doesn't cover is a side plot and
+   stays out, even its funniest line. Side plot means the scene, not the words: a line said inside a main-thread scene
+   stays, even if it echoes a side scene, when a stranger gets it on its own **(run 20: v2 kept four side-plot
+   laughs and Tko cut them)**.
+3. **Find where the main thread starts**: the call, the order, the arrival that sets it moving. The recap starts
+   there; earlier scenes come in only if a stranger needs them to know who the main character is **(run 20: the
+   first 13 of 35 minutes skipped)**.
+4. **List candidates on the main thread only**: go through every row of it and list every laugh before choosing
+   any, with their times, and tag each: **L** a laugh a stranger gets with no scene before, one you can state in a
+   sentence ("he denies a domestic call by saying they aren't married"); a one-word reaction or an exclamation is not
+   an L; **S** a line that states the situation, stakes or a relationship; **T** the title line or the line
+   everyone would quote; **E** the ending. Most good candidates are L+S.
+5. **Fill the arc**, in film order: **hook** (moment 1: a mission, a threat or a strange situation, said in words,
+   with its reason in the same moment) → **set-up** (who wants what) → **escalation** beats, each raising the stakes
+   → **stakes/turn** → **outcome** → **button** (the best laugh in the main thread's *last* scene; if a new person or
+   subject starts just before it, you've left the main thread; a warning or an order is not a button).
+   **Both ends of every moment:** read the sentence before `first_words` and the one after `last_words`. Take the one
+   before if yours answers or points back to it (opens with "No", "Yeah", "You don't…", or "that/this" for something
+   not yet said); take the one after if it's the reply, the punchline, or names something used later. A moment that
+   opens on an answer without its question, or stops a sentence before the joke, is broken.
+   **A moment is one whole exchange that lands its beat:** a set-up and its punchline, or a line and its reply,
+   usually 2–4 sentences and 3–12s. Never split one speaker's continuous speech into two moments; two picks less
+   than 10s apart in one scene are one moment. **Take the reply:** a line that states a beat is often followed by
+   the reply that makes it funny (an accusation, then the joke denial). Read 30s either side of every beat and take
+   the reply, or the line and its reply together. A straight S-only moment is allowed only for the hook, a set-up
+   that pays off later, a who-is-who line or one stakes line **(run 20: 4 of 16 moments straight)**.
+6. **Bridge check, every pair of neighbours:** if the place or the people change, the moment before must send us
+   there ("go over to Willie's", "they coming"). **Set-up check:** for every person, object or animal in the last
+   third of the recap, search the reading file for the first time it appears or changes hands (the noun, and "take
+   it", "here", "this"). That line must be in the recap, earlier than the payoff. A line that explains it after it
+   appeared ("X gave it to me") is a payoff, never a set-up. Note each pair as `set-up <time> → payoff <time>`
+   **(run 20: the gun had no set-up until "You're gonna need this… Take it." was added)**.
+7. **Cold-stranger retell, a gate:** using only facts your quotes state, retell in three sentences: who, what
+   happened, how it ended. Then write, for each moment, the question a stranger would ask (who is speaking? who is X
+   to Y? where are we? where did that come from?): an earlier moment or that one must answer it. **Fail** if by
+   moment 3 a stranger doesn't know the main character and what he is to the person he's helping; if a person who
+   drives the plot is never tied to him by a quoted line ("my uncle"); if a new place has no line sending us there;
+   if anything in the last three moments is unexplained. On a fail, go back to 5–6. A who-is-who line ("That's my
+   uncle") always earns its seconds. You know the film and will pass yourself: when you can, hand this step to a fresh
+   reader (a new agent) given the **full spoken text** of every moment, numbered, with no times, notes or speakers,
+   never just first and last words. Every question it asks is a fix. **Never hand in notes that say fail, "known gap"
+   or "can't fix within budget".**
+8. **Budget:** 14–24 moments, 50–90s of speech. Dialogue runs about 2.5–3 words a second (348: 254 words in 89s), so
+   that's roughly 130–260 quoted words; the prompt gives this film's own pace, measured over speech only. Too long:
+   drop a whole S-only moment, never an L while an S-only one is left, and side beats before main ones. Too short:
+   grow each moment into its full exchange first, then add the next-best L on the main thread. At least two thirds
+   of the moments carry an L.
+9. **Quote exactly**: copy `first_words`/`last_words` word for word from the reading file (the code matches the
+   words, not punctuation; a word that isn't there drops the moment). `first_words` opens a sentence and
+   `last_words` closes one. Reading-file rows wrap mid-sentence: if your `last_words` reach the end of a row, read
+   on into the next one. Read `last_words` alone: if they don't finish a sentence, or the funny part comes after
+   them, extend. A word that makes no sense was probably misheard: check the SDH line at that time. The viewer hears
+   the audio, not Whisper, so a mishearing never drops a moment: copy the boundary words as Whisper wrote them, from
+   outside the misheard stretch. A moment that runs long for its few words is a Whisper timing slip **(run 20: "I'm the alligator
+   man" was 5s early)**.
+10. **Write the post text** (below) and a one-line `why` per moment naming its slot (hook, laugh, stakes, set-up…).
 
 **Post text:** the hook is a teaser question or a quote twist on the film ("An offer he can't refuse?", "His savage
 reply to all the doubters!"), never the ending. Credit: "From <Film> (<year>)." Hashtags: the film, its stars, the

@@ -208,6 +208,18 @@ for a film) and the theme profile in `skill.md`; write the picks as the cache So
 `parts-claude-sonnet-5-5/<begin>.json` per piece of `score.chunks(score.reading_lines(work), span)` for a podcast or
 stream, `recap-claude-sonnet-5-5.json` for a movie; run `score(work, kind=...)` (reads the cache, no API); set each
 clip's `by`/`model` to `gurt-by-hand`. The app moves the job to Review by itself. One lean pass: no panels.
+**Movies:** follow `skill.md` movie-recap "How to build a recap" step by step; `clip_logun-20` is the worked example.
+Read the reading file as `score.reading_lines(work)` builds it (write it out fresh; a hand-kept `reading.txt` went stale
+after a transcript fix and broke a quote). A movie job saves the film's English SDH track as `subs_sdh.srt`.
+
+**Recap method, blind-tested 2026-11-09 (not ready for a small model on its own).** Haiku ×2 drafted Atlanta from the
+method only (no example, no 348), judged against 348: round 1 3/10 and 3/10, round 2 6/10 and 5/10 after the method
+was rewritten from round 1's failures. Round 1 also exposed a code bug: the recap pace was measured over the whole
+runtime (1.3 w/s, real dialogue 2.6–2.9), asking for 40s recaps; now over speech only. What's left is self-grading:
+the model passes its own gates. **Plan for a small model:** draft → a fresh reader given only the full spoken text
+of each moment (its questions are the fixes) → repair; never one call. Code now flags moments that stop
+mid-sentence. **Sonnet 5.5 refused both blind drafts** (safeguards flagged the episode's language): the app's
+Sonnet recap path may hit the same on R-rated films; untested. Round costs: ~455k and ~390k subagent tokens.
 
 **Auto-post is done for YouTube (2026-11-09):** schedules per account and kind, click-through to Visibility, tab
 closes and records itself. Movies go to The-Theatre-Goer only; don't tick recaps 346/347 (rejected v1/v2) Ready. Only tick Ready on clips you've seen: runs 17–19 are still unwatched.

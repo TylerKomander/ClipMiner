@@ -46,6 +46,7 @@ universal) and note "(in skill.md)" here.
 | 17 | `run-17-this-past-weekend-661-kiriakou.md` | This Past Weekend #661 (John Kiriakou) | 139m | 302–321 | **not reviewed by GURT**: Tko approved Sonnet's 20 in the app; log written afterwards from `review.json` |
 | 18 | `run-18-jynxzi-i-hate-clips.md` | Jynxzi "I Hate Clips..." (stream, solo, Siege clip review) | 46m | 322–331 | second `streamer` run, first on the review budget; Sonnet 10 picks, 9 kept (5 recut), missed 1; cut-out webcam set by hand; `one_voice` |
 | 19 | `run-19-matt-shane-636-sam-tallent.md` | Matt & Shane Ep 636 (Sam Tallent) | 73m | 332–345 | budget review of a repeat show: no blind pass, Sonnet's 23 read directly, 14 kept; seats set before approving, right in 13 of 14 |
+| 20 | `run-20-atlanta-s02e01-recap.md` | Atlanta S02E01 "Alligator Man" (TV episode, `movie-recap`) | 35m | 346–348 | first recap; three versions by GURT by hand, v3 (348) passed: main thread only, funny lines carry it, every pay-off set up |
 
 ## Shapes (universal), most seen first
 Format: tally · shape · clips (score). Clip numbers match `Finished_Clips\` and the run files.
@@ -93,6 +94,10 @@ Read so far: story shapes with a clear turn score 8–9; takes score 7 unless th
 quotable. Duo shows (Shane/Steve) run on "friend exposes the other"; one-guest shows on self-roast.
 
 ## Recurring lessons, most seen first
+- `[.]` `[theme]` movie-recap: follow the main thread only; a side plot's funniest line still goes (run 20: v2 → v3). (in skill.md)
+- `[.]` `[theme]` movie-recap: let the laughs tell the story; a straight line only where no laugh tells that beat (run 20: 4 of 16 straight). (in skill.md)
+- `[.]` `[theme]` movie-recap: every pay-off needs a set-up moment and every scene change a line that sends us there; a cold-stranger retell catches both (run 20: the gun). (in skill.md)
+- `[.]` `[universal]` A film's SDH subtitle track names who speaks; Whisper gives exact words and times (run 20). (in skill.md, `download.subtitles`)
 - `[..........]` `[universal]` Clips with zero signal support are as good as signalled ones (runs 1–10). (in skill.md)
 - `[............]` `[universal]` Whisper drops to lowercase with no punctuation (runs 2–4, 6–10). (in skill.md) Run 12: 47% of the lines. Run 13: 41:55–53:35. Run 14: most of the episode. Run 16: 0:00–44:09, with whole lines lost. **Fix found (run 16, one episode):** `condition_on_previous_text=False` plus a cased, punctuated style hint (`hotwords`): cased all the way, 234 curses instead of 104, no loops. In `transcribe.py`.
 - `[............]` `[scorer]` Model scores the best clips one point low (runs 3–10, every run). Calibration added after run 9; run 10 still low (two 9s given 7–8). (in skill.md) Run 12 (first stream): with 7 = reject it submitted 3 clips; GURT found 17, and Sonnet's reject list named 7 of them as "a 7". Run 13: six strong one-liners it named were rejected as 7s or "light banter"; GURT kept all six. Run 15: of the 10 final 9s it had, 9 were 8s on its list. Run 16: 12 of its 13 were 8s; eight of the ten kept finished at 9.
