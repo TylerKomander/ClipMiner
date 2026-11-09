@@ -24,13 +24,14 @@ READY = ROOT / "ready.json"
 AUTOPOST = ROOT / "autopost.json"
 RUNNING = ("download", "transcribe", "signals", "score", "render")
 CATEGORIES = [folder for folder, _ in review.KINDS.values()]
+PICKERS = {"GURT": "gurt", "Sonnet": "sonnet"}
 
 # Dark tech palette after TerraPlayer's default skin: black, neon green, cyan.
 BG, PANEL, FIELD, LINE = "#07090b", "#0e1318", "#141b22", "#22303b"
 INK, MUTED = "#d6e2ea", "#7a8a96"
 GREEN, CYAN, AMBER, RED = "#00ff88", "#00e5ff", "#ffb000", "#ff4d5e"
 MONO, SANS = "Consolas", "Segoe UI"
-STAGE_COLOR = {"queued": MUTED, "review": AMBER, "done": GREEN, "failed": RED, **{s: CYAN for s in RUNNING}}
+STAGE_COLOR = {"queued": MUTED, "gurt": AMBER, "review": AMBER, "done": GREEN, "failed": RED, **{s: CYAN for s in RUNNING}}
 
 
 def score_of(base: Path) -> int:
@@ -136,6 +137,9 @@ class Worker(threading.Thread):
         self.events.put(job["id"])
 
     def next_job(self) -> dict | None:
+        # GURT writes review.json from a chat session; the job moves on once it's there.
+        for job in [j for j in self.jobs if j["stage"] == "gurt" and (ROOT / "work" / j["slug"] / "review.json").exists()]:
+            self.set(job, stage="review", clips=len(review.load(ROOT / "work" / job["slug"])["clips"]))
         with self.lock:
             # Approved reviews go first: they are one render away from finished clips.
             # A finished job comes back too when new picks are approved for it (a second batch).
@@ -171,6 +175,9 @@ class Worker(threading.Thread):
         transcribe(video, work)
         self.set(job, stage="signals")
         loudness(video, work)
+        if job.get("picker") == "gurt":
+            self.set(job, stage="gurt")
+            return
         self.set(job, stage="score")
         score(work, kind=job.get("kind", "podcast"))
         self.set(job, stage="review", clips=len(review.load(work)["clips"]))
@@ -196,12 +203,16 @@ class Page(ttk.Frame):
 class QueuePage(Page):
     def __init__(self, app):
         super().__init__(app, "Queue", "Pick the type, then paste links, one per line. They run one at a time "
-                                       "(download → transcribe → pick clips) and then wait in Review.")
+                                       "(download → transcribe → pick clips) and then wait in Review. GURT picks: it waits as \"for GURT\" until "
+                                       "you open a session and ask him to pick it.")
         add = self.card("Add episodes", expand=False, fill="x")
         row = ttk.Frame(add, style="Panel.TFrame")
         row.pack(fill="x")
         self.kind = tk.StringVar(value=CATEGORIES[0])
         ttk.Combobox(row, textvariable=self.kind, values=CATEGORIES, state="readonly", width=11).pack(side="left", padx=(0, 10))
+        ttk.Label(row, text="Picks by", style="Panel.TLabel").pack(side="left")
+        self.picker = tk.StringVar(value="GURT")
+        ttk.Combobox(row, textvariable=self.picker, values=list(PICKERS), state="readonly", width=8).pack(side="left", padx=(6, 10))
         self.urls = text_box(row, 3)
         self.urls.pack(side="left", fill="x", expand=True)
         ttk.Button(row, text="Add to queue", style="Accent.TButton", command=self.add).pack(side="left", padx=(10, 0))
@@ -216,6 +227,7 @@ class QueuePage(Page):
         bar.pack(fill="x", pady=(10, 0))
         ttk.Button(bar, text="Retry", command=self.retry).pack(side="left")
         ttk.Button(bar, text="Remove", command=self.remove).pack(side="left", padx=8)
+        ttk.Button(bar, text="Send to Sonnet", command=self.to_sonnet).pack(side="left")
         self.error = ttk.Label(bar, style="Error.TLabel", background=PANEL, wraplength=600)
         self.error.pack(side="left", padx=10)
 
@@ -226,7 +238,7 @@ class QueuePage(Page):
             next_id = max((j["id"] for j in self.app.jobs), default=0) + 1
             for i, source in enumerate(lines):
                 self.app.jobs.append({"id": next_id + i, "source": source, "title": source, "slug": "", "kind": kind,
-                                      "stage": "queued", "clips": 0, "elapsed": 0, "error": ""})
+                                      "picker": PICKERS[self.picker.get()], "stage": "queued", "clips": 0, "elapsed": 0, "error": ""})
             save_json(JOBS, self.app.jobs)
         self.urls.delete("1.0", "end")
         self.app.refresh()
@@ -245,6 +257,18 @@ class QueuePage(Page):
                 save_json(JOBS, self.app.jobs)
             self.app.refresh()
 
+    def to_sonnet(self) -> None:
+        job = self.selected()
+        if not job or job["stage"] != "gurt":
+            messagebox.showinfo("Send to Sonnet", "Pick a job that's waiting for GURT.")
+            return
+        if messagebox.askyesno("Send to Sonnet", "Let Sonnet pick this one through the Claude API instead of waiting "
+                                                 "for GURT? Download and transcript are kept."):
+            with self.app.lock:
+                job.update(picker="sonnet", stage="queued")
+                save_json(JOBS, self.app.jobs)
+            self.app.refresh()
+
     def remove(self) -> None:
         job = self.selected()
         if job and job["stage"] not in RUNNING:
@@ -259,15 +283,15 @@ class QueuePage(Page):
         with self.app.lock:
             for j in self.app.jobs:
                 self.tree.insert("", "end", iid=str(j["id"]), tags=(j["stage"],), values=(
-                    j["title"], review.KINDS[j.get("kind", "podcast")][0], j["stage"], j["clips"] or "", f"{j['elapsed'] / 60:.0f}m" if j["elapsed"] else ""))
+                    j["title"], review.KINDS[j.get("kind", "podcast")][0], "for GURT" if j["stage"] == "gurt" else j["stage"], j["clips"] or "", f"{j['elapsed'] / 60:.0f}m" if j["elapsed"] else ""))
         if keep and self.tree.exists(keep[0]):
             self.tree.selection_set(keep)
 
 
 class ReviewPage(Page):
     def __init__(self, app):
-        super().__init__(app, "Review", "Sonnet's picks for each episode. Drop the weak ones, then approve "
-                                        "to render. GURT can review and approve the same picks from chat.")
+        super().__init__(app, "Review", "GURT's or Sonnet's picks for each episode. Drop the weak ones, then "
+                                        "approve to render. GURT can review and approve the same picks from chat.")
         split = ttk.Frame(self)
         split.pack(fill="both", expand=True)
         left = ttk.Frame(split, style="Panel.TFrame", padding=14)

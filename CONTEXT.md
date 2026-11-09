@@ -201,6 +201,14 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
   the rest is the manual recipe above)
 
 ## Next step
+**GURT picks by hand now (Tko 2026-11-09: "I want you to handle all of that").** Queue default is "Picks by
+GURT": the job downloads, transcribes, measures loudness and parks as **for GURT**. No Sonnet call. "Send to Sonnet"
+in the Queue hands one over. **Recipe when Tko says "pick it":** read `work/<slug>/transcript.json` (+ `subs_sdh.srt`
+for a film) and the theme profile in `skill.md`; write the picks as the cache Sonnet would have written:
+`parts-claude-sonnet-5-5/<begin>.json` per piece of `score.chunks(score.reading_lines(work), span)` for a podcast or
+stream, `recap-claude-sonnet-5-5.json` for a movie; run `score(work, kind=...)` (reads the cache, no API); set each
+clip's `by`/`model` to `gurt-by-hand`. The app moves the job to Review by itself. One lean pass: no panels.
+
 **Auto-post is done for YouTube (2026-11-09):** schedules per account and kind, click-through to Visibility, tab
 closes and records itself. Movies go to The-Theatre-Goer only; don't tick recaps 346/347 (rejected v1/v2) Ready. Only tick Ready on clips you've seen: runs 17–19 are still unwatched.
 
