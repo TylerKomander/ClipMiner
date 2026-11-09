@@ -608,16 +608,17 @@ class ClipsPage(Page):
             self.status_text = text
 
         def run() -> None:
+            published = set()
             try:
-                post.prepare(folder, [(p, video, description) for p in platforms], step)
+                published = post.prepare(folder, [(p, video, description) for p in platforms], step)
                 self.status_text = f"{profile['name']}: browser closed."
             except Exception as e:
                 self.status_text = (f"{profile['name']}: stopped ({type(e).__name__}: {str(e).splitlines()[0][:160]}). "
                                     f"Finish by hand; Copy description on {number_of(base)} has its caption.")
             finally:
-                # The app can't see the Post click, so it asks once the browser is closed. The account stays
-                # busy until that's answered, or an auto-post time could re-open a clip just posted.
-                self.finished.append((str(folder), profile["name"], platforms, base.name, layout))
+                # A post the app saw go through is recorded; any other tab gets asked about once the browser
+                # is closed. The account stays busy until then, or an auto-post time could re-open a clip just posted.
+                self.finished.append((str(folder), profile["name"], platforms, published, base.name, layout))
 
         threading.Thread(target=run, daemon=True).start()
         if idle:
@@ -708,10 +709,10 @@ class ClipsPage(Page):
     def watch(self) -> None:
         self.post_status.config(text=self.status_text)
         while self.finished:
-            folder, name, platforms, stem, layout = self.finished.pop(0)
+            folder, name, platforms, published, stem, layout = self.finished.pop(0)
             profile = next((p for p in self.app.profiles if p["name"] == name), None)
             for platform in platforms if profile else []:
-                self.record(profile, platform, ask=True, stem=stem, layout=layout)
+                self.record(profile, platform, ask=platform not in published, stem=stem, layout=layout)
             self.busy.discard(folder)
         if self.busy:
             self.after(500, self.watch)

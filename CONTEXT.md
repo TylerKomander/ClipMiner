@@ -167,6 +167,9 @@ Next clip number: **346** (counted from the logs automatically: write a run's lo
       `posts.json` for that account+platform, TRACK else BLUR, one tab per platform in one browser, stops before Post.
       Skips a time while any post browser or "Posted?" question is open. Movies never picked. **Live 2026-11-09:**
       fired at 16:44, picked 281, YouTube filled, Tko posted. Not yet tried: two platforms in one window (YT + TikTok).
+- [x] YouTube tab closes itself once "Video processing" or "Video/Short published" shows, and that post is recorded without the Posted?
+      question (`post.PUBLISHED`; other platforms still ask). First live try missed: Tko published
+      mid-processing, which shows "Video processing"; now matched too. **Live 2026-11-09: closed itself, recorded.**
 
 **Cost plan (Tko 2026-09-30: fine for now, must get cheaper as it scales).** Today ~$1–1.50 per 2h
 episode, mostly Sonnet's output (~9k tokens per 20-min piece, flat across runs; logs don't shrink it).

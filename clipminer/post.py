@@ -4,7 +4,7 @@ import subprocess
 from pathlib import Path
 from typing import Callable
 
-from playwright.sync_api import Page, sync_playwright
+from playwright.sync_api import Error as PlaywrightError, Page, sync_playwright
 
 from .review import REQUIRED_TAGS
 
@@ -125,29 +125,51 @@ def facebook(page: Page, video: Path, hook: str, body: str, step: Callable[[str]
 FILLERS = {"TikTok": tiktok, "YouTube": youtube, "Instagram": instagram, "Facebook": facebook}
 
 
-def prepare(folder: Path, posts: list[tuple[str, Path, str]], step: Callable[[str], None]) -> None:
+def youtube_published(page: Page) -> bool:
+    # Publish clicked before processing ends shows "Video processing" (it goes live when done), after shows
+    # "Video published". Neither box exists until Publish is clicked.
+    boxes = page.locator("ytcp-uploads-still-processing-dialog, ytcp-video-share-dialog").filter(visible=True)
+    titles = page.get_by_text(re.compile(r"^\s*(Video|Short) (published|processing)\s*$")).filter(visible=True)
+    return boxes.count() + titles.count() > 0
+
+
+# Other platforms' tabs stay open for Tko to close, and he's asked whether they posted.
+PUBLISHED = {"YouTube": youtube_published}
+
+
+def prepare(folder: Path, posts: list[tuple[str, Path, str]], step: Callable[[str], None]) -> set[str]:
     """Fills one tab per (platform, video, description), all in this account's browser: Chrome locks a
-    profile folder, so one session per account. Blocks until every tab is closed. A tab whose step fails
-    stays open where it stopped, so that post can be finished by hand; the first error is re-raised."""
+    profile folder, so one session per account. A tab whose fill fails stays open where it stopped, so
+    that post can be finished by hand. A tab closes itself once its platform shows the post went through;
+    returns those platforms when every tab is closed."""
     with sync_playwright() as p:
         context = p.chromium.launch_persistent_context(
             folder, channel="chrome", headless=False, no_viewport=True,
             ignore_default_args=["--enable-automation"], args=["--disable-blink-features=AutomationControlled"])
-        failures = []
-        pages = []
+        tabs = {}
         for platform, video, description in posts:
-            page = context.pages[0] if not pages and context.pages else context.new_page()
-            pages.append(page)
+            page = context.pages[0] if not tabs and context.pages else context.new_page()
+            tabs[platform] = page
             hook, _, body = description.strip().partition("\n")
             try:
                 FILLERS[platform](page, video, hook, body.strip(), lambda text, pl=platform: step(f"{pl}: {text}"))
                 step(f"{platform}: ready: check it and click Post")
-            except Exception as e:
-                failures.append(e)
+            except Exception:
                 step(f"{platform}: stopped: finish by hand (Copy description in the app has the caption)")
-        for page in pages:
-            if not page.is_closed():
-                page.wait_for_event("close", timeout=0)
+        published = set()
+        while open_tabs := [page for page in tabs.values() if not page.is_closed()]:
+            for platform, page in tabs.items():
+                try:
+                    if not page.is_closed() and platform in PUBLISHED and PUBLISHED[platform](page):
+                        published.add(platform)
+                        step(f"{platform}: posted, closing its tab")
+                        page.close()
+                except PlaywrightError:
+                    pass  # Tko closed the tab mid-check
+            # Not time.sleep: Playwright only notices a tab closed by hand while one of its calls is waiting.
+            try:
+                open_tabs[0].wait_for_event("close", timeout=1000)
+            except PlaywrightError:
+                pass
         context.close()
-        if failures:
-            raise failures[0]
+        return published
