@@ -148,7 +148,18 @@ Next clip number: **346** (counted from the logs automatically: write a run's lo
       call over the whole film → 12–18 moments, 45–62s, one clip whose `cuts` are everything between them), BAND render.
       Tested on a reference short as a stand-in film: splice output identical to the old code, BAND + subtitles render,
       the source file survives. **`recap()` has never called the API and no real film has been run.**
-- [ ] First movie recap end to end, Tko watches it next to the references
+- [ ] First movie recap end to end, Tko watches it next to the references. 2026-11-09, Atlanta S02E01 (TV episode as
+      the dry run), picked by GURT, no API: 346 (v1, 16 moments, 57.6s, fixed crop) Tko: "flat, skipped story, needs
+      face tracking, set up every scene change". 347 (v2, 24 moments, 97.9s, follows the speaker) Tko: "way better… tells the story"; lines clipped at cuts, half
+      faces, cut side plots and serious beats for funnier lines. 348 (v3, 16 moments, 96.7s) Tko: "really good" (2026-11-09). The recap shape is set.
+- [x] HDR sources (PQ/HLG) tone-mapped to SDR 1080p in `splice.build` (mobius; hable crushed dark faces)
+- [x] BAND follows the speaker (`reframe.band_track_filter`, `plan(film=True, joins=, group=)`): everyone framed
+      together when they fit; no face found -> whole picture over a blurred fill (FIT) instead of a guessed crop; the
+      window never slices a detected face (`_unsliced`). `reframe.cut_faces` lists faces on the band edge after each
+      movie render (it can't see faces the detector misses). `crop_x` in review.json still pins a fixed crop.
+- [x] Recap moments end on a held beat after the last word (`splice.RECAP_HOLD`, every moment, not just the last)
+- [x] Splice stretches are whole frames (`splice.frame_rate`): spliced clips drifted ~1 frame per stretch, 0.37s by
+      the end of 348, so captions and BAND moves ran early. Applies to podcast splices too.
 - [ ] Separate channel for movies in Accounts; then let the app post Movies clips to it (blocked today)
 
 **Cost plan (Tko 2026-09-30: fine for now, must get cheaper as it scales).** Today ~$1–1.50 per 2h
@@ -173,12 +184,24 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
   the rest is the manual recipe above)
 
 ## Next step
-**Movie recaps (new type, 2026-11-05).** Code is in; nothing real has run. Next: Tko drops one film he owns,
-`.\.venv\Scripts\python.exe -m clipminer "<film path>" --kind movie` (or Movies in the app, after a restart). GURT
-reads `review.json`'s one clip: do the moments tell the story cold? Then render, frame-sheet check (faces inside the
-crop? set `crop_x` if not), and Tko compares it with `UTBAKThAmI4` / `ZY4qS0KewuI`. Known limits: one crop for the
-whole recap (per-moment crop or face centring if the sheet shows misses); Whisper under film music is untested
-(fallback: read the film's own subtitle track); Content ID will still claim most recaps.
+**Movie recaps: dry run passed (Atlanta S02E01 -> 348, Tko: "really good", 2026-11-09).** Next: a real film,
+same recipe (GURT cuts by hand from the transcript + SDH, funny lines carry the main story, ~95s). Clip 348 in
+`Finished_Clips\Movies\Atlanta\` is the reference for what good looks like.
+v3 = the alligator-man story told through its laughs (Tko on v2: cut side plots and serious beats, funny lines carry
+the story; in `skill.md` and memory). GURT cut it by hand from v2 plus five laughs v2 skipped; no panel.
+~97s rendered is accepted. Open call: a better face detector for mesh/dark shots (new model, needs a yes)? Then a
+real film. The two v1/v2 recap panels cost ~1.3M agent tokens: too much for routine. A film run = one drafting pass +
+one cold test, or GURT by hand.
+Transcript hand fixes in `work/<slug>/transcript.json`: "I'm" moved to 1165.28; "four to five" -> "45" (word indices
+after 992s shift by 2, so `review_v1.json`/`review_v2.json` can't be re-rendered as they are).
+v1 is `work/<slug>/review_v1.json`. **How it ran, no API:** transcribe + loudness only (not `prepare()`, which calls the scorer); GURT's picks written as
+`work/<slug>/recap-claude-sonnet-5-5.json`, which `recap()` reads as its cache; `score(work, kind="movie")` builds
+`review.json` (then `by`/`model` set to `gurt-by-hand`). Picks came from a panel: 4 drafts, 3 judges, a synthesis
+that **failed** a cold-stranger retell (no hook, gun never set up), then the grader's fix plus GURT's edits.
+**Learned:** Whisper under film audio held up (missed 136 of ~3,240 subtitle words, all grunts); the episode's own
+SDH track (`subs_sdh.srt`) is the best reference for names and who speaks. Whisper hung one word 5s early
+("I'm the alligator man", fixed by hand in `transcript.json` from the audio); long moments for few words mean that.
+Content ID will still claim most recaps.
 
 **Tko's two directions, 2026-10-08 (both in `skill.md` and in memory):** (1) tell the whole story and splice out
 interruptions and branches instead of rejecting or shrinking it; (2) every clip needs enough editing to pass
