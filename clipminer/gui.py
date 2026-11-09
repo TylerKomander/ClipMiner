@@ -396,9 +396,17 @@ class ClipsPage(Page):
         auto = ttk.Frame(left, style="Panel.TFrame")
         auto.pack(fill="x", pady=(12, 0))
         ttk.Label(auto, text="AUTO-POST", style="Section.TLabel").pack(anchor="w", pady=(0, 6))
-        self.auto_button = ttk.Button(auto, text="Turn on…", command=self.toggle_auto)
-        self.auto_button.pack(anchor="w")
-        self.auto_status = ttk.Label(auto, text="Off.", style="Help.TLabel", background=PANEL, wraplength=500, justify="left")
+        self.schedule_list = list_box(auto)
+        self.schedule_list.configure(height=4)
+        self.schedule_list.pack(fill="x")
+        self.schedule_list.bind("<Double-Button-1>", lambda _: self.edit_schedule())
+        bar = ttk.Frame(auto, style="Panel.TFrame")
+        bar.pack(fill="x", pady=(6, 0))
+        ttk.Button(bar, text="New…", command=lambda: ScheduleDialog(self, None)).pack(side="left")
+        ttk.Button(bar, text="Edit…", command=self.edit_schedule).pack(side="left", padx=6)
+        ttk.Button(bar, text="Turn on/off", command=self.toggle_schedule).pack(side="left")
+        ttk.Button(bar, text="Delete", command=self.delete_schedule).pack(side="left", padx=6)
+        self.auto_status = ttk.Label(auto, text="All off.", style="Help.TLabel", background=PANEL, wraplength=500, justify="left")
         self.auto_status.pack(anchor="w", pady=(6, 0))
         self.tree.bind("<<TreeviewSelect>>", lambda _: self.show())
 
@@ -451,9 +459,13 @@ class ClipsPage(Page):
         self.status_text = ""
         self.finished: list[tuple[str, str, str, str]] = []
         self.ready: set[str] = set(load_json(READY, []))
-        self.auto = load_json(AUTOPOST, {"accounts": {}, "kinds": ["podcast"], "times": ["12:00", "18:00"]})
-        self.auto_on = False
+        saved = load_json(AUTOPOST, [])
+        # autopost.json held one setting before schedules: it becomes one schedule per account it named.
+        self.schedules: list[dict] = saved if isinstance(saved, list) else [
+            {"account": a, "platforms": p, "kinds": saved["kinds"], "times": saved["times"]} for a, p in saved["accounts"].items()]
+        self.on: set[int] = set()  # id() of each schedule turned on; off again at every start
         self.fired: set[str] = set()
+        self.draw_schedules()
 
     def scan(self) -> dict[tuple[str, str], list[Path]]:
         # Show folders from before the type folders sit straight under Finished_Clips: all podcasts.
@@ -571,9 +583,8 @@ class ClipsPage(Page):
             messagebox.showinfo("Post", "Pick a clip first.")
             return
         folder = ROOT / profile["folder"]
-        if base.relative_to(FINISHED).parts[0] == review.KINDS["movie"][0]:
-            messagebox.showinfo("Post", "Movie recaps go on their own channel, never this one, and posting them "
-                                        "from the app isn't set up yet. Upload this one by hand.")
+        if category_of(base) == review.KINDS["movie"][0] and not profile.get("movies"):
+            messagebox.showinfo("Post", "Movie recaps only go to an account ticked Movie channel on the Accounts page.")
             return
         layout = self.layout.get()
         video = base.with_name(f"{base.name}_{layout}.mp4")
@@ -635,69 +646,111 @@ class ClipsPage(Page):
         self.tree.item(self.tree.selection()[0], tags=("posted",) if self.posted_on(base.name)
                        else ("ready",) if base.name in self.ready else ())
 
-    def toggle_auto(self) -> None:
-        if self.auto_on:
-            self.auto_on = False
-            self.auto_button.config(text="Turn on…")
-            self.note("Off.")
-            self.app.refresh()
-        else:
-            AutoPostDialog(self)
+    def draw_schedules(self) -> None:
+        keep = self.schedule_list.curselection()
+        self.schedule_list.delete(0, "end")
+        for schedule in self.schedules:
+            on = id(schedule) in self.on
+            kinds = " + ".join(review.KINDS[k][0] for k in schedule["kinds"])
+            self.schedule_list.insert("end", f" {'ON ' if on else 'off'}  {schedule['account']} · {', '.join(schedule['platforms'])}"
+                                             f" · {kinds} · {', '.join(schedule['times'])}")
+            self.schedule_list.itemconfig("end", foreground=GREEN if on else MUTED)
+        if keep and keep[0] < len(self.schedules):
+            self.schedule_list.selection_set(keep[0])
 
-    def start_auto(self, settings: dict) -> None:
-        self.auto = settings
-        save_json(AUTOPOST, settings)
-        self.auto_on = True
-        # Turned on inside a listed minute, it waits for the next time instead of firing at once.
-        self.fired.add(time.strftime("%Y-%m-%d %H:%M"))
-        self.auto_button.config(text="Turn off")
-        accounts = "; ".join(f"{name}: {', '.join(platforms)}" for name, platforms in settings["accounts"].items())
-        kinds = ", ".join(review.KINDS[k][0] for k in settings["kinds"])
-        self.note(f"On at {', '.join(settings['times'])}. {accounts}. {kinds}. {len(self.ready)} clip(s) ticked Ready.")
+    def schedule(self) -> dict | None:
+        sel = self.schedule_list.curselection()
+        if not sel:
+            messagebox.showinfo("Auto-post", "Pick a schedule first.")
+        return self.schedules[sel[0]] if sel else None
+
+    def edit_schedule(self) -> None:
+        schedule = self.schedule()
+        if schedule:
+            ScheduleDialog(self, schedule)
+
+    def save_schedule(self, old: dict | None, new: dict) -> None:
+        if old:
+            old.update(new)
+        else:
+            self.schedules.append(new)
+            self.set_on(new, True)
+        save_json(AUTOPOST, self.schedules)
+        self.draw_schedules()
         self.app.refresh()
 
+    def toggle_schedule(self) -> None:
+        schedule = self.schedule()
+        if schedule:
+            self.set_on(schedule, id(schedule) not in self.on)
+            self.draw_schedules()
+            self.app.refresh()
+
+    def delete_schedule(self) -> None:
+        schedule = self.schedule()
+        if schedule and messagebox.askyesno("Auto-post", f"Delete the {schedule['account']} schedule at "
+                                                         f"{', '.join(schedule['times'])}?"):
+            self.on.discard(id(schedule))
+            del self.schedules[self.schedule_list.curselection()[0]]
+            save_json(AUTOPOST, self.schedules)
+            self.draw_schedules()
+            self.app.refresh()
+
+    def set_on(self, schedule: dict, on: bool) -> None:
+        if on:
+            self.on.add(id(schedule))
+            # Turned on inside a listed minute, it waits for the next time instead of firing at once.
+            self.fired.add(f"{id(schedule)} {time.strftime('%Y-%m-%d %H:%M')}")
+            self.note(f"{schedule['account']}: on at {', '.join(schedule['times'])}. {len(self.ready)} clip(s) ticked Ready.")
+        else:
+            self.on.discard(id(schedule))
+            self.note(f"{schedule['account']}: off.")
+
     def note(self, text: str) -> None:
-        self.auto_status.config(text=text, foreground=GREEN if self.auto_on else MUTED)
+        self.auto_status.config(text=text, foreground=GREEN if self.on else MUTED)
 
     def tick(self) -> None:
         now = time.strftime("%H:%M")
         slot = time.strftime("%Y-%m-%d ") + now
-        if not self.auto_on or now not in self.auto["times"] or slot in self.fired:
+        due = [s for s in self.schedules if id(s) in self.on and now in s["times"] and f"{id(s)} {slot}" not in self.fired]
+        if not due:
             return
-        self.fired.add(slot)
+        self.fired.update(f"{id(s)} {slot}" for s in due)
         if self.busy:
-            self.note(f"{now}: skipped. A post is still open or waiting for its Posted? answer.")
+            self.note(f"{now}: skipped {', '.join(s['account'] for s in due)}. A post is still open or waiting for its "
+                      "Posted? answer.")
             return
         opened, skipped = [], []
-        for name, platforms in self.auto["accounts"].items():
-            profile = next((p for p in self.app.profiles if p["name"] == name), None)
-            platforms = [p for p in platforms if p in set_up(profile)]
+        for schedule in due:
+            profile = next((p for p in self.app.profiles if p["name"] == schedule["account"]), None)
+            platforms = [p for p in schedule["platforms"] if p in set_up(profile)]
             if not platforms:
-                skipped.append(f"{name} (account renamed or deleted, or its platforms aren't set up)")
+                skipped.append(f"{schedule['account']} (account renamed or deleted, or its platforms aren't set up)")
                 continue
-            pick = self.pick(profile, platforms, skipped)
+            pick = self.pick(profile, platforms, schedule["kinds"], skipped)
             if not pick:
+                skipped.append(f"{schedule['account']} (nothing Ready left of its kinds)")
                 continue
-            base, layout, description, due = pick
-            self.launch(profile, base, layout, description, due)
-            opened.append(f"{number_of(base)} on {', '.join(due)} as {name}")
-        text = (f"{now}: opened " + "; ".join(opened) + ". Check each tab and click Post." if opened
-                else f"{now}: nothing Ready left to post for these accounts and kinds.")
+            base, layout, description, due_on = pick
+            self.launch(profile, base, layout, description, due_on)
+            opened.append(f"{number_of(base)} on {', '.join(due_on)} as {schedule['account']}")
+        text = f"{now}: opened " + "; ".join(opened) + ". Check each tab and click Post." if opened else f"{now}: nothing opened."
         self.note(text + (" Passed over: " + "; ".join(skipped) + "." if skipped else ""))
 
-    def pick(self, profile: dict, platforms: list[str], skipped: list[str]) -> tuple[Path, str, str, list[str]] | None:
-        # Movies go to their own channel, which doesn't exist yet: never picked, whatever autopost.json says.
-        categories = {review.KINDS[k][0] for k in self.auto["kinds"] if k != "movie"}
+    def pick(self, profile: dict, platforms: list[str], kinds: list[str],
+             skipped: list[str]) -> tuple[Path, str, str, list[str]] | None:
+        # Movies only ever go to a movie channel, whatever autopost.json says.
+        categories = {review.KINDS[k][0] for k in kinds if k != "movie" or profile.get("movies")}
         candidates = [b for b in self.clips.values() if b.name in self.ready and category_of(b) in categories]
         for base in sorted(candidates, key=lambda b: (-score_of(b), -number_of(b))):
             due = [p for p in platforms if not any(e["clip"] == base.name and e["platform"] == p
                                                    and e["account"] == profile["name"] for e in self.posts)]
             if not due:
                 continue
-            layout = next((l for l in ("track", "blur") if base.with_name(f"{base.name}_{l}.mp4").exists()), None)
+            layout = next((l for l in ("track", "blur", "band") if base.with_name(f"{base.name}_{l}.mp4").exists()), None)
             txt = base.with_suffix(".txt")
             if not layout or not txt.exists():
-                skipped.append(f"{number_of(base)} (no {'TRACK or BLUR file' if not layout else 'description'})")
+                skipped.append(f"{number_of(base)} (no {'TRACK, BLUR or BAND file' if not layout else 'description'})")
                 continue
             description = txt.read_text(encoding="utf-8").strip()
             if review.off_limits(description):
@@ -733,47 +786,41 @@ class ClipsPage(Page):
             subprocess.Popen(["explorer", "/select,", str(base.with_name(f"{base.name}_{self.layout.get()}.mp4"))])
 
 
-class AutoPostDialog(tk.Toplevel):
-    def __init__(self, page: ClipsPage):
+class ScheduleDialog(tk.Toplevel):
+    def __init__(self, page: ClipsPage, schedule: dict | None):
         super().__init__(page.app)
-        self.page = page
-        self.title("Auto-post")
+        self.page, self.schedule = page, schedule
+        saved = schedule or {"account": "", "platforms": [], "kinds": ["podcast"], "times": []}
+        self.title("Auto-post schedule")
         self.configure(bg=PANEL)
         self.transient(page.app)
         self.resizable(False, False)
-        saved = page.auto
         body = ttk.Frame(self, style="Panel.TFrame", padding=18)
         body.pack(fill="both", expand=True)
-        ttk.Label(body, text="At each time below, the best-scored clip ticked Ready that an account hasn't posted yet opens "
-                             "in that account's browser with the description filled in. Nothing is published until you "
-                             "click Post. A time is skipped while a post is still waiting for you.",
+        ttk.Label(body, text="At each time below, the best-scored clip ticked Ready of these kinds that this account hasn't "
+                             "posted opens in its browser, filled in. Nothing is published until you click Post. A time "
+                             "is skipped while a post is still waiting for you.",
                   style="Help.TLabel", background=PANEL, wraplength=460, justify="left").pack(anchor="w", pady=(0, 14))
 
-        ttk.Label(body, text="ACCOUNTS AND PLATFORMS", style="Section.TLabel").pack(anchor="w", pady=(0, 6))
-        self.platforms: dict[tuple[str, str], tk.BooleanVar] = {}
-        for profile in page.app.profiles:
-            row = ttk.Frame(body, style="Panel.TFrame")
-            row.pack(fill="x", pady=(0, 4))
-            ttk.Label(row, text=profile["name"], style="Panel.TLabel", width=22).pack(side="left")
-            ready = set_up(profile)
-            if not ready:
-                ttk.Label(row, text="no platforms set up", style="Help.TLabel", background=PANEL).pack(side="left")
-            for platform in ready:
-                var = tk.BooleanVar(value=platform in saved["accounts"].get(profile["name"], []))
-                self.platforms[profile["name"], platform] = var
-                ttk.Checkbutton(row, text=platform, variable=var, style="Panel.TCheckbutton").pack(side="left", padx=(0, 10))
+        ttk.Label(body, text="ACCOUNT AND PLATFORMS", style="Section.TLabel").pack(anchor="w", pady=(0, 6))
+        names = [p["name"] for p in page.app.profiles]
+        self.account = tk.StringVar(value=saved["account"] if saved["account"] in names else (names or [""])[0])
+        picker = ttk.Combobox(body, textvariable=self.account, values=names, state="readonly", width=28)
+        picker.pack(anchor="w")
+        picker.bind("<<ComboboxSelected>>", lambda _: self.draw_platforms(saved))
+        self.platform_row = ttk.Frame(body, style="Panel.TFrame")
+        self.platform_row.pack(fill="x", pady=(6, 0))
+        self.platforms: dict[str, tk.BooleanVar] = {}
+        self.draw_platforms(saved)
 
         ttk.Label(body, text="KINDS OF CLIPS", style="Section.TLabel").pack(anchor="w", pady=(14, 6))
         row = ttk.Frame(body, style="Panel.TFrame")
         row.pack(fill="x")
         self.kinds: dict[str, tk.BooleanVar] = {}
         for kind, (folder, _) in review.KINDS.items():
-            if kind == "movie":
-                ttk.Checkbutton(row, text=f"{folder} (needs its own channel first)", style="Panel.TCheckbutton",
-                                state="disabled").pack(side="left")
-                continue
             self.kinds[kind] = tk.BooleanVar(value=kind in saved["kinds"])
-            ttk.Checkbutton(row, text=folder, variable=self.kinds[kind], style="Panel.TCheckbutton").pack(side="left", padx=(0, 10))
+            label = f"{folder} (movie channels only)" if kind == "movie" else folder
+            ttk.Checkbutton(row, text=label, variable=self.kinds[kind], style="Panel.TCheckbutton").pack(side="left", padx=(0, 10))
 
         ttk.Label(body, text="TIMES  ·  24-hour, comma-separated", style="Section.TLabel").pack(anchor="w", pady=(14, 6))
         self.times = tk.StringVar(value=", ".join(saved["times"]))
@@ -782,15 +829,26 @@ class AutoPostDialog(tk.Toplevel):
         self.error.pack(anchor="w", pady=(8, 0))
         bar = ttk.Frame(body, style="Panel.TFrame")
         bar.pack(fill="x", pady=(8, 0))
-        ttk.Button(bar, text="Turn on", style="Accent.TButton", command=self.start).pack(side="left")
+        ttk.Button(bar, text="Save" if schedule else "Save and turn on", style="Accent.TButton",
+                   command=self.save).pack(side="left")
         ttk.Button(bar, text="Cancel", command=self.destroy).pack(side="left", padx=8)
         self.grab_set()
 
-    def start(self) -> None:
-        accounts: dict[str, list[str]] = {}
-        for (name, platform), var in self.platforms.items():
-            if var.get():
-                accounts.setdefault(name, []).append(platform)
+    def draw_platforms(self, saved: dict) -> None:
+        for child in self.platform_row.winfo_children():
+            child.destroy()
+        profile = next((p for p in self.page.app.profiles if p["name"] == self.account.get()), None)
+        ready = set_up(profile)
+        if not ready:
+            ttk.Label(self.platform_row, text="No platforms set up for this account: see Accounts.",
+                      style="Help.TLabel", background=PANEL).pack(side="left")
+        same = self.account.get() == saved["account"]
+        self.platforms = {name: tk.BooleanVar(value=same and name in saved["platforms"]) for name in ready}
+        for name, var in self.platforms.items():
+            ttk.Checkbutton(self.platform_row, text=name, variable=var, style="Panel.TCheckbutton").pack(side="left", padx=(0, 10))
+
+    def save(self) -> None:
+        platforms = [name for name, var in self.platforms.items() if var.get()]
         kinds = [kind for kind, var in self.kinds.items() if var.get()]
         times, bad = set(), []
         for t in filter(None, (t.strip() for t in self.times.get().split(","))):
@@ -799,12 +857,20 @@ class AutoPostDialog(tk.Toplevel):
                 times.add(f"{int(m.group(1)):02d}:{m.group(2)}")
             else:
                 bad.append(t)
-        problem = ("Tick at least one platform." if not accounts else "Tick at least one kind of clip." if not kinds
-                   else f"Not a time: {', '.join(bad)} (use 18:00)." if bad else "Add at least one time." if not times else "")
+        profile = next((p for p in self.page.app.profiles if p["name"] == self.account.get()), {})
+        # One browser per account, so the same account at the same minute could only open one of the two.
+        clash = sorted({t for other in self.page.schedules if other is not self.schedule
+                        and other["account"] == self.account.get() for t in other["times"]} & times)
+        problem = ("Tick at least one platform." if not platforms else "Tick at least one kind of clip." if not kinds
+                   else f"Not a time: {', '.join(bad)} (use 18:00)." if bad else "Add at least one time." if not times
+                   else f"{self.account.get()} already has a schedule at {', '.join(clash)}." if clash
+                   else f"{self.account.get()} isn't ticked Movie channel on the Accounts page: untick Movies."
+                   if "movie" in kinds and not profile.get("movies") else "")
         if problem:
             self.error.config(text=problem)
             return
-        self.page.start_auto({"accounts": accounts, "kinds": kinds, "times": sorted(times)})
+        self.page.save_schedule(self.schedule, {"account": self.account.get(), "platforms": platforms, "kinds": kinds,
+                                                "times": sorted(times)})
         self.destroy()
 
 
@@ -842,6 +908,9 @@ class AccountsPage(Page):
                     row=1, column=col * 2 + 1, sticky="we", padx=(0, 16))
             ttk.Button(slot, text="Open", command=lambda p=platform: self.open_profile(p)).grid(row=1, column=4)
             slot.columnconfigure(3, weight=1)
+        self.movies = tk.BooleanVar()
+        ttk.Checkbutton(form, text="Movie channel: Movies recaps post here, and never to an account without this tick",
+                        variable=self.movies, style="Panel.TCheckbutton").pack(anchor="w", pady=(0, 6))
         ttk.Label(form, text="No passwords here: you sign in once inside the account's own browser and it stays "
                              "signed in.", style="Help.TLabel", background=PANEL).pack(anchor="w", pady=(4, 10))
         bar = ttk.Frame(form, style="Panel.TFrame")
@@ -867,6 +936,7 @@ class AccountsPage(Page):
         if not profile:
             return
         self.name.set(profile["name"])
+        self.movies.set(profile.get("movies", False))
         for platform, fields in self.fields.items():
             saved = profile["socials"].get(platform, {})
             for key, var in fields.items():
@@ -879,6 +949,7 @@ class AccountsPage(Page):
         profile["name"] = self.name.get().strip() or "Unnamed"
         profile["socials"] = {platform: {key: var.get().strip() for key, var in fields.items()}
                               for platform, fields in self.fields.items()}
+        profile["movies"] = self.movies.get()
         save_json(PROFILES, self.app.profiles)
         self.redraw(self.list.curselection()[0])
         self.app.refresh()
@@ -972,7 +1043,8 @@ class App(tk.Tk):
         with self.lock:
             active = next((j for j in self.jobs if j["stage"] in RUNNING), None)
             queued = sum(j["stage"] == "queued" for j in self.jobs)
-        auto = "\nauto-post on" if self.pages["Clips"].auto_on else ""
+        on = len(self.pages["Clips"].on)
+        auto = f"\nauto-post: {on} on" if on else ""
         if active:
             self.status.configure(text=f"● {active['stage'].upper()}\n{active['title'][:60]}\n{queued} queued{auto}", foreground=CYAN)
         else:
