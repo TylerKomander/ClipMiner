@@ -243,19 +243,21 @@ def recent_runs(theme: str, count: int = 3, fallback: bool = True) -> list[str]:
     return [p.name for p in (own or (runs if fallback else []))[-count:]]
 
 
-def recap_prompt(info: dict, lines: list[str], words_per_second: float) -> str:
+def recap_prompt(info: dict, lines: list[str], words_per_second: float, subs: str) -> str:
     return (
         f"Film: {info.get('title')}\nLength: {hms(info.get('duration') or 0)}\n\n"
         "Make ONE recap short that tells this whole film's story as a supercut of its own dialogue, in film order: "
-        "who the main character is and what they want, the conflict, the turn, and how it ends. "
-        f"Pick {RECAP_MOMENTS[0]}-{RECAP_MOMENTS[1]} moments of one or two lines each (about 2-6s). A stranger must "
-        "follow the story from these lines alone, so prefer lines that state the situation or a relationship over "
-        "lines that need the picture. The ending may be spoiled. "
+        "who the main character is and what they want, the conflict, the turn, and how it ends. Follow the "
+        "movie-recap profile's step-by-step method and write down each step before the next: the main thread only, "
+        "funny lines carry the story, every scene change and every pay-off set up, a cold-stranger retell before you "
+        f"submit. Pick {RECAP_MOMENTS[0]}-{RECAP_MOMENTS[1]} moments, each one whole exchange (a line and its reply, about 3-12s). The "
+        "ending may be spoiled. "
         f"Together they must run {RECAP_LEN[0]}-{RECAP_LEN[1]}s of speech: about "
         f"{RECAP_LEN[0] * words_per_second:.0f}-{RECAP_LEN[1] * words_per_second:.0f} words at this film's pace. "
         "Count before you submit. first_words and last_words must be copied exactly from the text; a moment never "
         "runs past the reading line after the one it starts in.\n\n"
         f"Reading file: one line per ~{LINE_SECONDS}s as `h:mm:ss text`.\n\n" + "\n".join(lines)
+        + (f"\n\nThe film's own subtitles, for names and who speaks only (quote from the reading file):\n\n{subs}" if subs else "")
     )
 
 
@@ -275,6 +277,10 @@ def place_moments(picks: dict, words: list[dict], norm: list[str]) -> tuple[list
         return [], "two moments overlap"
     if not RECAP_MOMENTS[0] - 2 <= len(ranges) <= RECAP_MOMENTS[1] + 2:
         return ranges, f"{len(ranges)} moments, asked for {RECAP_MOMENTS[0]}-{RECAP_MOMENTS[1]}"
+    # The blind test's small models stopped moments at reading-file row wraps, before the punchline.
+    cut_short = [words[j]["word"].strip() for _, j in ranges if words[j]["word"].rstrip()[-1:] not in ".?!"]
+    if cut_short:
+        return ranges, f"{len(cut_short)} moment(s) stop mid-sentence (on: {', '.join(cut_short)})"
     return ranges, None
 
 
@@ -289,7 +295,9 @@ def recap(work: Path, model: str, theme: str) -> Path:
     transcript = json.loads((work / "transcript.json").read_text(encoding="utf-8"))
     words = [w for s in transcript["segments"] for w in s["words"]]
     norm = [re.sub(r"[^a-z0-9']", "", w["word"].lower()) for w in words]
-    words_per_second = len(words) / transcript["duration"]
+    # Over speech only: a film is half silence, and the runtime pace (Atlanta 1.3 w/s against 2.9 in the
+    # recap) asked for 40s recaps.
+    words_per_second = len(words) / sum(s["end"] - s["start"] for s in transcript["segments"])
     out = work / f"recap-{model}.json"
     if out.exists():
         picks = json.loads(out.read_text(encoding="utf-8"))
@@ -297,7 +305,9 @@ def recap(work: Path, model: str, theme: str) -> Path:
         client = anthropic.Anthropic(api_key=api_key())
         # Only movie runs teach a recap; podcast runs would cost tokens and teach the wrong shape.
         system = [{"type": "text", "text": system_prompt(recent_runs(theme, fallback=False), theme)}]
-        messages = [{"role": "user", "content": recap_prompt(info, [text for _, text in reading_lines(work)], words_per_second)}]
+        subs = (work / "subs_sdh.srt").read_text(encoding="utf-8") if (work / "subs_sdh.srt").exists() else ""
+        messages = [{"role": "user", "content": recap_prompt(info, [text for _, text in reading_lines(work)],
+                                                             words_per_second, subs)}]
         text, usage = ask(client, model, system, messages, 1, RECAP_SCHEMA)
         picks = json.loads(text)
         ranges, problem = place_moments(picks, words, norm)

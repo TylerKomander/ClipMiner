@@ -12,7 +12,7 @@ from tkinter import messagebox, ttk
 
 from . import post, review
 from .__main__ import FINISHED, ROOT, finish
-from .download import fetch
+from .download import fetch, subtitles
 from .score import score
 from .signals import loudness
 from .transcribe import transcribe
@@ -175,6 +175,8 @@ class Worker(threading.Thread):
         transcribe(video, work)
         self.set(job, stage="signals")
         loudness(video, work)
+        if job.get("kind") == "movie":
+            subtitles(video, work)
         if job.get("picker") == "gurt":
             self.set(job, stage="gurt")
             return

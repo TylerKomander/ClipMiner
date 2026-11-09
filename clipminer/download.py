@@ -50,3 +50,17 @@ def fetch(source: str, work_root: Path) -> tuple[Path, Path]:
         "heatmap": info.get("heatmap"),
     }, indent=2), encoding="utf-8")
     return work, video
+
+
+def subtitles(video: Path, work: Path) -> None:
+    """A film's own English subtitles, SDH first: they name who is speaking, which Whisper can't. None is fine."""
+    out = work / "subs_sdh.srt"
+    if out.exists():
+        return
+    streams = json.loads(subprocess.run(["ffprobe", "-v", "error", "-select_streams", "s", "-show_entries",
+                                         "stream=index:stream_tags=language,title", "-of", "json", str(video)],
+                                        capture_output=True, text=True, check=True).stdout)["streams"]
+    english = [s for s in streams if s.get("tags", {}).get("language") in ("eng", "en")]
+    pick = next((s for s in english if "SDH" in s["tags"].get("title", "")), english[0] if english else None)
+    if pick:
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(video), "-map", f"0:{pick['index']}", str(out)], check=True)
