@@ -84,6 +84,15 @@ def youtube(page: Page, video: Path, hook: str, body: str, step: Callable[[str],
     clear_and_type(page, page.locator("#description-textarea #textbox"), at_most_15_tags(body))
     step("marking not made for kids")
     page.locator('tp-yt-paper-radio-button[name="VIDEO_MADE_FOR_KIDS_NOT_MFK"]').click()
+    step("clicking through to Visibility")
+    radios = page.locator("#privacy-radios")
+    # Each step slides in and a click mid-slide can be lost, so it clicks until Visibility shows. On Visibility
+    # Next is gone (Publish takes its place), so a stuck dialog times out here instead of looping.
+    while not radios.is_visible():
+        page.locator("#next-button").click()
+        page.wait_for_timeout(700)
+    step("choosing Public")
+    page.locator('tp-yt-paper-radio-button[name="PUBLIC"]').click()
 
 
 def instagram(page: Page, video: Path, hook: str, body: str, step: Callable[[str], None]) -> None:

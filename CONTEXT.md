@@ -170,6 +170,9 @@ Next clip number: **346** (counted from the logs automatically: write a run's lo
 - [x] YouTube tab closes itself once "Video processing" or "Video/Short published" shows, and that post is recorded without the Posted?
       question (`post.PUBLISHED`; other platforms still ask). First live try missed: Tko published
       mid-processing, which shows "Video processing"; now matched too. **Live 2026-11-09: closed itself, recorded.**
+- [x] YouTube fill clicks Next through Video elements and Checks and picks Public; stops on Visibility, Tko clicks
+      Publish. Content ID claims show on Checks, which is skipped: glance at the checks line on Visibility.
+      Live 2026-11-09: reached Visibility with Public set.
 
 **Cost plan (Tko 2026-09-30: fine for now, must get cheaper as it scales).** Today ~$1–1.50 per 2h
 episode, mostly Sonnet's output (~9k tokens per 20-min piece, flat across runs; logs don't shrink it).
