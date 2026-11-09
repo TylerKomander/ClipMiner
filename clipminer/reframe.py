@@ -18,10 +18,15 @@ EDGE = 25
 CAM_FACE = 0.09
 
 
-def _detector(W: int, H: int):
+def _detector(W: int, H: int, score: float = 0.7):
     # YuNet, not mediapipe's detector: mediapipe's short-range model misses ~90px faces in wide
     # shots and fires on hands, plant pots, belt buckles.
-    return cv2.FaceDetectorYN.create(str(MODELS / "face_detection_yunet_2023mar.onnx"), "", (W, H), 0.7)
+    return cv2.FaceDetectorYN.create(str(MODELS / "face_detection_yunet_2023mar.onnx"), "", (W, H), score)
+
+
+# A film is darker and grainier than a podcast studio. On Atlanta S02E01 full-size YuNet found a face in 7 of 14 shots
+# (missing plain frontal ones); at 960px wide, 0.6 and 4fps it found 12, but on as few as 1 frame in 10.
+FILM_WIDTH, FILM_SCORE, FILM_FPS, FILM_PERSIST = 960, 0.6, 4, 10
 
 
 def _landmarker():
@@ -66,16 +71,18 @@ def _frames(video: Path, start: float, end: float, fps: float, keyframes: bool =
     proc.wait()
 
 
-def find_faces(video: Path, start: float, end: float) -> list[tuple[int, int, int]]:
+def find_faces(video: Path, start: float, end: float, film: bool = False) -> list[tuple[int, int, int]]:
     """Median (cx, cy, width) per person, left to right, within one camera shot."""
     W, H = frame_size(video)
-    det = _detector(W, H)
+    k = FILM_WIDTH / W if film else 1
+    size = (round(W * k), round(H * k))
+    det = _detector(*size, FILM_SCORE if film else 0.7)
     hits, seen = [], 0
-    for frame in _frames(video, start, end, max(2, 1 / (end - start))):
+    for frame in _frames(video, start, end, FILM_FPS if film else max(2, 1 / (end - start))):
         seen += 1
-        _, found = det.detect(frame)
+        _, found = det.detect(cv2.resize(frame, size) if film else frame)
         for x, y, w, h, *_ in (found if found is not None else []):
-            hits.append((int(x + w / 2), int(y + h / 2), int(w)))
+            hits.append((int((x + w / 2) / k), int((y + h / 2) / k), int(w / k)))
     if not hits:
         return []
     # Faces on posters and book covers behind the hosts are real detections but tiny (run 5).
@@ -90,7 +97,7 @@ def find_faces(video: Path, start: float, end: float) -> list[tuple[int, int, in
             near.append(h)
         else:
             people.append([h])
-    people = [p for p in people if len(p) >= max(1, seen // 3)]
+    people = [p for p in people if len(p) >= (max(2, seen // FILM_PERSIST) if film else max(1, seen // 3))]
     # A face that doesn't move a pixel for three seconds is a picture, however big it is.
     people = [p for p in people if len(p) < 6 or max(max(v) - min(v) for v in list(zip(*p))[:2]) > 2]
     return sorted(tuple(int(statistics.median(v)) for v in zip(*p)) for p in people)
@@ -281,19 +288,26 @@ def _follow(video: Path, start: float, a: float, b: float, faces, said, known: d
 
 def plan(video: Path, start: float, end: float, solo: bool = False, said: list[tuple] = (),
          known: dict[int, np.ndarray] | None = None,
-         seats: dict[int, float] | None = None) -> tuple[list[tuple[float, tuple | None]], list | None]:
+         seats: dict[int, float] | None = None, film: bool = False, joins: list[float] = (),
+         group: int = 0) -> tuple[list[tuple[float, tuple | None]], list | None]:
     """TRACK segments as (clip-relative time, face as (cx, cy, width) or None), plus the two faces for SPLIT, or None
     when SPLIT can't work (camera cuts, not exactly two people in the one shot, or faces too small).
     `solo`: one person on camera (a streamer), so TRACK stays on the biggest face; anything else is a poster.
     `said` is (start, end, speaker) per caption word on the clip's clock and `known` is `known_faces`: with
     them a shot of several people follows the voice; without, or when nobody talking has a known face, it
     falls back to jaw movement. `seats` (speaker -> x as a share of the width) replaces `known` on a show
-    filmed as one wide shot: nobody gets a close-up there, so there are no faces to learn (run 16)."""
+    filmed as one wide shot: nobody gets a close-up there, so there are no faces to learn (run 16).
+    `group` (px of the source): a shot whose faces all fit in that width is framed on all of them.
+    `film`: segments are (time, face, every face in that shot)."""
     W, H = frame_size(video)
-    bounds = [0.0, *shot_cuts(video, start, end), end - start]
-    segments, shots = [], []
+    cuts = shot_cuts(video, start, end)
+    # A splice join is a cut even where scdet can't see one: two dark shots through a window screen read as one
+    # shot and Willy's lines were framed on Earn's face (Atlanta S02E01).
+    cuts += [t for t in joins if all(abs(t - c) > 0.3 for c in cuts)]
+    bounds = [0.0, *sorted(cuts), end - start]
+    segments, shots, owner = [], [], []
     for a, b in zip(bounds, bounds[1:]):
-        faces = find_faces(video, start + a, start + b)
+        faces = find_faces(video, start + a, start + b, film)
         if solo:
             faces = sorted(faces, key=lambda f: -f[2])[:1]
         # YuNet boxed a guest's clasped hands as a second face and TRACK cut to them on the payoff (2026-10-06
@@ -305,10 +319,19 @@ def plan(video: Path, start: float, end: float, solo: bool = False, said: list[t
             segments.append((a, None))
         elif len(faces) == 1:
             segments.append((a, faces[0]))
+        elif group and max(cx + w for cx, _, w in faces) - min(cx - w for cx, _, w in faces) <= group:
+            # Everyone fits in the window with room for their hair: frame them together instead of guessing
+            # who talks by jaw, which left the speaker half out of frame (Tko on clip 347).
+            lo, hi = min(cx - w for cx, _, w in faces), max(cx + w for cx, _, w in faces)
+            segments.append((a, ((lo + hi) // 2, int(statistics.mean(cy for _, cy, _ in faces)), hi - lo)))
         else:
             heard = _follow(video, start, a, b, faces, said, known, seats) if known or seats else []
             for t, i in heard or [(a + t, i) for t, i in speaker_segments(video, start + a, start + b, faces)]:
                 segments.append((t, faces[i]))
+        owner += [faces] * (len(segments) - len(owner))
+    if film:
+        # BAND needs everyone in the shot, not just the speaker, so its window never slices a face.
+        segments = [(t, face, faces) for (t, face), faces in zip(segments, owner)]
     split = shots[0] if len(shots) == 1 and len(shots[0]) == 2 else None
     # A 960px panel is ~6 face-widths tall; below H*0.45 the upscale turns to mush (run 4 wide shot: 4x).
     if split and min(w for _, _, w in split) * 6 < H * 0.45:
@@ -579,6 +602,68 @@ def track_filter(shots, W: int, H: int) -> str:
         else:
             parts.append(f"{crop},scale=1080:1920,setsar=1[t{n}]")
     return ";".join(parts) + ";" + "".join(f"[t{n}]" for n in range(len(parts))) + f"concat=n={len(parts)}:v=1:a=0"
+
+
+BAND_STEADY = 80    # px in the band: a speaker this close to where the window already is doesn't move it
+FIT = -1            # band_track_filter's mark for a shot shown whole, smaller, over a blurred fill
+
+
+HAIR = 0.3          # a face box widened this much of its width each side, for ears and hair
+
+
+def _unsliced(x: float, face, faces, k: float, sw: int) -> float:
+    """Shift the band window so no face straddles its edge (Earn half in frame on clip 348), keeping `face`, the
+    speaker, whole: take the sliced face in, or leave it out, whichever moves the window less."""
+    box = lambda f: ((f[0] - f[2] / 2 - HAIR * f[2]) * k, (f[0] + f[2] / 2 + HAIR * f[2]) * k)
+    sl, sr = box(face)
+    for _ in range(3):
+        sliced = [(l, r) for l, r in map(box, faces) if l < x < r or l < x + 1080 < r]
+        if not sliced:
+            break
+        l, r = sliced[0]
+        fits = [c for c in (l, r, r - 1080, l - 1080) if 0 <= c <= sw - 1080 and c <= sl and sr <= c + 1080]
+        if not fits:
+            break
+        x = min(fits, key=lambda c: abs(c - x))
+    return x
+
+
+def band_track_filter(segments, W: int, H: int, length: float, band_h: int) -> tuple[str, int]:
+    """BAND that follows whoever is talking: the picture scaled to `band_h` high and a 1080-wide window slid to
+    the speaker's face per segment from `plan`, instead of one fixed crop that lost faces at the edges (Atlanta
+    S02E01, 4 of 18 frames). Returns the filter and how many times the window moves."""
+    sw = round(W * band_h / H / 2) * 2
+    held = []
+    k = band_h / H
+    for (a, face, faces), b in zip(segments, [s[0] for s in segments[1:]] + [length]):
+        # No face found (a dark shot, a face behind a window screen): show the whole picture rather than guess
+        # a crop that leaves whoever is talking half out of frame (Tko on clip 347). FIT marks it.
+        x = FIT if face is None else _unsliced(min(max(face[0] * k - 540, 0), sw - 1080), face, faces, k, sw)
+        if held and (b - a <= FLASH or x == held[-1][2] or FIT not in (x, held[-1][2]) and abs(held[-1][2] - x) < BAND_STEADY):
+            held[-1] = (held[-1][0], b, held[-1][2])
+        else:
+            held.append((a, b, x))
+    parts = []
+    for n, (a, b, x) in enumerate(held):
+        cut = f"[0:v]trim={a:.3f}:{b:.3f},setpts=PTS-STARTPTS"
+        if x == FIT:
+            parts.append(f"{cut},split[f{n}][g{n}];[f{n}]scale={sw}:{band_h},crop=1080:{band_h},boxblur=20:5[h{n}];"
+                         f"[g{n}]scale=1080:-2[i{n}];[h{n}][i{n}]overlay=0:(H-h)/2,setsar=1[b{n}]")
+        else:
+            parts.append(f"{cut},scale={sw}:{band_h},crop=1080:{band_h}:{int(x)}:0,setsar=1[b{n}]")
+    return (";".join(parts) + ";" + "".join(f"[b{n}]" for n in range(len(held))) +
+            f"concat=n={len(held)}:v=1:a=0,pad=1080:1920:0:{(1920 - band_h) // 2}:black"), len(held) - 1
+
+
+def cut_faces(video: Path, length: float, band_h: int) -> list[float]:
+    """Times (s) in a rendered BAND clip where a face touches the band's left or right edge: someone half in frame."""
+    det = _detector(540, band_h // 2, FILM_SCORE)
+    top, hits = (1920 - band_h) // 2, []
+    for n, frame in enumerate(_frames(video, 0, length, FILM_FPS)):
+        _, found = det.detect(cv2.resize(frame[top:top + band_h], (540, band_h // 2)))
+        if any(x < 2 or x + w > 538 for x, _, w, *_ in (found if found is not None else [])):
+            hits.append(n / FILM_FPS)
+    return hits
 
 
 def track_caption_y(shots, W: int, H: int, least: int, most: int) -> int:

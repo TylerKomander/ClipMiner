@@ -11,6 +11,19 @@ QUIET_DB = 18        # "quiet" = this far under the clip's speech level
 MIN_KEEP = 1.0       # a kept stretch shorter than this is a flash on screen: leave the pause beside it alone
 MIN_TAIL, MAX_TAIL = 0.25, 0.8
 LONG_WINDOW = 600    # past this, the audio is read per kept run instead of for the whole window
+RECAP_HOLD = 0.35    # a recap moment stays this long on the quiet after its last line, so a cut doesn't clip it
+# An HDR film (PQ, BT.2020) played as plain video is grey and washed out: map it to SDR, at 1080p since the
+# short is 1080 wide anyway and tone mapping 4K frames in float is slow. Mobius, not hable: hable crushed dark
+# faces on Atlanta S02E01 (2026-11-09).
+TO_SDR = ("scale=1920:-2,zscale=tin=smpte2084:min=bt2020nc:pin=bt2020:rin=tv:t=linear:npl=100,format=gbrpf32le,"
+          "zscale=p=bt709,tonemap=mobius:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p,")
+
+
+def is_hdr(video: Path) -> bool:
+    transfer = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
+                               "stream=color_transfer", "-of", "csv=p=0", str(video)],
+                              capture_output=True, text=True, check=True).stdout.strip()
+    return transfer in {"smpte2084", "arib-std-b67"}
 
 
 def kept_runs(first: int, last: int, cuts: list[list[int]]) -> list[tuple[int, int]]:
@@ -87,13 +100,14 @@ def seconds(words: list[dict], first: int, last: int, cuts: list[list[int]]) -> 
     return round(sum(b - a for a, b in spans) + MIN_TAIL, 1)
 
 
-def tail_end(video: Path, t: float) -> float:
+def tail_end(video: Path, t: float, hold: float = 0.0) -> float:
     """Whisper often ends the last word early (or at the next word's start), which clipped the final
     syllable on some clips. Listen instead, never cutting sooner than MIN_TAIL: stop where the voice
-    drops for 120ms, or, when someone talks straight on, at the quietest seam before MAX_TAIL."""
+    drops for 120ms, or, when someone talks straight on, at the quietest seam before MAX_TAIL.
+    `hold` stays that much longer on the quiet after the voice drops, ending early if anyone speaks."""
     lead = 1.0
     raw = subprocess.run(
-        ["ffmpeg", "-hide_banner", "-loglevel", "error", "-ss", f"{max(t - lead, 0):.3f}", "-t", f"{lead + MAX_TAIL + 0.1:.3f}",
+        ["ffmpeg", "-hide_banner", "-loglevel", "error", "-ss", f"{max(t - lead, 0):.3f}", "-t", f"{lead + MAX_TAIL + hold + 0.1:.3f}",
          "-i", str(video), "-vn", "-ac", "1", "-ar", "16000", "-f", "s16le", "-"],
         capture_output=True, check=True).stdout
     samples = np.frombuffer(raw, dtype=np.int16).astype(np.float32)
@@ -106,38 +120,62 @@ def tail_end(video: Path, t: float) -> float:
     quiet = np.percentile(db[:zero], 90) - 18
     for k in range(lo, hi - 5):
         if (db[k:k + 6] < quiet).all():
-            return t + (k - zero) * 0.02 + 0.06
+            j = k + 3
+            while j < min(k + 3 + int(hold / 0.02), len(db)) and db[j] < quiet:
+                j += 1
+            return t + (j - zero) * 0.02
     return t + (lo + int(np.argmin(db[lo:hi])) - zero) * 0.02 + 0.02
 
 
-def build(video: Path, work: Path, words: list[dict], clip: dict, stem: str) -> tuple[Path, float, float, list[dict]]:
-    """Source file, start, end and caption words (on that file's clock) for one clip."""
+def frame_rate(video: Path) -> float:
+    rate = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=r_frame_rate",
+                           "-of", "csv=p=0", str(video)], capture_output=True, text=True, check=True).stdout.strip()
+    num, den = rate.split("/")
+    return int(num) / int(den)
+
+
+def build(video: Path, work: Path, words: list[dict], clip: dict, stem: str) -> tuple[Path, float, float, list[dict], list[float]]:
+    """Source file, start, end, caption words (on that file's clock) and where one moment cuts to the next (recaps), for one clip."""
     first, last, cuts = clip["first"], clip["last"], clip.get("cuts", [])
     runs = kept_runs(first, last, cuts)
     if words[last]["end"] - words[first]["start"] <= LONG_WINDOW:
         sound = envelope(video, max(words[first]["start"] - 1, 0), words[last]["end"] + 1)
         spans = stretches(words, first, last, cuts, sound)
+        spans[-1] = (spans[-1][0], tail_end(video, words[last]["end"]))
+        ends = set(range(len(spans)))
     else:
         # A movie recap's moments sit up to two hours apart: read the audio around each one, not the whole film.
-        spans = [s for a, b in runs
-                 for s in stretches(words, a, b, [], envelope(video, max(words[a]["start"] - 1, 0), words[b]["end"] + 1))]
-    spans[-1] = (spans[-1][0], tail_end(video, words[last]["end"]))
+        # Every moment ends on a beat of quiet after its last word, not just the last one: cut 0.12s after
+        # Whisper's last word, lines sounded chopped into the next moment (Tko on clip 347).
+        spans, ends = [], set()
+        for a, b in runs:
+            spans += stretches(words, a, b, [], envelope(video, max(words[a]["start"] - 1, 0), words[b]["end"] + 1))
+            spans[-1] = (spans[-1][0], tail_end(video, words[b]["end"], RECAP_HOLD))
+            ends.add(len(spans) - 1)
     kept = [w for a, b in runs for w in words[a:b + 1]]
     if len(spans) == 1:
-        return video, spans[0][0], spans[0][1], kept
+        return video, spans[0][0], spans[0][1], kept, []
 
-    offset, shifted, inputs, filters, labels = 0.0, [], [], [], []
+    offset, shifted, inputs, filters, labels, joins = 0.0, [], [], [], [], []
+    sdr = TO_SDR if is_hdr(video) else ""
+    fps = frame_rate(video)
     for n, (a, b) in enumerate(spans):
-        length = b - a
+        # Whole frames only: a stretch ends on a frame, so a length in between came out up to a frame long
+        # each time and the captions and BAND moves ran 0.37s early by the end of a 16-moment recap (348).
+        first, frames = round(a * fps), max(round(b * fps) - round(a * fps), 1)
+        a, length = first / fps, frames / fps
         shifted += [{**w, "start": w["start"] - a + offset, "end": w["end"] - a + offset}
                     for w in kept if a <= w["start"] < b]
         # One seek per stretch: ffmpeg decodes only the stretches, however far apart they are.
-        inputs += ["-ss", f"{a:.3f}", "-t", f"{length:.3f}", "-i", str(video.resolve())]
-        filters.append(f"[{n}:v:0]setpts=PTS-STARTPTS[v{n}];"
+        # Half a frame early, so the seek lands on frame `first` whatever the rounding.
+        inputs += ["-ss", f"{a - 0.5 / fps:.6f}", "-t", f"{length:.6f}", "-i", str(video.resolve())]
+        filters.append(f"[{n}:v:0]{sdr}setpts=PTS-STARTPTS[v{n}];"
                        f"[{n}:a:0]asetpts=PTS-STARTPTS,"
                        f"afade=t=in:d=0.012,afade=t=out:st={max(length - 0.012, 0):.3f}:d=0.012[a{n}]")
         labels.append(f"[v{n}][a{n}]")
         offset += length
+        if n in ends:
+            joins.append(offset)
     cut = work / f"{stem}_spliced.mp4"
     subprocess.run(
         ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", *inputs,
@@ -145,4 +183,4 @@ def build(video: Path, work: Path, words: list[dict], clip: dict, stem: str) -> 
          "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-crf", "14", "-preset", "veryfast",
          "-c:a", "aac", "-b:a", "192k", str(cut.resolve())],
         check=True)
-    return cut, 0.0, offset, shifted
+    return cut, 0.0, offset, shifted, [t for t in joins if t < offset]

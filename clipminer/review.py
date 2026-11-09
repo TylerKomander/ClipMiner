@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 
 from . import reframe, speakers, splice
-from .render import BLUR_FILL, CAPTIONS_LOW, CAPTIONS_MID, CAPTIONS_SEAM, CURSE, SUBTITLES, band_filter, render
+from .render import BAND_H, BLUR_FILL, CAPTIONS_LOW, CAPTIONS_MID, CAPTIONS_SEAM, CURSE, SUBTITLES, band_filter, render
 
 # What Tko picks before pasting a link: kind -> (Finished_Clips folder, theme profile in skill.md).
 KINDS = {"podcast": ("Podcast", "comedian-podcast"), "stream": ("Streaming", "streamer"), "movie": ("Movies", "movie-recap")}
@@ -154,15 +154,24 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
         stem = clip.get("rendering_as") or f"{number:02d}_s{clip['score']}_{clip['name']}"
         clip["rendering_as"] = stem
         save(work, review)
-        source, start, end, kept = splice.build(video, work, words, clip, stem)
+        source, start, end, kept, joins = splice.build(video, work, words, clip, stem)
         fixes = clip["fixes"]
         # A fix to "" drops the word: Whisper wrote fake speaker names as spoken words in run 11.
         caption = [{**w, "word": " ".join(fixes.get(x, x) for x in w["word"].split())} for w in kept]
         caption = [w for w in caption if w["word"].strip()]
         split, game, edits = None, False, ""
         if kind == "movie":
-            done.append(render(source, work, out_dir / f"{stem}_band.mp4", start, end,
-                               band_filter(clip.get("crop_x", 0.5)), SUBTITLES, caption, subtitles=True))
+            # `crop_x` in review.json pins one fixed crop instead, for a recap the tracking gets wrong.
+            if "crop_x" in clip:
+                band = band_filter(clip["crop_x"])
+            else:
+                sw, sh = reframe.frame_size(source)
+                band, moves = reframe.band_track_filter(reframe.plan(source, start, end, film=True, joins=joins, group=sh * 1080 // BAND_H)[0], sw, sh, end - start, BAND_H)
+                edits = f", follows the speaker: {moves} moves"
+            done.append(render(source, work, out_dir / f"{stem}_band.mp4", start, end, band, SUBTITLES, caption, subtitles=True))
+            # A face on the band's edge is someone half in frame: listed so GURT can pin `crop_x` or recut.
+            edge = reframe.cut_faces(done[-1], end - start, BAND_H)
+            edits += f", half faces at {[round(t, 1) for t in edge]}" if edge else ", no half faces"
         else:
             done.append(render(source, work, out_dir / f"{stem}_blur.mp4", start, end, BLUR_FILL, CAPTIONS_LOW, caption))
             # A stream switches between gameplay and talking to the camera, so the layout is decided per clip.
