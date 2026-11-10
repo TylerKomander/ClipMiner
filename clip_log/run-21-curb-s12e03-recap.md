@@ -72,3 +72,31 @@ words were corrected in `transcript.json` (original kept in GURT's scratchpad) s
   Keep them inside a moment.
 - `[theme]` A fresh reader catches what the picker's own retell passes; per-moment checkers catch cut jokes, but they
   judge split moments as if alone: tell them which moments play back to back.
+
+### Funny moments (first batch of the new type, 2026-11-09)
+**Picked by:** GURT by hand, one pass over `reading.txt`. First cut ran 30-59s; Tko: "keep the clips a little
+shorter", so every clip was re-cut to 40s of speech (now the code cap) before rendering. Renders run ~8% over
+speech: 40s of speech came out 40.4s, Takahashi's 39.2s came out 43.0s. Nobody has watched these yet.
+- **352 · s9 · father-in-law-condolences · 29.0s · 2 pieces.** "my condolences aren't quite as deep as the average
+  person's". Cut the "sorry means nothing" tangent after it.
+- **353 · s8 · lemons-are-a-fungible-citrus · 32.3s · 2 pieces.** Grapefruit on fish.
+- **354 · s9 · aesthetic-bench · 20.7s · 4 pieces.** Bench law at 11:00, roped off at 25:50.
+- **355 · s9 · larry-ruins-jeffs-wordle · 36.2s · 4 pieces.** It's Richard Lewis, not Jeff (credit fixed after the
+  frame strip; the file name still says jeffs). Streak at 11:52, "Sugar." at 27:00.
+- **356 · s9 · no-fore-for-the-deaf-guy · 24.2s · 4 pieces.** "That's the sign for Postmates dinner."
+- **357 · s9 · golf-was-there · 39.6s · 4 pieces.** "Depends how I'm playing."
+- **358 · s8 · un-tubman-like-behavior · 40.4s · 3 pieces.** Risk flag: race/slavery joke. Caption fix art→yard.
+- **359 · s8 · authenticity-in-caring-about-oneself · 30.2s · 1 piece.** With Ted Danson.
+- **360 · s8 · dog-is-not-a-person · 40.4s · 1 piece.** Risk flag: crude (J.B. Smoove).
+- **361 · s8 · takahashi-fish-dream · 43.0s · 4 pieces.** The ramble is the joke.
+
+**Rejected:** fluke Wordle spoiler (never says Wordle), dog pronoun one-liner, brother/nod/Hey Jude (misheard),
+sperm bet (sex is the joke), balls save $1,350 and the Theragun groin (both the picture).
+
+**Lessons**
+- `[theme]` Credit only who you saw: GURT credited Jeff Garlin for Richard Lewis and guessed the neighbour's actor.
+  Check the frame strip before writing names; leave out a name you can't confirm.
+- `[theme]` A funny moment's 40s comes from cutting the walk-up and the talk between laughs (4 pieces is normal),
+  not from trimming the joke.
+- `[universal]` An app started with `pythonw.exe` opens a console window per ffmpeg call; closing one killed 354
+  mid-render (exit 0xC000013A). Launch with `python.exe` in a hidden window instead.

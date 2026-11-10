@@ -44,9 +44,10 @@ Scoring moves from GURT-by-hand → Claude API → small local model.
 
 ## How a run is done
 **App:** `.\.venv\Scripts\python.exe -m clipminer.gui` from the project root. Tko normally starts it. When he asks
-GURT to, start `.venv\Scripts\pythonw.exe -m clipminer.gui` via `Invoke-CimMethod Win32_Process Create`
-(CurrentDirectory = project root): an app started as a child of GURT's shell died mid-render (run 14). If GURT must
-render, use `--render <slug>` as a background task.
+GURT to, start `.venv\Scripts\python.exe -m clipminer.gui` via `Invoke-CimMethod Win32_Process Create`
+(CurrentDirectory = project root, `ProcessStartupInformation` ShowWindow 0): an app started as a child of GURT's
+shell died mid-render (run 14), and one started with `pythonw.exe` pops a console per ffmpeg call, and closing one
+kills the render (354, run 21). GURT renders by setting `review.json` to approved while the app is open.
 **CLI:** `python -m clipminer <url>` (no URL = `queue.txt`) stops at review; `python -m clipminer --render <slug>`.
 **Picks (GURT by hand, default since 2026-11-09):** a job downloads, transcribes, measures loudness and parks as
 **for GURT** ("Send to Sonnet" hands one to the API). When Tko says "pick it": write the reading file fresh from
@@ -67,8 +68,8 @@ needs a fresh reader given the full spoken text of each moment; the picker passe
 - [x] App: queue, review, clips by type/show, accounts, auto-post schedules, YouTube tab closes and records itself
 - [x] Movie type: recap from a local file, SDH subtitles saved, BAND follows the speaker. Atlanta 348: "really good"
 - [x] Recap rules after Curb v4 was rejected: a moment is a whole joke, cap 155s of speech, no source chapters
-- [x] Movie funny moments (`score.funny`, skill.md "Funny moments"): code done, dry-run on a copy of Curb
-- [ ] Funny moments picked, rendered and passed by Tko on a real episode
+- [x] Movie funny moments (`score.funny`, skill.md "Funny moments", ≤40s): Curb 352–361 rendered
+- [ ] Funny moments passed by Tko (Curb 352–361 unwatched)
 - [ ] Auto-publish confirmed live (see Next step)
 - [ ] Curb recap v7 rendered and passed by Tko
 - [ ] A real film (not a TV episode) through the recap recipe
@@ -84,13 +85,13 @@ needs a fresh reader given the full spoken text of each moment; the picker passe
 without the Posted? question. Stuck at "YouTube: publishing" = the button id changed.
 Then: Tko watches Curb v7 (351); his verdict goes in run 21. 349 and 350 in
 `Finished_Clips\Movies\Curb.Your.Enthusiasm.S12E03\` are rejected cuts.
-**Funny moments, first real run:** Curb S12E03's 10 picks (GURT by hand, 2026-11-09) wait in Review next to the
-rendered recap. Tko approves, the app renders them; then GURT checks frame strips and logs them in run 21 (risk
-flags: `un-tubman-like-behavior` race, `dog-is-not-a-person` crude). Atlanta's source is gone
-(`info.json` points at a missing `Movies\Atlanta...mkv_`): it needs the file back before any funny-moments render.
+Tko watches Curb's funny moments 352–361 (logged in run 21; risk flags 358 race, 360 crude); his verdict on
+length and picks goes in run 21. Atlanta's source is gone (`info.json` points at a missing `Movies\Atlanta...mkv_`):
+it needs the file back before any funny moments.
 
 ## Open items
 **Tko's queue (nobody has listened to these; don't tick unwatched clips Ready):**
+- Run 21 funny moments (352–361): risk calls 358 (race), 360 (crude).
 - Run 19 (332–345): re-rendered TRACK files (≤4.5s shots) are waiting on Tko's yes to overwrite; if that scratchpad
   is gone, re-render. 334 is unsure on TRACK: post BLUR. Its "slow child" pick sits unticked.
 - Run 18 (322–331): least sure 325, 330, 326; risk calls 327, 325.

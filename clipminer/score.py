@@ -60,7 +60,7 @@ RECAP_MOMENTS = (8, 24)
 MOMENT_WORDS = 160
 
 # Besides the recap, a film's standalone laughs (Tko, 2026-11-09): one joke each, spliced from up to four pieces
-# when its set-up sits elsewhere in the film. Longer than a podcast clip's 40s: a scene's joke needs its reply.
+# when its set-up sits elsewhere in the film. 40s at most, as a podcast clip (Tko: the 45-60s cuts ran long).
 FUNNY_SCHEMA = _object({
     "clips": {"type": "array", "items": _object({
         "name": {"type": "string", "description": "short kebab-case name"},
@@ -73,9 +73,9 @@ FUNNY_SCHEMA = _object({
     })},
     "rejected": {"type": "array", "items": _object({"approx_start": {"type": "string"}, "why": {"type": "string"}})},
 })
-FUNNY_LEN = (10, 60)
+FUNNY_LEN = (10, 40)
 FUNNY_PIECES = 4
-FUNNY_WORDS = 400  # a one-scene joke may be its whole 60s: past 160 words at Curb's 4 words/s
+FUNNY_WORDS = 400  # a one-piece joke may run its whole 40s, past the recap moment's 160 words
 
 
 def hms(t: float) -> str:

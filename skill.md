@@ -157,8 +157,9 @@ whole joke a stranger laughs at cold**: set-up, punchline, and the reply or topp
 - **1–4 pieces, back to back in film order.** One when the scene stands alone. Add a piece only when the joke
   needs it: who someone is, the line a callback points to, the set-up of a payoff minutes later. An extra piece is
   that one line or exchange, not its whole scene. Never trim inside the joke.
-- **10–60s of speech.** The first 3s state the situation in words (not a greeting); stop at the first line after
-  the last laugh.
+- **10–40s of speech** (Tko: shorter). Cut the walk-up and the middle, not the joke: start at the line that sets
+  it up, splice out lines between laughs. The first 3s state the situation in words (not a greeting); stop at the
+  first line after the last laugh.
 - **Only 8+**, scored by Part B. Few is normal: a drama may have none, a sitcom episode 2–5. Never pad. Same joke
   twice: keep the better cut.
 - **Off-theme:** a sight gag with no line, a callback whose set-up can't be spliced in, a reaction line alone.
