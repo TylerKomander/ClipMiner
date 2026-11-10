@@ -84,9 +84,9 @@ needs a fresh reader given the full spoken text of each moment; the picker passe
 without the Posted? question. Stuck at "YouTube: publishing" = the button id changed.
 Then: Tko watches Curb v7 (351); his verdict goes in run 21. 349 and 350 in
 `Finished_Clips\Movies\Curb.Your.Enthusiasm.S12E03\` are rejected cuts.
-**Funny moments, first real run:** when Tko says "pick it" on Curb S12E03, GURT writes
-`funny-claude-sonnet-5-5.json` by hand and runs `score(work, kind="movie")`: the picks are added to the existing
-review (8+ ticked), the rendered recap is untouched, and the job shows in Review again. Atlanta's source is gone
+**Funny moments, first real run:** Curb S12E03's 10 picks (GURT by hand, 2026-11-09) wait in Review next to the
+rendered recap. Tko approves, the app renders them; then GURT checks frame strips and logs them in run 21 (risk
+flags: `un-tubman-like-behavior` race, `dog-is-not-a-person` crude). Atlanta's source is gone
 (`info.json` points at a missing `Movies\Atlanta...mkv_`): it needs the file back before any funny-moments render.
 
 ## Open items
