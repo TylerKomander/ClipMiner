@@ -1,5 +1,6 @@
 """Turn a reviewed pick into the stretches of video it keeps: story cuts removed, dead air shortened,
 and an ending that waits for the last word to finish. More than one stretch means jump cuts."""
+import re
 import subprocess
 from pathlib import Path
 
@@ -12,6 +13,9 @@ MIN_KEEP = 1.0       # a kept stretch shorter than this is a flash on screen: le
 MIN_TAIL, MAX_TAIL = 0.25, 0.8
 LONG_WINDOW = 600    # past this, the audio is read per kept run instead of for the whole window
 RECAP_HOLD = 0.35    # a recap moment stays this long on the quiet after its last line, so a cut doesn't clip it
+SLIVER = 0.7         # a film's camera cut this close inside a stretch's start or end leaves a flash of the other shot
+MIN_SHOT = 0.5       # what a sliver is grown to when the line runs across the camera cut
+WORD_SLOP = 0.2      # Whisper puts a word's start up to this much early
 # An HDR film (PQ, BT.2020) played as plain video is grey and washed out: map it to SDR, at 1080p since the
 # short is 1080 wide anyway and tone mapping 4K frames in float is slow. Mobius, not hable: hable crushed dark
 # faces on Atlanta S02E01 (2026-11-09).
@@ -134,6 +138,47 @@ def frame_rate(video: Path) -> float:
     return int(num) / int(den)
 
 
+def camera_cuts(video: Path, start: float, end: float) -> list[float]:
+    """Times (on the source's clock) where the camera cuts between `start` and `end`."""
+    proc = subprocess.run(
+        ["ffmpeg", "-hide_banner", "-nostats", "-ss", f"{max(start, 0):.3f}", "-to", f"{end:.3f}", "-i", str(video),
+         "-vf", "scdet=threshold=10", "-an", "-f", "null", "-"],
+        capture_output=True, text=True, encoding="utf-8", errors="replace")
+    return [max(start, 0) + float(t) for t in re.findall(r"lavfi\.scd\.time: ([\d.]+)", proc.stderr)]
+
+
+def unsliver(video: Path, spans: list[tuple[float, float]], words: list[dict], kept: list[int]) -> list[tuple[float, float]]:
+    """A film stretch that starts or ends a few frames from a camera cut flashes the other shot, and the BAND
+    window jumps to it and back (Tko on 352-361: "no flicker", "doesn't seem super clipped"). Start or end on
+    the cut when the clip's own line is clear of it; when the line runs across it, grow the sliver into the quiet
+    beside it. `kept` is the clip's word indices: the beat held after a line often reaches the next one's start."""
+    out = []
+    for a, b in spans:
+        said = [i for i in kept if a - SLIVER <= words[i]["start"] < b]
+        said = [i for i in said if words[i]["end"] > a] or said
+        near = camera_cuts(video, a - SLIVER, a + SLIVER)
+        head = [c for c in near if a < c <= a + SLIVER]
+        if head and said:
+            c = max(head)
+            # Whisper starts a word up to ~0.2s early: a line that "starts" that close before the cut starts on it.
+            if words[said[0]]["start"] >= c - WORD_SLOP:
+                a = c
+            else:
+                floor = max(words[said[0] - 1]["end"] + PAD if said[0] else 0.0, out[-1][1] if out else 0.0)
+                a = max(min(a, c - MIN_SHOT), floor, max((x for x in near if x <= a), default=a - SLIVER))
+        near = camera_cuts(video, b - SLIVER, b + SLIVER)
+        tail = [c for c in near if b - SLIVER <= c < b and c > a + MIN_SHOT]
+        if tail and said:
+            c = min(tail)
+            if words[said[-1]]["end"] <= c + 0.05:
+                b = c
+            else:
+                after = words[said[-1] + 1]["start"] - PAD if said[-1] + 1 < len(words) else b + SLIVER
+                b = min(max(b, c + MIN_SHOT), max(after, b), min((x for x in near if x >= b), default=b + SLIVER))
+        out.append((a, b))
+    return out
+
+
 def build(video: Path, work: Path, words: list[dict], clip: dict, stem: str, film: bool = False) -> tuple[Path, float, float, list[dict], list[float]]:
     """Source file, start, end, caption words (on that file's clock) and where one moment cuts to the next (recaps), for one clip."""
     first, last, cuts = clip["first"], clip["last"], clip.get("cuts", [])
@@ -155,6 +200,10 @@ def build(video: Path, work: Path, words: list[dict], clip: dict, stem: str, fil
             spans[-1] = (spans[-1][0], tail_end(video, words[b]["end"], RECAP_HOLD))
             ends.add(len(spans) - 1)
     kept = [w for a, b in runs for w in words[a:b + 1]]
+    if film:
+        spans = unsliver(video, spans, words, [i for a, b in runs for i in range(a, b + 1)])
+        # A stretch moved onto a camera cut may start just after its first word's (early) start: keep the caption.
+        kept = [next(({**w, "start": a} for a, b in spans if a - WORD_SLOP <= w["start"] < a < w["end"]), w) for w in kept]
     if len(spans) == 1:
         return video, spans[0][0], spans[0][1], kept, []
 

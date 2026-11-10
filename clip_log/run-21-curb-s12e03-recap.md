@@ -77,18 +77,25 @@ words were corrected in `transcript.json` (original kept in GURT's scratchpad) s
 **Picked by:** GURT by hand, one pass over `reading.txt`. First cut ran 30-59s; Tko: "keep the clips a little
 shorter", so every clip was re-cut to 40s of speech (now the code cap) before rendering. Renders run ~8% over
 speech: 40s of speech came out 40.4s, Takahashi's 39.2s came out 43.0s. Nobody has watched these yet.
-- **352 · s9 · father-in-law-condolences · 29.0s · 2 pieces.** "my condolences aren't quite as deep as the average
+- **362 · s9 · father-in-law-condolences · 28.4s · 2 pieces.** "my condolences aren't quite as deep as the average
   person's". Cut the "sorry means nothing" tangent after it.
-- **353 · s8 · lemons-are-a-fungible-citrus · 32.3s · 2 pieces.** Grapefruit on fish.
-- **354 · s9 · aesthetic-bench · 20.7s · 4 pieces.** Bench law at 11:00, roped off at 25:50.
-- **355 · s9 · larry-ruins-jeffs-wordle · 36.2s · 4 pieces.** It's Richard Lewis, not Jeff (credit fixed after the
+- **363 · s8 · lemons-are-a-fungible-citrus · 32.2s · 2 pieces.** Grapefruit on fish.
+- **364 · s9 · aesthetic-bench · 19.8s · 4 pieces.** Bench law at 11:00, roped off at 25:50.
+- **365 · s9 · larry-ruins-jeffs-wordle · 35.9s · 4 pieces.** It's Richard Lewis, not Jeff (credit fixed after the
   frame strip; the file name still says jeffs). Streak at 11:52, "Sugar." at 27:00.
-- **356 · s9 · no-fore-for-the-deaf-guy · 24.2s · 4 pieces.** "That's the sign for Postmates dinner."
-- **357 · s9 · golf-was-there · 39.6s · 4 pieces.** "Depends how I'm playing."
-- **358 · s8 · un-tubman-like-behavior · 40.4s · 3 pieces.** Risk flag: race/slavery joke. Caption fix art→yard.
-- **359 · s8 · authenticity-in-caring-about-oneself · 30.2s · 1 piece.** With Ted Danson.
-- **360 · s8 · dog-is-not-a-person · 40.4s · 1 piece.** Risk flag: crude (J.B. Smoove).
-- **361 · s8 · takahashi-fish-dream · 43.0s · 4 pieces.** The ramble is the joke.
+- **366 · s9 · no-fore-for-the-deaf-guy · 23.5s · 4 pieces.** "That's the sign for Postmates dinner."
+- **367 · s9 · golf-was-there · 38.9s · 4 pieces.** "Depends how I'm playing."
+- **368 · s8 · un-tubman-like-behavior · 39.8s · 3 pieces.** Risk flag: race/slavery joke. Caption fix art→yard.
+- **369 · s8 · authenticity-in-caring-about-oneself · 30.2s · 1 piece.** With Ted Danson.
+- **370 · s8 · dog-is-not-a-person · 40.0s · 1 piece.** Risk flag: crude (J.B. Smoove).
+- **371 · s8 · takahashi-fish-dream · 43.0s · 4 pieces.** The ramble is the joke.
+
+**Re-cut for flicker (Tko: "make sure there's no flicker", "if a camera changes as soon as the clip starts
+cut that out"):** 352-361 rendered with 0.1-0.4s slivers of the neighbouring shot at piece edges (the beat held
+after a line ran into the next speaker's camera); Tko had them deleted. `splice.unsliver` now starts or ends a
+film stretch on a camera cut within 0.7s, and BAND holds any shot under 0.4s. Re-rendered as 362-371: no shot
+under 0.5s except 364 at 15.97s (0.42s, "What" spoken across the cut; kept) and 371 at 6.55s (0.42s, the show's
+own over-the-shoulder shot). Old recap 351 has four such slivers (0.13-0.42s).
 
 **Rejected:** fluke Wordle spoiler (never says Wordle), dog pronoun one-liner, brother/nod/Hey Jude (misheard),
 sperm bet (sex is the joke), balls save $1,350 and the Theragun groin (both the picture).
@@ -98,5 +105,7 @@ sperm bet (sex is the joke), balls save $1,350 and the Theragun groin (both the 
   Check the frame strip before writing names; leave out a name you can't confirm.
 - `[theme]` A funny moment's 40s comes from cutting the walk-up and the talk between laughs (4 pieces is normal),
   not from trimming the joke.
+- `[theme]` Film pieces must start and end on the source's camera cuts, not on word times: a few frames of the
+  next shot read as flicker. Measure every render's shots (scdet on the band); anything under 0.5s is a defect.
 - `[universal]` An app started with `pythonw.exe` opens a console window per ffmpeg call; closing one killed 354
   mid-render (exit 0xC000013A). Launch with `python.exe` in a hidden window instead.

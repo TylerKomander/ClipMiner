@@ -68,8 +68,8 @@ needs a fresh reader given the full spoken text of each moment; the picker passe
 - [x] App: queue, review, clips by type/show, accounts, auto-post schedules, YouTube tab closes and records itself
 - [x] Movie type: recap from a local file, SDH subtitles saved, BAND follows the speaker. Atlanta 348: "really good"
 - [x] Recap rules after Curb v4 was rejected: a moment is a whole joke, cap 155s of speech, no source chapters
-- [x] Movie funny moments (`score.funny`, skill.md "Funny moments", ≤40s): Curb 352–361 rendered
-- [ ] Funny moments passed by Tko (Curb 352–361 unwatched)
+- [x] Movie funny moments (`score.funny`, skill.md "Funny moments", ≤40s): Curb 362–371 rendered, cut on camera cuts
+- [ ] Funny moments passed by Tko (Curb 362–371 unwatched)
 - [ ] Auto-publish confirmed live (see Next step)
 - [ ] Curb recap v7 rendered and passed by Tko
 - [ ] A real film (not a TV episode) through the recap recipe
@@ -85,13 +85,14 @@ needs a fresh reader given the full spoken text of each moment; the picker passe
 without the Posted? question. Stuck at "YouTube: publishing" = the button id changed.
 Then: Tko watches Curb v7 (351); his verdict goes in run 21. 349 and 350 in
 `Finished_Clips\Movies\Curb.Your.Enthusiasm.S12E03\` are rejected cuts.
-Tko watches Curb's funny moments 352–361 (logged in run 21; risk flags 358 race, 360 crude); his verdict on
+Tko watches Curb's funny moments 362–371 (logged in run 21; risk flags 368 race, 370 crude); his verdict on
 length and picks goes in run 21. Atlanta's source is gone (`info.json` points at a missing `Movies\Atlanta...mkv_`):
 it needs the file back before any funny moments.
 
 ## Open items
 **Tko's queue (nobody has listened to these; don't tick unwatched clips Ready):**
-- Run 21 funny moments (352–361): risk calls 358 (race), 360 (crude).
+- Run 21 funny moments (362–371): risk calls 368 (race), 370 (crude). Recap 351 has four flicker slivers:
+  re-render it if Tko wants.
 - Run 19 (332–345): re-rendered TRACK files (≤4.5s shots) are waiting on Tko's yes to overwrite; if that scratchpad
   is gone, re-render. 334 is unsure on TRACK: post BLUR. Its "slow child" pick sits unticked.
 - Run 18 (322–331): least sure 325, 330, 326; risk calls 327, 325.

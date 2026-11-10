@@ -605,6 +605,7 @@ def track_filter(shots, W: int, H: int) -> str:
 
 
 BAND_STEADY = 80    # px in the band: a speaker this close to where the window already is doesn't move it
+BAND_MIN = 0.4      # a BAND shot shorter than this keeps the framing beside it: a jump there and back is flicker
 FIT = -1            # band_track_filter's mark for a shot shown whole, smaller, over a blurred fill
 
 
@@ -639,10 +640,12 @@ def band_track_filter(segments, W: int, H: int, length: float, band_h: int) -> t
         # No face found (a dark shot, a face behind a window screen): show the whole picture rather than guess
         # a crop that leaves whoever is talking half out of frame (Tko on clip 347). FIT marks it.
         x = FIT if face is None else _unsliced(min(max(face[0] * k - 540, 0), sw - 1080), face, faces, k, sw)
-        if held and (b - a <= FLASH or x == held[-1][2] or FIT not in (x, held[-1][2]) and abs(held[-1][2] - x) < BAND_STEADY):
+        if held and (b - a < BAND_MIN or x == held[-1][2] or FIT not in (x, held[-1][2]) and abs(held[-1][2] - x) < BAND_STEADY):
             held[-1] = (held[-1][0], b, held[-1][2])
         else:
             held.append((a, b, x))
+    if len(held) > 1 and held[0][1] - held[0][0] < BAND_MIN:
+        held[:2] = [(held[0][0], held[1][1], held[1][2])]
     parts = []
     for n, (a, b, x) in enumerate(held):
         cut = f"[0:v]trim={a:.3f}:{b:.3f},setpts=PTS-STARTPTS"
