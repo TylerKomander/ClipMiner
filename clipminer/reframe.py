@@ -286,10 +286,39 @@ def _follow(video: Path, start: float, a: float, b: float, faces, said, known: d
     return cuts or [(a, min(who_is.values()))]
 
 
+MOVING_W = 0.15     # a head's width of the frame: the strip a cartoon's moving mouth is looked for in
+MOVING_SHARE = 0.25 # that strip holds at least this much of the shot's motion, or it's a pan or a walk, not a mouth
+MOVING_CHUNK = 2.0  # seconds per look: a cartoon two-shot trades lines about this often
+
+
+def _moving(video: Path, a: float, b: float) -> list[tuple[float, int | None]]:
+    """(time from `a`, x in px of the frame) of the strip that moves most, per MOVING_CHUNK. In limited animation
+    only the talker is redrawn: listeners hold still between blinks. YuNet never finds Rick (grey skin, spiky hair),
+    so face tracking framed whoever stood next to him (377 and 379, run 22)."""
+    W = frame_size(video)[0]
+    small = 480
+    frames = [cv2.cvtColor(cv2.resize(f, (small, small * f.shape[0] // f.shape[1])), cv2.COLOR_BGR2GRAY).astype(np.int16)
+              for f in _frames(video, a, b, 12)]
+    out, n, strip = [], int(MOVING_CHUNK * 12), int(MOVING_W * small)
+    starts = list(range(0, max(len(frames) - 1, 1), n))
+    if len(starts) > 1 and len(frames) - 1 - starts[-1] < n // 2:
+        starts.pop()
+    for i, s in enumerate(starts):
+        part = frames[s:starts[i + 1] + 1 if i + 1 < len(starts) else len(frames)]
+        cols = sum((np.abs(q - p).sum(axis=0) for p, q in zip(part, part[1:])), np.zeros(small)).astype(float)
+        sums = np.convolve(cols, np.ones(strip), mode="valid")
+        best = int(np.argmax(sums))
+        # A pan moves the whole picture: the busiest strip is the shelves going past, not a mouth (379's garage).
+        pan = np.median([abs(complex(*cv2.phaseCorrelate(np.float32(p), np.float32(q))[0])) for p, q in zip(part, part[1:])])
+        x = round((best + strip / 2) / small * W) if pan < 0.5 and sums[best] >= MOVING_SHARE * max(cols.sum(), 1) else None
+        out.append((s / 12, x if x is not None else (out[-1][1] if out else None)))
+    return out
+
+
 def plan(video: Path, start: float, end: float, solo: bool = False, said: list[tuple] = (),
          known: dict[int, np.ndarray] | None = None,
          seats: dict[int, float] | None = None, film: bool = False, joins: list[float] = (),
-         group: int = 0) -> tuple[list[tuple[float, tuple | None]], list | None]:
+         group: int = 0, cartoon: bool = False) -> tuple[list[tuple[float, tuple | None]], list | None]:
     """TRACK segments as (clip-relative time, face as (cx, cy, width) or None), plus the two faces for SPLIT, or None
     when SPLIT can't work (camera cuts, not exactly two people in the one shot, or faces too small).
     `solo`: one person on camera (a streamer), so TRACK stays on the biggest face; anything else is a poster.
@@ -315,11 +344,19 @@ def plan(video: Path, start: float, end: float, solo: bool = False, said: list[t
         # on a real face behind a microphone.
         faces = [f for f in faces if not any(abs(f[0] - o[0]) < 1.5 * o[2] and f[1] - o[1] > 1.5 * o[2] for o in faces)]
         shots.append(faces)
-        if not faces:
+        fits = group and faces and max(cx + w for cx, _, w in faces) - min(cx - w for cx, _, w in faces) <= group
+        # A cartoon's found faces are the ones that look human: whoever was missed may be the one talking.
+        if cartoon:
+            # No mouth to follow (a pan, a still): the found faces' middle, else the frame's, which is where a pan
+            # keeps its subject. Never FIT: Tko read the small blurred picture as weird cropping (377, run 22).
+            rest = int(statistics.mean(cx for cx, _, _ in faces)) if faces else W // 2
+            for t, x in _moving(video, start + a, start + b):
+                segments.append((a + t, (rest if x is None else x, H // 2, int(MOVING_W * W))))
+        elif not faces:
             segments.append((a, None))
         elif len(faces) == 1:
             segments.append((a, faces[0]))
-        elif group and max(cx + w for cx, _, w in faces) - min(cx - w for cx, _, w in faces) <= group:
+        elif fits:
             # Everyone fits in the window with room for their hair: frame them together instead of guessing
             # who talks by jaw, which left the speaker half out of frame (Tko on clip 347).
             lo, hi = min(cx - w for cx, _, w in faces), max(cx + w for cx, _, w in faces)

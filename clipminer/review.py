@@ -173,7 +173,9 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
                 band = band_filter(clip["crop_x"])
             else:
                 sw, sh = reframe.frame_size(source)
-                band, moves = reframe.band_track_filter(reframe.plan(source, start, end, film=True, joins=joins, group=sh * 1080 // BAND_H)[0], sw, sh, end - start, BAND_H)
+                # `cartoon` in review.json: frame on the moving mouth, not on faces YuNet only finds when they look human.
+                band, moves = reframe.band_track_filter(reframe.plan(source, start, end, film=True, joins=joins, group=sh * 1080 // BAND_H,
+                                                                     cartoon=review.get("cartoon", False))[0], sw, sh, end - start, BAND_H)
                 edits = f", follows the speaker: {moves} moves"
             done.append(render(source, work, out_dir / f"{stem}_band.mp4", start, end, band, SUBTITLES, caption, subtitles=True))
             # A face on the band's edge is someone half in frame: listed so GURT can pin `crop_x` or recut.
