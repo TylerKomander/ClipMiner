@@ -119,6 +119,22 @@ def chunks(lines: list[tuple[float, str]], span: tuple[float, float]) -> list[tu
     return out
 
 
+# Sections of a run file about running it, not picking: they cost tokens in every call and teach the scorer nothing.
+OFF_PROMPT = ("Picked by", "Inputs used", "Transcript", "Faces", "Camera", "Render check", "What went wrong",
+              "Fixes this run", "Blind test")
+
+
+def example_text(name: str) -> str:
+    keep, out = True, []
+    for line in (ROOT / "clip_log" / name).read_text(encoding="utf-8").splitlines():
+        label = re.match(r"(?:\*\*|###\s+)([^*:(]+)", line)
+        if label:
+            keep = not label.group(1).strip().startswith(OFF_PROMPT)
+        if keep:
+            out.append(line)
+    return "\n".join(out)
+
+
 def system_prompt(examples: list[str], theme: str) -> str:
     return "\n\n".join([
         "You pick short-form clips from long videos. Follow the rulebook exactly.",
@@ -126,7 +142,7 @@ def system_prompt(examples: list[str], theme: str) -> str:
         "Part B applies to every theme.",
         "# RULEBOOK\n" + (ROOT / "skill.md").read_text(encoding="utf-8"),
         "# CLIP LOG INDEX\n" + (ROOT / "clip_log" / "INDEX.md").read_text(encoding="utf-8"),
-        *(f"# WORKED EXAMPLE RUN\n{(ROOT / 'clip_log' / name).read_text(encoding='utf-8')}" for name in examples),
+        *(f"# WORKED EXAMPLE RUN\n{example_text(name)}" for name in examples),
     ])
 
 
@@ -242,7 +258,9 @@ def retry_prompt(long: list[tuple[dict, str]], words_per_second: float) -> str:
 def recent_runs(theme: str, count: int = 3, fallback: bool = True) -> list[str]:
     runs = sorted((ROOT / "clip_log").glob("run-*.md"))
     # A new theme has no runs yet: the other theme's runs still show the universal rules applied.
-    own = [p for p in runs if f"**Theme:** `{theme}`" in p.read_text(encoding="utf-8")]
+    # An unreviewed run is Sonnet's own picks: showing them as examples would teach it from itself.
+    own = [p for p in runs if f"**Theme:** `{theme}`" in (text := p.read_text(encoding="utf-8"))
+           and "**No review by GURT.**" not in text]
     return [p.name for p in (own or (runs if fallback else []))[-count:]]
 
 

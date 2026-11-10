@@ -104,14 +104,11 @@ the 4.5s shot rule too? · white "unsure" caption lines: fill them? · a better 
 **GURT's work, in order:**
 1. Re-render 165 (ROB MARKMAN shows twice): delete its `rendered_as` in `work/MpjdkVCj5ys/review.json`, add the
    name-blanking fixes, `--render`. Tko deletes the old files.
-2. Scorer prompt fixes: played footage isn't clippable; a clip inside the overlap minute belongs to its part; credit
-   only people in the clip; stop on the payoff; a sexual joke about a child is a reject; host lines count; show name
-   from the channel field; a live dodge or one-question roast is a payoff.
-3. Voice labels behind 297's first 6 seconds.
-4. Description cleanup (Tko hasn't asked yet): `#stavvyshalkias` 161–166, `#markNormand` 236, 245–247, `#robmarkman`
+2. Voice labels behind 297's first 6 seconds.
+3. Description cleanup (Tko hasn't asked yet): `#stavvyshalkias` 161–166, `#markNormand` 236, 245–247, `#robmarkman`
    179–180, 20–22 hashtags on seven Joe Bart files, mixed credit lines in Bad Friends / We Might Be Drunk.
-5. Review window can't edit a description or reload after GURT's chat edits.
-6. Smaller: warn when code is newer than the app's start; `queue.json` job 6 says "failed"; webcam near the frame
+4. Review window can't edit a description or reload after GURT's chat edits.
+5. Smaller: warn when code is newer than the app's start; `queue.json` job 6 says "failed"; webcam near the frame
    edge in `cam_box`; compounds like `half-assed` not in `render.CURSE`.
 
 **Cost plan (Tko: fine now, must get cheaper):** Message Batches API (−50%) → lower reasoning effort once Sonnet

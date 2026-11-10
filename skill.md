@@ -1,525 +1,299 @@
 # ClipMiner — how we pick clips
 
-The rulebook. Read this whole file before picking clips. Worked examples live in `clip_log\`,
-one file per run; `clip_log\INDEX.md` lists every shape and lesson with a tally of how often it
-has been seen. Read the index, then only the run entries you're given. Tko + GURT tune both after every run.
-Anything marked **(guess)** hasn't been checked against a real run yet.
-
-Two parts:
-- **Part A: Theme profile.** *What* counts as a good clip. Swappable: a different niche
-  gets a different profile. Only Part A changes when the theme changes.
-- **Part B: Universal rules.** *How* to find, cut and render a clip. True for any theme.
+The rulebook. Read it whole before picking. `clip_log\INDEX.md` tallies every shape and lesson; the run files in
+`clip_log\` are worked examples (read only the ones you're given). **(guess)** = not yet checked on a real run.
+**Part A** (theme profile) says *what* is a good clip and changes per video type; **Part B** (universal) says *how*
+to find, cut and render one.
 
 ---
 
 # Part A — Theme profile
 
-One profile per video type. Tko picks the type in the app before pasting the link (Podcast →
-`comedian-podcast`, Streaming → `streamer`, Movie → `movie-recap`); the prompt names the profile in force. Ignore the others.
+Tko picks the type before pasting the link: Podcast → `comedian-podcast`, Streaming → `streamer`, Movie →
+`movie-recap`. Use the profile the prompt names; ignore the others.
 
 ## Theme: `comedian-podcast`
-Long-form podcasts hosted by (or featuring) stand-up comedians. Hosts riff, commit to bits,
-tell road/tour stories, and interview guests who are often *not* comedians (run 2: a rancher).
+Long-form podcasts hosted by or featuring stand-up comedians: riffs, bits, road stories, guests who are often not
+comedians. **Audience:** people who scroll for laughs and "wait, what?" moments.
 
-**Audience:** people who scroll for laughs and "wait, what?" moments, and follow comedians.
+**Payoff:** **funny** (a joke or punchline lands inside the clip; often a riff that builds, capped by a one-liner;
+laughter helps, isn't required) is the priority. **Whacky** (an absurd true story or fact) and **interesting** (a
+take or vivid description someone would share) fill the mix.
 
-**What the payoff looks like in this theme** (the "payoff" Part B keeps referring to):
-- **Funny:** a joke or punchline lands *inside* the clip. Often a riff that builds, then a
-  one-liner caps it. Laughter helps but is not required.
-- **Whacky:** an absurd true story or fact. Reaction: "wait, what?"
-- **Interesting:** a take, insight or vivid description someone would share or nod along to.
-Funny is the priority for this theme; whacky and interesting fill the mix.
+**Where it hides:** road/tour stories; a host breaking an unwritten rule of the guest's world and getting corrected;
+hosts riffing on a serious topic until someone lands a sarcastic capper; the guest's strangest true fact from their
+job or past; hot takes on everyday things; **a guest from outside comedy the hosts can poke at** (a rancher, an NBA
+player, a famous fan: every question is a setup); a guest walking in mid-episode; hosts workshopping new bits out
+loud; a deadpan athlete storyteller. **The hosts' own lines count even when the guest is the star.**
 
-**Where it hides in this theme:**
-- Road/tour stories (venues, crowds, weird cities). Run 2 clip 06.
-- A host breaking an unwritten rule of the guest's world and getting corrected. Run 2 clip 07.
-- Hosts riffing on a serious topic until someone lands a sarcastic capper. Run 1 clip 01.
-- The guest's strangest true fact from their job or past. Run 1 clip 02, run 2 clip 08.
-- Hot takes on everyday things (malls, drugs, the internet). Run 1 clip 04, run 2 clips 09, 10.
-- A guest from outside comedy the hosts can poke at (a rancher, an NBA player, an internet-famous
-  Alabama fan). Every question to them is a setup. Runs 2, 4, 5.
+**Off-theme:** sincere segments (charity, gratitude), technical explainers with no joke, business talk, tour-date
+plugs, **a guest or host plugging their own product** (free advertising, even when riffy). A politician guest is
+mostly off-theme: clips come from the host's tangents and the guest playing straight man.
 
-**Off-theme here:** sincere/earnest segments (charity, gratitude), technical explainers
-without a joke, business talk, tour-date plugs, and **a guest or host plugging their own product**
-(run 8: Caleb's tequila taglines and shoe "review" — even when it's riffy, a clip of it is free
-advertising for them).
-
-**Theme-specific tolerance:** profanity and crude topics are normal and fine. Only flag
-profanity in the first 3s (reach), not the topic.
+**Tolerance:** profanity and crude topics are fine. Only flag profanity in the first 3s (reach), not the topic.
 
 ## Theme: `streamer`
-Livestreams and stream uploads: a streamer at a webcam, usually playing a game, often with friends
-on voice chat. One run behind it (run 12, Joe Bart Games); lines marked **(guess)** are untested.
+A streamer at a webcam, usually playing a game, often with friends on voice chat. Two runs behind it. Same audience
+and bar as the podcast theme: funny first.
 
-**Audience:** people who scroll for laughs and follow streamers. Same bar as the podcast theme: funny first.
+**A friend-group stream is a podcast with a game on screen** (16 of 19 clips in run 12 were banter). Judge the
+banter like podcast banter; the game is the backdrop, not a reason to reject.
 
-**A friend-group stream is a podcast with a game on screen.** Run 12: 16 of 19 clips were friends
-roasting each other and telling stories over the game, and would have passed as podcast clips. Judge
-the banter exactly like `comedian-podcast` banter. The game is the backdrop, not the reason to reject.
+**Payoff:** **funny** (a roast, comeback, confession or rant, often a friend's line, which is fine); **whacky**
+(something goes absurdly wrong in the game and someone says it out loud); **interesting** (a story told to the group).
 
-**What the payoff looks like in this theme:**
-- **Funny:** a roast, a comeback, a confession or a rant that lands inside the clip (GTA RP janitor,
-  "because they give you gifts and stuff"). The line is often a friend's, not the streamer's. Fine.
-- **Whacky:** something goes absurdly wrong in the game and someone says it out loud ("that wolf
-  didn't have a weapon on him").
-- **Interesting:** a story or take told to the group, same as a podcast clip.
+**Where it hides:** lulls (waiting, loading, walking) when the group talks; right after a failure (who caused it,
+who ran); a story one friend refuses to tell and the others drag out; **loudness spikes, which work here** (read
+around every one); full-screen "just chatting" stretches at the start and end **(guess)**.
 
-**Where it hides in this theme:**
-- Lulls in the game: waiting for the monster, loading, walking. That's when the group talks.
-- Right after a failure: who caused it, who ran away, who didn't help.
-- A story one friend refuses to tell and the others drag out of them.
-- Loudness spikes. Unlike group podcasts, they work here (run 12: 14 of 19 clips on a spike; the first
-  attack is the loudest stretch of the video, +21, the second peaks at +12). Read around every spike.
-- Full-screen "just chatting" stretches (usually the start and end) **(guess)**.
+**You only have the words.** A scream with few words around it goes in `rejected` with "visual, check the frame" so
+the reviewer looks. Judge everything else on the words. **Don't reject for:** a garbled transcript (gamer words are
+misheard constantly: "are peeing" = RPing, "mac dumped" = mag dumped, "insulin" = incel; these are caption fixes);
+a callback (only if the clip makes no sense without it); several voices (that's the format).
 
-**You only have the words.** The scorer can't see the game. A scream with few words around it is not a
-clip on the transcript alone: put it in `rejected` with "visual, check the frame" so the reviewer looks
-(run 12: both of those were clips once the frames were checked). Everything else, judge on the words.
+**A streamer reviewing other people's clips:** a moment counts only when the payoff is his own line (a rating with a
+reason, a roast of the sender, a rant) and it lands for someone who can't see what he's reacting to.
 
-**Do not reject for these (run 12, all wrong):**
-- **A garbled transcript.** Gamer words are misheard constantly ("are peeing" = RPing, "mac dumped the
-  wall" = mag dumped the wolf, "insulin" = incel). They are caption fixes. Read through them.
-- **A callback.** "Needs the stream's history" applies only when the clip makes no sense without it.
-- **Several voices.** Four friends trading lines is the format, not cross-talk.
+**Off-theme:** silent or mumbled gameplay, pure callouts ("he's on me"), menus, mod setup, sub/donation thank-yous,
+sponsor reads, scheduling, sincere drama about another creator.
 
-**Off-theme here:** silent or mumbled gameplay, pure callouts ("he's on me", "I need ammo"), menus and
-mod setup, sub/donation thank-yous, sponsor reads, stream scheduling, and sincere drama about another
-creator (run 12: the debate rant; named person, no joke).
+**Before approving, set in `review.json` when they apply:** `"facecam": [x, y, w, h]` when the camera is a cut-out
+over the game with no border (`cam_box` finds nothing); `"one_voice": true` when one person is on the mic (otherwise
+a shouting voice is split into several and caption colours flip). Not for friends on voice chat.
 
-**A streamer reviewing other people's clips** (run 18, Jynxzi): the footage he watches isn't his. A moment counts
-only when the payoff is his own line (a rating with a reason, a roast of the sender, a rant) and it lands for
-someone who can't see the clip he is reacting to. That was 10 clips in 46 minutes.
-
-**Before approving a stream, set these in `review.json` when they apply:**
-- `"facecam": [x, y, w, h]` when the camera is a cut-out over the game with no border (`cam_box` finds nothing
-  and `facecam.jpg` is never written). Draw the box on a frame and look.
-- `"one_voice": true` when one person is on the mic. The voice labelling splits a shouting, whispering voice into
-  several and the captions change colour mid-sentence. Not for friends on voice chat.
-
-**Transcript traps:** every voice is one stream of words, with nothing to say who spoke; game
-characters' lines are transcribed too. Long screaming stretches come out as a few words or a
-hallucinated loop ("A, A, A" ×100).
-
-**Theme-specific tolerance:** same as `comedian-podcast`.
+**Transcript traps:** every voice is one stream of words with no speaker; game characters are transcribed too;
+screaming comes out as a few words or a loop ("A, A, A" ×100). **Tolerance:** as `comedian-podcast`.
 
 ## Theme: `movie-recap`
-A whole feature film or show episode, from a local file. **Not clips: one recap short per film** that tells the
-whole story as a supercut of the film's own dialogue (reference shorts `UTBAKThAmI4` *42*, `ZY4qS0KewuI`
-*10 Things I Hate About You*: 59s, 16–17 moments, film order, ending included). **One run so far: run 20, Atlanta
-S02E01 → clip 348, Tko: "That's really good."** `clip_log\run-20-atlanta-s02e01-recap.md` is the worked example:
-read its moment table before picking. Rules from that one run are marked **(run 20)**; one film is one data point.
+A whole film or episode from a local file → **one recap short** telling the main story as a supercut of the film's
+own dialogue, in film order, ending included (references `UTBAKThAmI4`, `ZY4qS0KewuI`). Worked examples:
+`clip_log\run-20-atlanta-s02e01-recap.md` (348, the reference: 16 short exchanges, 89s) and
+`run-21-curb-s12e03-recap.md` (7 whole scenes, 154s). Read the moment table before picking.
 
-**Audience:** people who scroll to be entertained. **The goal is the most entertaining short that still tells the
-story** (Tko, 2026-11-09, after the first recap told the plot but was flat): "I understood it" is the floor, not the bar.
+**The goal is the most entertaining short that still tells the story** (Tko). "I understood it" is the floor.
+**Funny beats everything, including the budget.** It must carry, in order: who the main character is and what they
+want, what stands in the way, the turn, how it ends.
 
-**What the recap must carry, in film order:** who the main character is and what they want; who or what stands in
-the way; the turn; how it ends. One whole exchange per moment (a line and its reply, about 3–12s), 14–24 moments, 50–90s of
-speech in total.
+**Let the funny lines tell the story.** Follow the main thread only; a side plot or a serious line goes even if it's
+good. When a beat can be carried by a laugh or a straight line, take the laugh. Every funny line a stranger gets
+without the scene before is a candidate. **Every scene change is set up:** a moment before it says why we're there.
 
-**Entertainment is half the pick.** Every funny line, roast, absurd exchange or character moment that a stranger
-gets without the scene before is a candidate, not filler; the best recaps are mostly lines you'd quote. Don't drop
-a great story beat to save seconds: drop a plain plot line instead, or use the length.
-**Let the funny lines tell the story** (Tko on clip 347): follow the main story only (Atlanta: the alligator man,
-not the storage unit, Tara or Tracy). A serious line or a side plot that isn't essential goes, even if it is good;
-when a beat can be carried by a laugh or a straight line, take the laugh.
+**Where the good lines hide:** lines that *state* the situation, a relationship or a threat, and the last line of a
+scene. A line that only works with the picture can't carry the story: one or two per recap at most.
 
-**Every scene change is set up.** When the next moment drops the viewer somewhere new or with new people, a moment
-before it must say why (a call, "go over to Willie's", "they coming"). Check every cut between scenes: would a
-stranger know why we're here now? If not, add the line that sends us there or drop the new scene.
+**Off-theme:** side-plot exposition, jokes that need the scene before, songs, crowd noise, a character the recap
+hasn't introduced.
 
-**Where the good lines hide:** lines that *state* the situation ("I didn't pay you to take out Kat so some little
-punk could snake me"), a relationship ("You are so not who I thought you were"), the threat ("there's gonna be
-trouble") and the last line of a scene. A line that only works with the picture (a look, an action, a reveal) can't
-carry the story on its own; at most one or two of those per recap.
-
-**Off-theme here:** exposition about side plots, jokes that need the scene before, songs, crowd noise, and any
-moment from a character the recap hasn't introduced.
-
-**Score** (1–10, the recap as a whole): can a stranger tell what the film is about, who it is about and how it
-ends from these lines alone? 8+ = yes, with a line that hooks in the first 3s.
+**Score** (1–10, the whole recap): can a stranger tell what it's about, who it's about and how it ends from these
+lines alone? 8+ = yes, with a hook in the first 3s.
 
 ### How to build a recap, step by step
-Do these in order and write each step's result down before the next. In the blind test (two small models, run 20's
-film, 3/10 each) every failure came from steps 5–7 done loosely. **If your notes call anything a weakness, you are
-not done: fix it or swap the moment.**
-1. **Read everything once before picking.** The SDH subtitles (`subs_sdh.srt`, if there is one) for names and who
-   speaks (`WILLY:` before a line); the reading file end to end for the story. Quote text and times come from the
-   reading file (it is Whisper's transcript), never the subtitles: the code matches your words against Whisper's.
-   An SDH `NAME:` names only the cue it starts; never borrow one from another cue. Otherwise a speaker is known only
-   from the dialogue (a reply comes from the person just addressed), or "speaker unknown". Never drop a line over a
-   speaker you guessed.
+Do these in order and write each step's result down before the next. Failures come from steps 5–7 done loosely.
+**If your notes call anything a weakness, you are not done: fix it or swap the moment.**
+1. **Read everything once before picking.** The SDH subtitles (`subs_sdh.srt`) for names and who speaks (`NAME:`
+   names only the cue it starts; never borrow one); the reading file end to end for the story. **Quotes and times
+   come from the reading file** (Whisper), never the subtitles. Otherwise a speaker is known only from the dialogue
+   (a reply comes from the person addressed) or "unknown". Never drop a line over a guessed speaker.
 2. **Write the main thread in one sentence:** "<main character> has to <goal>, but <obstacle>; <turn>; <ending>."
-   Back each clause with a quoted line and its time; the ending is the line in the main thread's last scene that
-   shows the result (read the lines after any standoff: "Where's X?" / "Not in jail" means X got away). If you can't
-   quote it, it isn't in the sentence; say in one clause how the conflict resolved (gave up, escaped, won). For an
-   episode, the main thread is the plot the title names. Everything the sentence doesn't cover is a side plot and
-   stays out, even its funniest line. Side plot means the scene, not the words: a line said inside a main-thread scene
-   stays, even if it echoes a side scene, when a stranger gets it on its own **(run 20: v2 kept four side-plot
-   laughs and Tko cut them)**.
-3. **Find where the main thread starts**: the call, the order, the arrival that sets it moving. The recap starts
-   there; earlier scenes come in only if a stranger needs them to know who the main character is **(run 20: the
-   first 13 of 35 minutes skipped)**.
-4. **List candidates on the main thread only**: go through every row of it and list every laugh before choosing
-   any, with their times, and tag each: **L** a laugh a stranger gets with no scene before, one you can state in a
-   sentence ("he denies a domestic call by saying they aren't married"); a one-word reaction or an exclamation is not
-   an L; **S** a line that states the situation, stakes or a relationship; **T** the title line or the line
-   everyone would quote; **E** the ending. Most good candidates are L+S.
-5. **Fill the arc**, in film order: **hook** (moment 1: a mission, a threat or a strange situation, said in words,
-   with its reason in the same moment) → **set-up** (who wants what) → **escalation** beats, each raising the stakes
-   → **stakes/turn** → **outcome** → **button** (the best laugh in the main thread's *last* scene; if a new person or
-   subject starts just before it, you've left the main thread; a warning or an order is not a button).
-   **Both ends of every moment:** read the sentence before `first_words` and the one after `last_words`. Take the one
-   before if yours answers or points back to it (opens with "No", "Yeah", "You don't…", or "that/this" for something
-   not yet said); take the one after if it's the reply, the punchline, or names something used later. A moment that
-   opens on an answer without its question, or stops a sentence before the joke, is broken.
-   **A moment is one whole joke, however long it runs:** its set-up, the punchline, and the reply or topper after
-   it. When the next line tops the joke, take it too; stop at the first line after the last laugh. **Funny beats the
-   budget: never trim inside a joke to save seconds; drop a whole weaker joke instead (Tko, run 21: "You cut early on
-   some dialogue and jokes again, remember funny over everything." v4 trimmed 14 exchanges to fit 90s; v6 kept 6
-   whole scenes in 164s).** A rambling answer is often the joke itself (the fish-dream defence): keep all of it. Two
-   picks less than 10s apart in one scene are one moment. **Take the reply:** a line that states a beat is often followed by
-   the reply that makes it funny (an accusation, then the joke denial). Read 30s either side of every beat and take
-   the reply, or the line and its reply together. A straight S-only moment is allowed only for the hook, a set-up
-   that pays off later, a who-is-who line or one stakes line **(run 20: 4 of 16 moments straight)**.
-6. **Bridge check, every pair of neighbours:** if the place or the people change, the moment before must send us
-   there ("go over to Willie's", "they coming"). **Set-up check:** for every person, object or animal in the last
-   third of the recap, search the reading file for the first time it appears or changes hands (the noun, and "take
-   it", "here", "this"). That line must be in the recap, earlier than the payoff. A line that explains it after it
-   appeared ("X gave it to me") is a payoff, never a set-up. Note each pair as `set-up <time> → payoff <time>`
-   **(run 20: the gun had no set-up until "You're gonna need this… Take it." was added)**. Exception: a payoff
-   that states its own set-up ("you hit him with a golf ball, then with a bagel") needs none; let the retell decide.
-   A set-up far before the main thread starts costs the hook: drop it if the payoff stands alone **(run 21: the
-   cold-open bagel opened the recap with no stakes; the reader got the payoff without it)**. A punchline that points
-   back to an earlier scene ("then I hear Jimmy… vertical drop") gets the one line from the same speech that names
-   that scene ("and I'm sitting on the bench"), spliced in.
-7. **Cold-stranger retell, a gate:** using only facts your quotes state, retell in three sentences: who, what
-   happened, how it ended. Then write, for each moment, the question a stranger would ask (who is speaking? who is X
-   to Y? where are we? where did that come from?): an earlier moment or that one must answer it. **Fail** if by
-   moment 3 a stranger doesn't know the main character and what he is to the person he's helping; if a person who
-   drives the plot is never tied to him by a quoted line ("my uncle"); if a new place has no line sending us there;
-   if anything in the last three moments is unexplained. On a fail, go back to 5–6. A who-is-who line ("That's my
-   uncle") always earns its seconds. You know the film and will pass yourself: when you can, hand this step to a fresh
-   reader (a new agent) given the **full spoken text** of every moment, numbered, with no times, notes or speakers,
-   never just first and last words. Every question it asks is a fix. **Never hand in notes that say fail, "known gap"
-   or "can't fix within budget".**
-8. **Budget:** 50–155s of speech; 8–24 moments. A Short must render under 3 minutes, and the render runs ~12% over
-   the speech count (pauses inside moments, the hold after each): run 21's 164s of speech rendered at 3:03.6. Atlanta's
-   348 was 16 short exchanges in 89s; Curb's was 7 whole stretches in 154s (174.7s rendered); both shapes are fine
-   when every joke is whole. To get there, trim filler around the jokes: an opener the next line makes clear ("You
-   are in big trouble"), a repeated dare, a scene-ending line after the laugh. The prompt gives this film's own pace, measured over speech only. Too long: drop a whole joke, weakest
-   first: an S-only moment before any L, side beats before main ones, and when two scenes tell the same joke keep the
-   funnier (run 21: Takahashi's "Wave means what? Hello, goodbye" over the earlier "fore" argument). Never shorten a
-   joke to fit. Too short: add the next-best whole L on the main thread. At least two thirds of the moments carry an
-   L. A moment over 160 words splits into two back to back (the next starts on the word after); they play as one.
-9. **Quote exactly**: copy `first_words`/`last_words` word for word from the reading file (the code matches the
-   words, not punctuation; a word that isn't there drops the moment). `first_words` opens a sentence and
-   `last_words` closes one. Reading-file rows wrap mid-sentence: if your `last_words` reach the end of a row, read
-   on into the next one. Read `last_words` alone: if they don't finish a sentence, or the funny part comes after
-   them, extend. A word that makes no sense was probably misheard: check the SDH line at that time. The viewer hears
-   the audio, not Whisper, so a mishearing never drops a moment: copy the boundary words as Whisper wrote them, from
-   outside the misheard stretch. A moment that runs long for its few words is a Whisper timing slip **(run 20: "I'm the alligator
-   man" was 5s early)**.
-10. **Write the post text** (below) and a one-line `why` per moment naming its slot (hook, laugh, stakes, set-up…).
+   Back each clause with a quoted line and its time. The ending is the line in the main thread's last scene that
+   shows the result (read past any standoff: "Where's X?" / "Not in jail" means X got away); say in one clause how
+   it resolved. For an episode, the main thread is the plot the title names. Everything else is a side plot and
+   stays out, even its funniest line. Side plot means the *scene*: a line said inside a main-thread scene stays.
+3. **Start where the main thread starts** (the call, the order, the arrival). Earlier scenes only if a stranger needs
+   them to know who the main character is.
+4. **List every laugh on the main thread before choosing any**, with times, tagged: **L** a laugh a stranger gets
+   cold, one you can state in a sentence (a one-word reaction isn't one); **S** states the situation, stakes or a
+   relationship; **T** the title line or the line everyone quotes; **E** the ending. Most good candidates are L+S.
+5. **Fill the arc in film order:** **hook** (moment 1: a mission, threat or strange situation in words, with its
+   reason in the same moment) → **set-up** → **escalation** → **stakes/turn** → **outcome** → **button** (the best
+   laugh in the main thread's *last* scene; a warning or an order is not a button).
+   **Both ends of every moment:** read the sentence before `first_words` and after `last_words`. Take the one before
+   if yours answers or points back to it ("No", "Yeah", "You don't…", "that/this" for something not yet said); take
+   the one after if it's the reply, the punchline, or names something used later.
+   **A moment is one whole joke, however long:** its set-up, the punchline, and the reply or topper; stop at the
+   first line after the last laugh. **Never trim inside a joke to save seconds; drop a whole weaker joke instead**
+   (Tko: "You cut early on some dialogue and jokes again, remember funny over everything"). A rambling answer is
+   often the joke itself: keep all of it. Two picks under 10s apart in one scene are one moment. **Take the reply:**
+   read 30s either side of every beat. A straight S-only moment only for the hook, a set-up that pays off later, a
+   who-is-who line or one stakes line.
+6. **Bridge check, every pair of neighbours:** if the place or the people change, the moment before sends us there.
+   **Set-up check:** for every person, object or animal in the last third, find where it first appears or changes
+   hands; that line must be in the recap, earlier. A line explaining it after it appeared is a payoff, not a set-up.
+   Note pairs as `set-up <time> → payoff <time>`. A payoff that states its own set-up needs none. A set-up far
+   before the main thread costs the hook: drop it if the payoff stands alone. A punchline pointing back to an
+   earlier scene gets the one line from the same speech that names it, spliced in.
+7. **Cold-stranger retell, a gate:** from only what your quotes state, retell in three sentences (who, what
+   happened, how it ended), then write the question a stranger would ask at each moment (who is this? who is X to Y?
+   where are we? where did that come from?): an earlier moment or that one must answer it. **Fail** if by moment 3
+   the main character and what he is to the others are unclear; if a plot-driving person is never tied to him by a
+   quoted line; if a new place has no line sending us there; if anything in the last three moments is unexplained.
+   On a fail, go back to 5–6. A who-is-who line always earns its seconds. **You will pass yourself:** hand this step
+   to a fresh reader given the full spoken text of every moment, numbered, no times or notes. Every question it asks
+   is a fix. **Never hand in notes that say fail, "known gap" or "can't fix within budget".**
+8. **Budget: 50–155s of speech, 8–24 moments.** A Short must render under 3 minutes and the render runs ~12% over
+   speech (164s of speech rendered at 3:03.6). Trim filler *around* jokes: an opener the next line makes clear, a
+   repeated dare, a scene-ending line after the laugh. The prompt gives the film's own pace. **Too long:** drop a
+   whole joke, weakest first (S-only before any L, side beats before main; of two scenes telling the same joke keep
+   the funnier). **Too short:** add the next-best whole L on the main thread. At least two thirds of moments carry
+   an L. A moment over 160 words splits into two back to back; they play as one.
+9. **Quote exactly:** `first_words`/`last_words` word for word from the reading file (words matched, not
+   punctuation; a missing word drops the moment). `first_words` opens a sentence, `last_words` closes one. Rows
+   wrap mid-sentence: if `last_words` reach a row's end, read on. If they don't finish a sentence or the funny part
+   comes after, extend. A word that makes no sense was misheard: check the SDH, and copy boundary words from outside
+   the misheard stretch (the viewer hears the audio). A moment long for its few words is a Whisper timing slip.
+10. **Write the post text** and a one-line `why` per moment naming its slot (hook, laugh, stakes, set-up…).
 
-**Post text:** the hook is a teaser question or a quote twist on the film ("An offer he can't refuse?", "His savage
-reply to all the doubters!"), never the ending. Credit: "From <Film> (<year>)." Hashtags: the film, its stars, the
-genre, #movie #movieclips. A TV episode credits the show and its year. The clean-text rule applies as everywhere.
+**Post text:** the hook is a teaser question or a quote twist ("An offer he can't refuse?"), never the ending.
+Credit: "From <Film> (<year>)."; a TV episode credits the show and its year. Hashtags: the film, its stars, the
+genre, #movie #movieclips. The clean-text rule applies.
 
-**Transcript traps:** music and effects under the dialogue; Whisper drops lines spoken over a score and writes song
-lyrics as speech. A moment whose quote isn't found is dropped in code, so quote exactly.
+**Transcript traps:** Whisper drops lines spoken over a score and writes song lyrics as speech.
+**Tolerance:** films carry slurs and violence in context; captions are still masked. Score on the story.
 
-**Tolerance:** films carry slurs and violence in context; caption masking still applies. Score on the story.
-
-## Writing a new theme profile (when Tko adds a video type)
-Add the type to `review.KINDS` (app label, folder, profile name), then copy a block above and fill the same fields: name, what the content is, audience, what the
-payoff looks like (and which kind is the priority), where it hides, what's off-theme,
-tolerance. Keep the `clip_log\` run files. Their *universal* lessons still apply, and their
-*theme* lessons show the new profile what "specific enough" looks like.
+## Writing a new theme profile
+Add the type to `review.KINDS`, then copy a block above and fill the same fields: content, audience, payoff (and
+its priority), where it hides, off-theme, tolerance. The run files' universal lessons still apply.
 
 ---
 
 # Part B — Universal rules
 
 ## The bar
-A stranger scrolling past stops and watches to the end. A clip that is only "pleasant
-conversation" is not a clip. Ask: *would I send this to a friend?*
+A stranger scrolling past stops and watches to the end. *Would I send this to a friend?* "Pleasant conversation" is
+not a clip.
 
 ## Clip shape
-- Length: **10–30s target, up to ~35s when the payoff needs it** (Tko's ruling after run 2).
-  Only stretch for the payoff, never for trailing chatter. Shorter is fine if it's complete.
-  Never pad. Length means the **finished** clip, after splicing.
-- **Splicing (built after run 7; Tko: "good clipping accounts cut out empty space").** A story whose
-  best version runs long can be spliced with hard jump cuts: list `cuts` (word ranges) for a tangent,
-  a repeated setup or cross-talk. The source window may span up to ~4 minutes as long as the kept
-  part is 10–40s and still reads cold. **A payoff whose setup came minutes earlier is a splice** (setup line,
-  then payoff), not a reject and not a clip of the payoff alone (run 9: the green-room game's setup sat 2.5
-  minutes before "who's this necromancer that brought Richard Pryor back from the dead?"). Never cut the payoff, the line that sets it up, or a reaction
-  that is part of the payoff. Dead air is shortened automatically; don't list it.
-  It is cut only where the **audio** is quiet for over 0.6s, never on a gap in the transcript alone, and never
-  leaving a stretch under 1s (Tko after run 12: cuts landed mid-word, between two people talking, and left
-  flashes). So a clip with laughter, cross-talk or game sound keeps its pauses: don't count on trimming to
-  get under 40s. Example: run 7's crematorium story, 77s → 32s with two cuts.
-  **The story's ending stays.** Splice the middle, never the end: run 8's Gronk story was cut to 34s
-  but stopped before "somebody told me that was the head of William Morris". Cut more of the middle
-  instead (the fixed version kept 38s of 2m09s with 7 cuts). Estimate ~2.5–3 words per second.
-- **Tell the whole story; cut what isn't the story** (Tko, 2026-10-08: "don't be afraid to use larger stories and
-  just clip non useful parts out… your whole goal is to portray stories and jokes to be as funny as possible by
-  keeping what's relevant and funny"). The job is the funniest version of the story or joke, not the tidiest
-  20 seconds of it. So before rejecting or trimming a long story, splice it:
-  - Someone cuts the teller off with something unrelated or unfunny: cut the interruption, keep the story.
-  - The teller starts a story, branches off to something else, and comes back: cut the branch, join the two halves.
-  - A listener's line stays only when it adds to the story (a question that sets up the next beat, a reaction that
-    is part of the payoff, a topper).
-  A story that reads as "three ideas in 35s" is usually one story with two things to cut, not a reject (run 19:
-  GURT unticked two picks that way without trying the splice). Reject only when it still fails the three tests
-  after the best splice.
-- **Endings** are set from the audio (`splice.tail_end`), not Whisper's word end: it waits for the
-  voice to drop, or cuts at the quietest seam 0.25–0.8s after the last word.
-- **Opening line:** must make sense on its own and pull you in: a claim, a surprising fact,
-  or a question. Never open on "And", "So yeah", "That's", "Like I said", or a pronoun with
-  no name ("he did...").
-- **Closing line:** end on the payoff (see the active theme for what that is). Cut right
-  after it + ~0.3s. Don't trail into the next topic or "yeah, yeah".
-- One idea per clip. If it needs a second idea to land, it's two clips or none.
-- Start and end on word boundaries from the word-level transcript, not segment boundaries.
-  Whisper segments often begin mid-thought.
-- **Pick words by start time with ±0.05s tolerance**, then do a dry run that prints every clip's
-  first 5 and last 5 words *before rendering anything*. Confirm the opener and payoff are
-  whole. The last word got dropped three different ways: filtering by end time (run 2),
-  a rounded bound 0.01s short (run 3, "stick with that ~~place~~"), and an end point typed
-  one word early (run 3: "I got to stop," / "crush" / "murder why"). All were caught by the
-  dry run, none by eye.
+- **Length: 10–30s, up to ~35s when the payoff needs it** (Tko), measured on the **finished** clip after splicing.
+  Stretch only for the payoff; never pad.
+- **Tell the whole story; cut what isn't the story** (Tko: "don't be afraid to use larger stories and just clip non
+  useful parts out"). Before rejecting or trimming a long story, splice it with `cuts` (word ranges): cut an
+  unrelated interruption, a branch the teller comes back from, a repeated setup, cross-talk. A listener's line stays
+  only when it adds (a question setting up the next beat, a reaction that is part of the payoff, a topper). "Three
+  ideas in 35s" is usually one story with two cuts. The source window may span ~4 minutes if the kept part is 10–40s
+  and reads cold. **A payoff whose setup came minutes earlier is a splice** (setup, then payoff), not a reject and
+  not the payoff alone. Never cut the payoff, its setup line or a reaction that is part of it.
+- **The ending stays:** splice the middle, never the end. Estimate ~2.5–3 words per second.
+- Dead air is trimmed in code only where the audio is quiet over 0.6s, so clips with laughter, cross-talk or game
+  sound keep their pauses: don't count on trimming to get under 40s. Endings are cut from the audio. Don't list either.
+- **Opening line** makes sense alone and pulls you in: a claim, a surprising fact, a question. Never "And", "So
+  yeah", "That's", "Like I said", or a pronoun with no name.
+- **Closing line:** end on the payoff, +~0.3s. **Stop on the payoff**: don't trail into the next topic or "yeah".
+- One idea per clip. Word boundaries from the word-level transcript, not segments.
+- **Dry run before rendering:** print every clip's first and last 5 words; confirm opener and payoff are whole. The
+  last word has been lost three different ways, caught only by the dry run.
 
-## Proven shapes (seen 3+ times, from `clip_log\INDEX.md`)
-Structures that keep producing 8s and 9s. Not a checklist: a clip needs a payoff whatever its
-shape. But when a candidate fits one of these, build it to land the turn.
-- **Self-roast of the past self:** delusion then, blunt truth now.
+## Proven shapes (3+ sightings in `clip_log\INDEX.md`)
+Not a checklist: a clip needs a payoff whatever its shape. When a candidate fits one, build it to land the turn.
 - **Scene → twist → reaction:** the reaction is the payoff.
+- **Escalating riff, capped:** each line tops the last until one caps it. Take the whole build, never its flat tail.
+  The scorer misses these most.
+- **Absurd image → strong verdict:** "if you make Heat, you should get to kill 20 horses minimum".
+- **Friend exposes the other's habit:** one host outs the other; the defence makes it worse. Duo shows run on it.
+- **Self-roast of the past self:** delusion then, blunt truth now.
+- **Observational take with a quotable capper:** a 7 unless the capper is quotable.
+- **Shameless confession, told proudly** (the scorer under-scores these).
+- **Strange true fact, explained in one breath:** "people kept stealing our balcony".
 - **Plan meets reality:** a naive expectation, then the obvious question or the bad trade.
-- **Observational take with a quotable capper:** scores 7 unless the capper is quotable.
-- **Strange true fact, explained in one breath:** "people kept stealing our balcony."
-- **Shameless confession, told proudly:** the teller is proud of the thing they should hide
-  ("I didn't turn down one ID... their Westchester Rams card, I'd be like, that works").
-- **Friend exposes the other's habit:** duo shows. One host outs the other; the defence makes it worse.
-- **Escalating riff, capped:** a premise gets built on line after line, each topping the last, until one line
-  caps it ("we're in an insane asylum... we let them dress up on Saturday... double his meds"). Take the whole
-  build, never just its flat tail. The scorer misses these most (runs 7, 9).
-- **Absurd image → strong verdict:** someone paints a ridiculous picture and lands a flat judgment on it
-  ("if you make Heat, you should get to kill 20 horses minimum").
-- **Insider rule revealed, pushed to absurd precision:** how a job or scene really works, taken one step too far.
-- **Roast in one line:** a long ramble or a dumb move, answered by one dry line ("that wolf didn't have a weapon on
-  him, bro"). The line is short, so take enough of what it answers. The scorer misses these (runs 10, 12).
-- **Made-up fact or dodge, caught live:** someone bluffs or dodges and the room calls it on the spot ("who would you
-  consider a friend?" / "you pulled the Bill Clinton: what is is?").
+- **Insider rule revealed, pushed to absurd precision.**
+- **Roast in one line:** a ramble or dumb move answered by one dry line. Take enough of what it answers. Missed often.
+- **Made-up fact or dodge, caught live:** a bluff called on the spot. This is a payoff, not "a mild answer".
+- **Proud reveal, instantly deflated.** · **Self-justifying logic spiral.** · **Behind-the-scenes reveal told
+  straight.** · **Steering toward the line everyone's thinking, called out.**
 
-**Build backwards from the payoff.** Find the payoff line, then start at the *latest* line that
-still makes sense cold. A story told over 45s often has a 20s clip inside it (run 4: "I spent
-three, four hundred thousand coming into the draft. And my check was three hundred thousand").
+**Build backwards from the payoff:** find the payoff line, then start at the *latest* line that still makes sense
+cold. A 45s story often has a 20s clip inside it.
 
-## The three tests (run all three on every candidate)
-1. **Cold read:** read only the clip's text, nothing before it. Does it make sense? Does it land?
-2. **Retell:** can you say what happens in one sentence? If not, it's too muddy.
-3. **Payoff check:** point to the exact line that is the payoff. If there isn't one, drop it.
-
-**Missing name = failed cold read.** A story about "this kid from Dallas" who is actually
-Post Malone doesn't work if the name is never said in the window. (Later: a title overlay.)
+## The three tests (every candidate)
+1. **Cold read:** only the clip's text. Does it make sense and land? **A subject never named in the window fails.**
+2. **Retell:** one sentence. If you can't, it's too muddy.
+3. **Payoff check:** point to the exact payoff line. None → drop it.
 
 ## Transcript quality — check before trusting it
-- **Hallucinated repeats:** Whisper sometimes repeats a whole sentence with every repeated
-  word at the *same timestamp* (run 2 at 31:48, ~30 words). That window is unusable.
-  **But short runs (3–8 words) at one timestamp are just squashed timing on fast speech** (run 3
-  had ~100, all real words). Only treat it as a hallucination if the run is 15+ words or
-  repeats text that was just said.
-- **No punctuation/casing:** Whisper can drop into all-lowercase, unpunctuated output and
-  stay there. Run 2 was like that throughout; run 3 switched at 1:28:52 and recovered at
-  1:47:42. Judge sentence boundaries by meaning there. Such a stretch has also lost whole spoken lines, not
-  only curses (run 16), so a "garbled" candidate there may be clean in the audio. Since run 16 `transcribe.py`
-  runs with conditioning off and a style hint, which fixed it on that episode; if a transcript still comes out
-  lowercase, re-transcribe before picking.
-- **Hallucinated loops and word salad** can sit right beside a good clip (run 6: "he's in the
-  neighborhood" x40 at 1:11:34, clip 61 starts 20s later). Read the clip's own captions.
-- **Misheard names:** fix the caption when you're sure (Cat → Katt Williams); otherwise cut around it.
-- **Dropped curse words:** Whisper often leaves the curse out entirely ("who gives a has nothing to do with
-  them"). If the punchline needs it, restore it with a caption fix on the word before (the caption masks it as
-  `****` anyway). A fix replaces that word everywhere in the clip, so skip it when the word before is "a" or "the".
-- **Misheard payoff words:** if Whisper gets a key word wrong ("we have a *shot* in an hour"),
-  move the boundary to avoid captioning it rather than posting a wrong caption.
+- **Hallucinated repeats:** a sentence repeated with every word at one timestamp (15+ words, or repeating what was
+  just said) makes the window unusable. 3–8 words at one timestamp is just fast speech.
+- **Loops and word salad** sit right beside good clips. Read the clip's own captions.
+- **Lowercase, unpunctuated stretches** also lose whole lines, so a "garbled" candidate may be clean in the audio.
+  Judge sentences by meaning; **if a transcript comes out lowercase, re-transcribe before picking.** A broken
+  transcript costs picks, not just captions.
+- **Fake speaker names** written as speech (a name repeated for minutes): grep for them, blank them with fixes.
+- **Misheard words:** fix the caption when sure (Cat → Katt Williams); misheard words are fixes, never rejects.
+  When unsure about a payoff word, move the boundary rather than post a wrong caption.
+- **Dropped curse words** ("who gives a has nothing to do with them"): if the punchline needs it, restore it with a
+  fix on the word before (masked `****` anyway). A fix replaces that word everywhere in the clip, so skip it after
+  "a"/"the", or put it on the word after when that word appears once.
 
-## Ads — detect first, exclude everywhere
-Sponsor language: "promo code", "<brand> dot com slash", "use the code", "free shipping",
-"let's get back to it", "shout out ... if you've got", tour-date lists. Mark the whole read
-as off-limits for clips, heatmap peaks and loudness spikes.
+## Ads and signals
+**Ads first:** "promo code", "<brand> dot com slash", "use the code", "free shipping", "let's get back to it",
+tour-date lists. The whole read is off-limits for clips, peaks and spikes.
+**Heatmap** (yt-dlp `heatmap`, ~100 buckets, 0–1 relative to the video's own peak; often missing): ignore the first
+~2 buckets. **A peak right after an ad read is a skip landing, not a replay: discard it.** Real peaks can be low;
+rank relatively. A bucket is ~45–80s wide: "something in here", not where to cut. Evenly spaced peaks on ordinary
+content may be mid-roll ad breaks **(guess)**.
+**Loudness** (`ebur128` vs the episode median; spike ≥ 6 LU **(guess)**): clusters over 10–20s are a hint. Ignore it
+on flat mixes, group shows that never go quiet and compressed mixes. Works on streams. Never selects a clip alone.
+**The transcript decides.** Clips with no signal are as good as signalled ones. **Always read the whole transcript.**
 
-## Signal 1 — Heatmap ("Most replayed")
-- yt-dlp `heatmap`: ~100 buckets, `value` 0–1, **relative to the video's own peak**.
-- Often missing (run 2). Then skip it.
-- Ignore the first ~2 buckets (people scrubbing at the start).
-- **Ad-skip peaks are fake.** Viewers skip a sponsor read and land right after it (run 1: 4 of
-  the top 5 peaks). If the ~60s before a peak is an ad read, discard the peak.
-- Real content peaks can be low (run 1: 0.30–0.59). Rank relatively.
-- A bucket is ~44s wide on a 73-min video (~82s on 2h17m). A peak says "something in here",
-  not where to cut.
-- **Evenly spaced peaks with ordinary content** (run 3: 9:38, 28:55, 48:11, every ~19 min)
-  are suspect. Likely YouTube-inserted mid-roll ad breaks, not replays **(guess)**. Treat
-  them like ad-skip peaks unless the content itself is strong.
-- Real peaks did land on good material in run 3 (35:48, 1:25:22, 2:05:18: all picked clips).
-
-## Signal 2 — Loudness
-- ffmpeg `ebur128` momentary loudness per second vs the episode's own median.
-- Spike = **≥ 6 LU above median (guess)**: laughter, raised voice, reaction. Clusters over
-  10–20s are the useful hint (run 1 clip 01).
-- Ad reads run hot; ignore spikes inside them.
-- Some shows are mixed flat (run 2: 5 spikes in 76 min). If spikes are that rare, ignore it.
-- Group shows never go quiet (run 4, six people: 21% of seconds spiked). Ignore it there too.
-- Compressed studio mixes can show zero spikes (run 6, Flagrant). Ignore it there too.
-- Loudness alone never selects a clip.
-
-## Signal 3 — Transcript (the decider)
-Signals point you to places; the transcript decides. A strong moment with no signal beats a
-peak with no payoff. Run 1: 2 of 5 kept clips had no signal. Run 2: all 5. **Always read the
-whole transcript.**
-
-Drop on sight (any theme): ads, cold-open teasers (the full moment is later), intros/outros, "subscribe", housekeeping, rapid-fire Q&A lists,
-cross-talk captions can't follow (people talking *over* each other; quick back-and-forth lines are fine, and so is
-one voice with "yeah"s under it), gestures the viewer can't see ("they were like *this*"),
-setups whose payoff is outside the length limit.
+**Drop on sight:** ads, cold-open teasers (the full moment is later), intros/outros, "subscribe", housekeeping,
+rapid-fire Q&A, **third-party footage played on the show** (not theirs to clip), cross-talk captions can't follow
+(people talking *over* each other; quick back-and-forth is fine), gestures the viewer can't see, setups whose
+payoff is outside the length limit.
 
 ## Selection order
-0. Check transcript health. Mark ad reads off-limits.
+0. Check transcript health; mark ad reads off-limits.
 1. List real heatmap peaks, if any.
-2. Read the full transcript with peaks and loudness clusters marked. Episodes over ~1h:
-   read in ~15-min chunks with ~1 min of overlap so no clip gets split across a boundary.
-3. For each candidate, find the payoff line; build the window backwards to a clean opener.
-4. Run the three tests. Drop failures.
-5. Score every survivor (rubric below). Render everything scoring **8+** (Tko's rule after run 11: 7s are filler; every 7 re-checked in run 11 failed).
-6. Mix kinds. No overlaps and no two clips on the same sub-topic. Two different stories may
-   sit back to back (run 3: "no-shirt overalls" was dropped for ending 11s before clip 18; wrong).
-7. **Same story type twice:** keep the version with the bigger payoff, not the first one found.
-8. **No turn, no clip.** A take or story with no capper is not a 6, it's a reject.
+2. Read the full transcript with peaks and loudness marked. Over ~1h: ~15–20 min chunks with ~1 min overlap. **A
+   clip wholly inside the overlap minute belongs to the part it sits in.**
+3. For each candidate, find the payoff; build backwards to a clean opener; splice before rejecting.
+4. Run the three tests.
+5. Score every survivor. **Render 8+ only** (Tko: 7s are filler).
+6. Mix kinds. No overlaps, no two clips on one sub-topic. Two different stories may sit back to back.
+7. **Same story told twice:** keep the bigger payoff, not the first found.
+8. **No turn, no clip.** A take or story with no capper is a reject, not a 6.
 
 ## How many clips
-**No fixed number, but a ceiling** (Tko's rule, 2026-10-04): **at most 20 clips per video, 30 for
-a video over 3 hours.** Under the ceiling the episode decides. A dead 2-hour episode might give 2;
-a great one might give 15. Never pad the count with 5s to hit a number. When more than the ceiling
-pass the bar, keep the highest scores and log the rest as rejected with "over the cap". Code holds
-the line: the scorer's extras land in Review unticked, and a render with too many ticked is refused
-(`review.clip_cap`). Density so far: ~4/hr (runs 1–2, host + non-comedian guest) to ~8/hr (run 3,
-two comedians trading road stories).
+**At most 20 per video, 30 over 3 hours** (Tko). Under that the episode decides (a dead episode gives 2; two
+comedians trading stories ~8–15/hour). Never pad. Over the ceiling: keep the highest, log the rest "over the cap";
+code leaves extras unticked and refuses a render with too many ticked. **Same-story dedupe:** keep the best one per
+story type.
 
-**Same-story dedupe:** comedians tell many versions of one story type (run 3 had 5+ "I
-bombed" stories). Keep the best one per story type, not every one that passes.
-
-## Score (1–10, absolute, not relative)
-Each clip is scored against the bar, **not against the other clips in the episode**. If
-all five are great, all five are 9–10. If none are, none are.
-**Calibration (runs 3–9, every run):** the model scorer rates the best clips one point low. A clip with a clean
-payoff, a cold opener and no flaw you can name is a 9. Save 8 for a strong clip with one flaw you can name.
-- **10:** would bet on it. Instant hook, clean payoff, perfect cold read, no weaknesses.
-- **9:** strong on all three tests; one tiny nitpick.
-- **8:** strong payoff; one real flaw (weak opener, slight overrun, a risk flag).
-- **7:** good moment, noticeably flawed cut (filler opener, runs long past the payoff).
-- **6:** postable filler. Passes the tests, but nobody shares it.
-- **≤7:** don't render. Log it as rejected with the reason.
-Write the score and a one-line reason in the run's `clip_log\` file. The score goes in the filename.
+## Score (1–10, absolute)
+Against the bar, not the other clips. **Calibration: the model scores the best clips one point low.** A clean
+payoff, a cold opener and no flaw you can name is a 9; 8 is strong with one nameable flaw.
+- **10:** would bet on it. **9:** strong on all three tests, one tiny nitpick. **8:** strong payoff, one real flaw
+  (weak opener, slight overrun, a risk flag). **7:** good moment, flawed cut. **6:** postable filler.
+- **≤7: don't render;** log as rejected with the reason. Score and one-line reason go in the run's `clip_log\` file.
 
 ## Post description (one per clip, written with the pick)
-Saved next to the clip as `NN_s<score>_<name>.txt`; Tko copies it into the post. Three parts, each on
-its own line:
-1. **Hook** (under ~70 characters): the premise that makes someone stop, in plain words. Never
-   the punchline; the clip delivers that. "He paid for his first rookie year before he got paid."
-2. **Credit:** show and guest, always. "From <show> <episode> with <guest>." Clips are someone
-   else's work; the credit stays.
-3. **Hashtags: 10–15, all on one line** (Tko's rule: at least 10). Never more than 15: YouTube ignores
-   every hashtag on a video that has 16 or more. Mix three kinds, each tag related to the clip or theme:
-   - **Who:** the show, host and guest (#soderpodcast #dansoder #louisck).
-   - **Theme:** #comedy #standup #standupcomedy #comedypodcast #podcast #funny #comedian.
-   - **This clip:** 2–4 tags on its subject (#nursinghome #dogsoftiktok #seinfeld #pootietang).
-   No tags for things the clip isn't about. **Don't write these four; code adds them to every post**
-   (Tko's rule): #xybca #fyp #blowthisup #viral. That makes 14–19 in the file; YouTube posting trims
-   the most generic ones (#funny, #podcast, …) first, then tags from the end of the line, to stay at 15,
-   and never drops the required four. **So order the line by importance: who, then this clip, then theme.**
-No emoji walls, no "wait for it", no "you won't believe".
-**The post text is clean even when the clip isn't** (Tko's rule, 2026-10-04). Nowhere in the hook or the
-hashtags: a curse word or slur (a masked `****` counts, so does one inside a tag like `#tightshit`), or
-anything about sex, porn, nudity or drugs (weed included), even when that is the clip's whole subject.
-Write around it: sell the situation, not the off-limits word ("His roommate's hobby cleared the room",
-not "His roommate watched porn at dinner"). Pick clip tags from the clean parts of the subject. Alcohol
-and toilet humor are fine. `review.off_limits` refuses a render or a post that has the plain words; the
-allusions are on the writer.
+Saved as `NN_s<score>_<name>.txt`. Three lines:
+1. **Hook** (under ~70 chars): the premise that makes someone stop, never the punchline. **Every fact in it must be
+   in the clip.**
+2. **Credit:** "From <show> <episode> with <guest>." Always. **Take the show's or streamer's name from the channel
+   field when the title lacks it.** Credit only people in the clip.
+3. **Hashtags: 10–15 on one line**, ordered by importance: who (show, host, guest) → this clip (2–4 on its subject)
+   → theme (#comedy #standup #comedypodcast #podcast #funny…). **Don't write #xybca #fyp #blowthisup #viral: code
+   adds them**; posting trims generic tags to stay at 15 (YouTube ignores all hashtags past 15).
+No emoji walls, "wait for it" or "you won't believe".
+**The post text is clean even when the clip isn't** (Tko): no curse or slur (a masked `****` counts, so does one in
+a tag), nothing about sex, porn, nudity or drugs (weed included), even when that's the subject. Sell the situation,
+not the word. Alcohol and toilet humor are fine. `review.off_limits` refuses the plain words; allusions are on you.
 
 ## Risk flags (mention, don't auto-reject; Tko decides)
-- Rumors or accusations about named real people. Drug-use rumors about named celebrities →
-  skip; there's usually a safer clip on the same topic nearby.
-- **N-word, race, religion or trans bits: judge them like any other clip.** Tko's ruling after
-  run 5: "if the clip is good I don't care if it has the N-word." Score on the payoff, then add a
-  risk flag so Tko knows. The caption shows `****`, never the word (see Render).
+- Rumors or accusations about named real people; drug-use rumors about a named celebrity → skip.
+- **N-word, race, religion or trans bits: judge like any clip, then flag** (Tko: "if the clip is good I don't care
+  if it has the N-word"). Captions mask it.
+- **A sexual joke about a child is a reject, not a flag.**
 
-## Render — the layouts a clip's type calls for
-**Podcast: BLUR + TRACK, + SPLIT when both faces share the shot. Streaming: BLUR + GAME on
-gameplay clips, BLUR + TRACK when there is no gameplay. Movie: BAND only.** Tko posts the variants across
-platforms and lets performance decide. Output:
-`Finished_Clips\<Podcast|Streaming>\<show>\NN_s<score>_<name>_{blur,split,track,game}.mp4`
-(e.g. `Podcast\Flagrant\64_s9_bouncer-every-id-works_track.mp4`).
-NN keeps counting up across runs, from the clip log, even after clips are deleted.
-- **BLUR:** full 16:9 frame centered, blurred copy fills top and bottom. Never cuts anyone out.
-- **BAND** (movies, from the reference shorts): the picture scaled to 1380px high and center-cropped to 1080 wide,
-  black bars above and below, white Cambria subtitles a sentence at a time near the bottom of the picture, curses
-  masked. One crop for the whole recap: when the speakers sit off-center, set `"crop_x"` (0 = left, 1 = right) on
-  the clip in `review.json` and re-render. Check a frame sheet of every recap before approving it as done.
-- **SPLIT:** two faces stacked (1080x960 each), captions on the seam. Top = left person.
-  Needs both people *in the same shot for the whole clip*. Multi-camera shows that cut
-  between single close-ups (run 3, JRE) can't do SPLIT. Skip it and say so; don't fake it.
-  Faces must also be big enough: a wide couch shot with ~40px faces would be a 4x upscale
-  (run 4). `reframe.plan` skips SPLIT when a face is under ~H/13.
-- **TRACK** (style C, Tko's pick 2026-10-06 from six samples; modelled on what other clip channels post):
-  a 9:16 crop that follows the talker with hard cuts. The clip is split into camera shots first (ffmpeg
-  `scdet`, threshold 10; real cuts score ~22–24). Per shot: 1 face → frame it; 2+ faces → follow the voice
-  (below); 0 faces → center of frame. The crop is
-  sized by the face (about a fifth of the frame's height, eyes a third of the way down), never tighter than
-  1.6x from the source height. **No shot runs longer than 4.5s: through a hold on one person the framing
-  switches between normal and punched-in (80%) about every 3 seconds, on a sentence break when one is in
-  reach; the last shot (the payoff) is a punch-in, and every shot pushes in slowly (5%).** A small face in a
-  wide shot can't go past 1.6x, so its punch-in is the 1.6x framing and its normal framing is wider.
-  **Why (Tko, 2026-10-08):** under YouTube's Shorts rule a clip has to be edited enough to count as changed,
-  not reposted, "even if a clip doesn't really need it"; a clip where one person talks for 18s used to be one
-  static shot. The render line prints each clip's shot count and longest shot (`reframe.edit_report`): read it.
-  All of it is code (`reframe.track_shots`, `track_filter`); the picker does nothing for it.
-  **Who is talking comes from the audio, not the picture** (built 2026-10-06; jaw movement put run 15's
-  crop on a laughing listener in 17 of 20 clips, because a mic hides the talker's mouth). Once per video
-  `speakers.label` finds the voices and gives every transcript sentence a speaker number (0 talks most; none
-  when two voices are too close to call), and `reframe.known_faces` learns each voice's face from the show's
-  own close-ups. In a shot of several people the picture cuts to whoever starts a turn, about 0.12s before
-  their first word; a line under 1s is an interjection and the picture stays put. A voice that never gets a
-  close-up has no face on record: it is given whichever leftover person moves their jaw most while it talks.
-  When nobody in the shot is known, the old jaw-movement pick is used. First render of a video takes about
-  5 minutes longer for this.
-  **A show filmed as one wide shot has no close-ups, so no face is learned and jaw movement parks the crop on
-  one seat (run 16: most clips wrong).** Before approving such a show, put `"seats"` at the top of
-  `review.json`: speaker number → where that voice sits, as x over the frame's width
-  (`{"0": 0.105, "1": 0.452, "2": 0.863}`). Get the numbers from `speakers.json` on lines whose speaker is
-  certain from the text, and the positions from one wide frame. With seats nobody is guessed: a voice is the
-  face at its seat. Tested on four of run 16's clips: the framed person matched the caption colour throughout. **Still check a frame strip of every TRACK file**: seven test clips came out
-  right for all but 2-3 seconds each, on two shows.
-- **GAME** (Streaming only): webcam across the top at full width (~1/3 of the frame for a 16:9
-  cam), gameplay under it, captions on the seam. Replaces TRACK and SPLIT on gameplay clips, so
-  those render BLUR + GAME. Decided per clip: a stream clip with no gameplay gets BLUR + TRACK on the
-  streamer. Edited uploads cut to the camera full screen mid-clip (run 12: zoom stretches in 11 of the 18
-  gameplay clips, and 193 is camera-only); GAME switches to a full-height crop on the face for those
-  shots and its captions drop to the low third.
-  **Look at a strip of frames across each rendered clip**, not one frame. The webcam box is found once per video (`reframe.cam_box`, cached in
-  `work\<slug>\facecam.json`). **Look at `work\<slug>\facecam.jpg` before approving**; a wrong
-  box is fixed by putting `"facecam": [x, y, w, h]` at the top of `review.json`.
-- **No plain center crop:** wide shots put people at the edges.
-- Face detection is OpenCV YuNet. mediapipe's short-range detector failed on wide shots
-  (boxed hands, a plant pot, a belt buckle). **Draw boxes on one frame per show and look
-  before rendering.**
-- Captions (style C): burned in, **1–2 words at a time** (two words only when they fit 12 characters), all
-  caps, Lilita One (`fonts\`), white with a black outline, each one popping in over 0.15s, on screen 0.18–1.2s
-  and gone in pauses. A line over 14 characters is scaled down to fit. TRACK: mid-frame on the chest (y 1100
-  of 1920, lower when a close-up's chin would reach it); BLUR: under the picture; SPLIT and GAME: on the seam.
-  The picker's caption `fixes` work as before. **Each line is coloured by who says it**: the voice that talks
-  most in the video is yellow, then green, cyan, orange; white when the speaker isn't certain (short
-  interjections, a last line under laughter). Streams too.
-- **No curse word readable on screen** (Tko's rule). `render.mask_curses` turns it into `****`;
-  the audio stays as spoken. Includes slurs. Add words to `render.CURSE` if one slips through.
+## Render — what the picker and reviewer must do
+Layouts: **Podcast** BLUR + TRACK (+ SPLIT when both faces share one shot the whole clip and are big enough);
+**Streaming** BLUR + GAME on gameplay, BLUR + TRACK without; **Movie** BAND only. Output:
+`Finished_Clips\<Podcast|Streaming|Movies>\<show>\NN_s<score>_<name>_<layout>.mp4`; NN counts up from the clip log.
+All framing and captions are code (style C: 1–2 word pop-in captions coloured per speaker, curses masked; TRACK
+follows the voice with no shot over 4.5s, Tko's Shorts-editing rule). What GURT does:
+- **Faces:** a show filmed as one wide shot has no close-ups, so TRACK parks on one seat. Before approving it, put
+  `"seats"` at the top of `review.json`: speaker number → x over the frame's width (`{"0": 0.105, "1": 0.452}`);
+  numbers from `speakers.json` on lines whose speaker is certain, positions from one wide frame.
+- **Streams:** look at `work\<slug>\facecam.jpg` before approving; fix a wrong box with `"facecam"`.
+- **Movies:** `"crop_x"` (0 left, 1 right) pins a fixed BAND crop when the speaker-following fails.
+- **Look at a frame strip of every rendered TRACK, GAME and BAND file**, not one frame, and read the render line's
+  shot count and longest shot. Add slipped curse words to `render.CURSE`.
 - Delete `work\<slug>\source.mp4` after rendering.
