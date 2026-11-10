@@ -85,13 +85,13 @@ needs a fresh reader given the full spoken text of each moment; the picker passe
 without the Posted? question. Stuck at "YouTube: publishing" = the button id changed.
 Then: Tko watches Curb v7 (351); his verdict goes in run 21. 349 and 350 in
 `Finished_Clips\Movies\Curb.Your.Enthusiasm.S12E03\` are rejected cuts.
-Curb's funny moments 362–371 passed (risk flags 368 race, 370 crude: Tko's call before posting). Next movie gets
+Curb's funny moments 362–371 passed; Tko cleared 368 (race) and 370 (crude) to post. Next movie gets
 the same recipe. Atlanta's source is gone (`info.json` points at a missing `Movies\Atlanta...mkv_`):
 it needs the file back before any funny moments.
 
 ## Open items
 **Tko's queue (nobody has listened to these; don't tick unwatched clips Ready):**
-- Run 21 funny moments (362–371): passed; risk calls 368 (race), 370 (crude). Recap 351 has four flicker slivers:
+- Run 21 funny moments (362–371): passed, 368 and 370 cleared by Tko. Recap 351 has four flicker slivers:
   re-render it if Tko wants.
 - Run 19 (332–345): re-rendered TRACK files (≤4.5s shots) are waiting on Tko's yes to overwrite; if that scratchpad
   is gone, re-render. 334 is unsure on TRACK: post BLUR. Its "slow child" pick sits unticked.
