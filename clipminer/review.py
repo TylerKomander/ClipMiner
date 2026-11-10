@@ -48,12 +48,19 @@ def load(work: Path) -> dict:
 
 def mark_overlaps(clips: list[dict], words: list[dict]) -> None:
     """GURT's and Sonnet's picks can land on the same moment; flag ticked pairs so it can't render twice
-    by accident (run 8 shipped two cuts of the Gronk story)."""
-    kept = [c for c in clips if c["keep"]]
+    by accident (run 8 shipped two cuts of the Gronk story). A movie recap spans the whole film and is meant to
+    share its jokes with the film's funny-moment clips, so it never counts."""
+    # Kept footage, not first-to-last: a funny moment spliced from a set-up 20 minutes before its payoff
+    # would otherwise overlap every clip in between.
+    def spans(c: dict) -> list[tuple[float, float]]:
+        return [(words[a]["start"], words[b]["end"]) for a, b in splice.kept_runs(c["first"], c["last"], c["cuts"])]
+
+    def shared(c: dict, o: dict) -> float:
+        return sum(max(0.0, min(b, d) - max(a, x)) for a, b in spans(c) for x, d in spans(o))
+
+    kept = [c for c in clips if c["keep"] and not c.get("recap")]
     for c in clips:
-        a, b = words[c["first"]]["start"], words[c["last"]]["end"]
-        c["overlaps"] = [o["name"] for o in kept if o is not c and c["keep"]
-                         and min(b, words[o["last"]]["end"]) - max(a, words[o["first"]]["start"]) > 5]
+        c["overlaps"] = [o["name"] for o in kept if o is not c and c["keep"] and not c.get("recap") and shared(c, o) > 5]
 
 
 def save(work: Path, review: dict) -> None:
@@ -154,7 +161,7 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
         stem = clip.get("rendering_as") or f"{number:02d}_s{clip['score']}_{clip['name']}"
         clip["rendering_as"] = stem
         save(work, review)
-        source, start, end, kept, joins = splice.build(video, work, words, clip, stem)
+        source, start, end, kept, joins = splice.build(video, work, words, clip, stem, film=kind == "movie")
         fixes = clip["fixes"]
         # A fix to "" drops the word: Whisper wrote fake speaker names as spoken words in run 11.
         caption = [{**w, "word": " ".join(fixes.get(x, x) for x in w["word"].split())} for w in kept]

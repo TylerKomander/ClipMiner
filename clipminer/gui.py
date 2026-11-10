@@ -324,7 +324,8 @@ class ReviewPage(Page):
 
     def refresh(self) -> None:
         with self.app.lock:
-            waiting = [j for j in self.app.jobs if j["stage"] == "review"
+            # A finished job is back when new picks land in it (a film's funny moments after its recap rendered).
+            waiting = [j for j in self.app.jobs if j["stage"] in ("review", "done")
                        and review.load(ROOT / "work" / j["slug"])["status"] == "awaiting"]
         if [j["id"] for j in waiting] == [j["id"] for j in self.waiting]:
             return
@@ -381,6 +382,11 @@ class ReviewPage(Page):
         if kept > cap:
             messagebox.showerror("Approve", f"{kept} clips ticked, the limit for this video is {cap}: untick {kept - cap}.")
             return
+        # A second batch (a film's funny moments) counts only what isn't rendered yet.
+        new = sum(c["keep"] and not c.get("rendered_as") for c in self.data["clips"])
+        if not new:
+            messagebox.showerror("Approve", "Nothing new is ticked: tick a pick to render.")
+            return
         unclean = [f"  {c['name']}:  {', '.join(review.off_limits(c['description']))}" for c in self.data["clips"]
                    if c["keep"] and not c.get("rendered_as") and review.off_limits(c["description"])]
         if unclean:
@@ -390,7 +396,7 @@ class ReviewPage(Page):
         pairs = sorted({tuple(sorted((c["name"], o))) for c in self.data["clips"] for o in c.get("overlaps", [])})
         warning = ("\n\nThese ticked picks cover the same moment and would both render:\n"
                    + "\n".join(f"  {a}  ↔  {b}" for a, b in pairs)) if pairs else ""
-        if messagebox.askyesno("Approve", f"Render {kept} clip(s) from this episode?{warning}"):
+        if messagebox.askyesno("Approve", f"Render {new} clip(s) from this episode?{warning}"):
             self.data["status"] = "approved"
             review.save(self.work, self.data)
             self.work, self.data = None, None
@@ -497,7 +503,7 @@ class ClipsPage(Page):
         # Show folders from before the type folders sit straight under Finished_Clips: all podcasts.
         # Clips from before per-show folders sit loose there (or in Used-Clips).
         shows: dict[tuple[str, str], list[Path]] = {}
-        # Every clip has a BLUR file except a movie recap, which only has its BAND file.
+        # Every clip has a BLUR file except a movie clip (recap or funny moment), which only has its BAND file.
         for video in [*FINISHED.rglob("*_blur.mp4"), *FINISHED.rglob("*_band.mp4")]:
             parts = video.parent.relative_to(FINISHED).parts
             category = category_of(video)
@@ -610,7 +616,7 @@ class ClipsPage(Page):
             return
         folder = ROOT / profile["folder"]
         if category_of(base) == review.KINDS["movie"][0] and not profile.get("movies"):
-            messagebox.showinfo("Post", "Movie recaps only go to an account ticked Movie channel on the Accounts page.")
+            messagebox.showinfo("Post", "Movie clips only go to an account ticked Movie channel on the Accounts page.")
             return
         layout = self.layout.get()
         video = base.with_name(f"{base.name}_{layout}.mp4")
@@ -936,7 +942,7 @@ class AccountsPage(Page):
             ttk.Button(slot, text="Open", command=lambda p=platform: self.open_profile(p)).grid(row=1, column=4)
             slot.columnconfigure(3, weight=1)
         self.movies = tk.BooleanVar()
-        ttk.Checkbutton(form, text="Movie channel: Movies recaps post here, and never to an account without this tick",
+        ttk.Checkbutton(form, text="Movie channel: Movies clips post here, and never to an account without this tick",
                         variable=self.movies, style="Panel.TCheckbutton").pack(anchor="w", pady=(0, 6))
         ttk.Label(form, text="No passwords here: you sign in once inside the account's own browser and it stays "
                              "signed in.", style="Help.TLabel", background=PANEL).pack(anchor="w", pady=(4, 10))

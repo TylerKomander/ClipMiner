@@ -59,6 +59,24 @@ RECAP_LEN = (50, 155)
 RECAP_MOMENTS = (8, 24)
 MOMENT_WORDS = 160
 
+# Besides the recap, a film's standalone laughs (Tko, 2026-11-09): one joke each, spliced from up to four pieces
+# when its set-up sits elsewhere in the film. Longer than a podcast clip's 40s: a scene's joke needs its reply.
+FUNNY_SCHEMA = _object({
+    "clips": {"type": "array", "items": _object({
+        "name": {"type": "string", "description": "short kebab-case name"},
+        "score": {"type": "integer", "description": "1-10 per the rubric"},
+        "reason": {"type": "string", "description": "one line: why this score"},
+        "payoff": {"type": "string", "description": "the exact line a stranger laughs at, copied from the text"},
+        "description": {"type": "string", "description": "the post text, following the movie-recap profile's funny-moment rules"},
+        "moments": {"type": "array", "description": "1-4 pieces played back to back in film order",
+                    "items": RECAP_SCHEMA["properties"]["moments"]["items"]},
+    })},
+    "rejected": {"type": "array", "items": _object({"approx_start": {"type": "string"}, "why": {"type": "string"}})},
+})
+FUNNY_LEN = (10, 60)
+FUNNY_PIECES = 4
+FUNNY_WORDS = 400  # a one-scene joke may be its whole 60s: past 160 words at Curb's 4 words/s
+
 
 def hms(t: float) -> str:
     t = int(t)
@@ -284,22 +302,41 @@ def recap_prompt(info: dict, lines: list[str], words_per_second: float, subs: st
     )
 
 
-def place_moments(picks: dict, words: list[dict], norm: list[str]) -> tuple[list[list[int]], str | None]:
+def funny_prompt(info: dict, lines: list[str], words_per_second: float, subs: str) -> str:
+    return (
+        f"Film: {info.get('title')}\nLength: {hms(info.get('duration') or 0)}\n\n"
+        "The recap is made separately. Here, find the film's FUNNY MOMENTS: each one a standalone short of one whole "
+        "joke a stranger laughs at without having seen the film, following the movie-recap profile's funny-moment "
+        "rules. Side plots count here. A clip is 1-4 pieces of dialogue played back to back in film order: one piece "
+        f"when the scene stands alone; more when the joke needs a set-up from elsewhere (who someone is, an earlier "
+        f"line it calls back to). Each clip runs {FUNNY_LEN[0]}-{FUNNY_LEN[1]}s of speech: about "
+        f"{FUNNY_LEN[0] * words_per_second:.0f}-{FUNNY_LEN[1] * words_per_second:.0f} words at this film's pace. Count "
+        "before you submit. Submit only clips scoring 8+; a film may have none, and an empty list is a fine answer. "
+        "Never pad. first_words and last_words must be copied exactly from the text; a piece never ends before its "
+        "joke's reply.\n\n"
+        f"Reading file: one line per ~{LINE_SECONDS}s as `h:mm:ss text`.\n\n" + "\n".join(lines)
+        + (f"\n\nThe film's own subtitles, for names and who speaks only (quote from the reading file):\n\n{subs}" if subs else "")
+    )
+
+
+def place_moments(picks: dict, words: list[dict], norm: list[str],
+                  count: tuple[int, int] = (RECAP_MOMENTS[0] - 2, RECAP_MOMENTS[1] + 2),
+                  reach: int = MOMENT_WORDS) -> tuple[list[list[int]], str | None]:
     """Word ranges for each moment, in film order, and what is wrong with them (None if nothing)."""
     ranges = []
     for m in picks["moments"]:
         head = re.findall(r"[a-z0-9']+", m["first_words"].lower())[:4]
         tail = re.findall(r"[a-z0-9']+", m["last_words"].lower())[-4:]
         i = snap(words, norm, seconds(m["approx_start"]), head, 60)
-        j = None if i is None else first_after(norm, tail, i, min(i + MOMENT_WORDS, len(words) - len(tail)))
+        j = None if i is None else first_after(norm, tail, i, min(i + reach, len(words) - len(tail)))
         if j is None:
             return [], f"moment \"{m['first_words']}\" … \"{m['last_words']}\" not found near {m['approx_start']}"
         ranges.append([i, j + len(tail) - 1])
     ranges.sort()
     if any(b[0] <= a[1] for a, b in zip(ranges, ranges[1:])):
         return [], "two moments overlap"
-    if not RECAP_MOMENTS[0] - 2 <= len(ranges) <= RECAP_MOMENTS[1] + 2:
-        return ranges, f"{len(ranges)} moments, asked for {RECAP_MOMENTS[0]}-{RECAP_MOMENTS[1]}"
+    if not count[0] <= len(ranges) <= count[1]:
+        return ranges, f"{len(ranges)} moments, asked for {count[0]}-{count[1]}"
     # The blind test's small models stopped moments at reading-file row wraps, before the punchline.
     cut_short = [words[j]["word"].strip() for _, j in ranges if words[j]["word"].rstrip()[-1:] not in ".?!"]
     if cut_short:
@@ -321,16 +358,18 @@ def recap(work: Path, model: str, theme: str) -> Path:
     # Over speech only: a film is half silence, and the runtime pace (Atlanta 1.3 w/s against 2.9 in the
     # recap) asked for 40s recaps.
     words_per_second = len(words) / sum(s["end"] - s["start"] for s in transcript["segments"])
+    lines = [text for _, text in reading_lines(work)]
+    subs = (work / "subs_sdh.srt").read_text(encoding="utf-8") if (work / "subs_sdh.srt").exists() else ""
+    # Only movie runs teach a recap; podcast runs would cost tokens and teach the wrong shape. Cached: the
+    # funny-moments call sends the same system prompt right after.
+    system = [{"type": "text", "text": system_prompt(recent_runs(theme, fallback=False), theme),
+               "cache_control": {"type": "ephemeral"}}]
     out = work / f"recap-{model}.json"
     if out.exists():
         picks = json.loads(out.read_text(encoding="utf-8"))
     else:
         client = anthropic.Anthropic(api_key=api_key())
-        # Only movie runs teach a recap; podcast runs would cost tokens and teach the wrong shape.
-        system = [{"type": "text", "text": system_prompt(recent_runs(theme, fallback=False), theme)}]
-        subs = (work / "subs_sdh.srt").read_text(encoding="utf-8") if (work / "subs_sdh.srt").exists() else ""
-        messages = [{"role": "user", "content": recap_prompt(info, [text for _, text in reading_lines(work)],
-                                                             words_per_second, subs)}]
+        messages = [{"role": "user", "content": recap_prompt(info, lines, words_per_second, subs)}]
         text, usage = ask(client, model, system, messages, 1, RECAP_SCHEMA)
         picks = json.loads(text)
         ranges, problem = place_moments(picks, words, norm)
@@ -352,10 +391,89 @@ def recap(work: Path, model: str, theme: str) -> Path:
     entry = review.entry(words, picks["name"], picks["score"], ranges[0][0], ranges[-1][1], model, "",
                          picks["reason"] + (f" Check: {problem}." if problem else ""),
                          description=picks["description"], cuts=as_cuts(ranges))
+    entry["recap"] = True
+    print(f"[score]      recap: {len(ranges)} moments, {entry['seconds']:.0f}s")
+    # Saved first: a failed funny-moments call must not cost the recap its place in Review.
     if not (work / "review.json").exists():
         review.save(work, {"status": "awaiting", "model": model, "kind": "movie", "clips": [entry]})
-    print(f"[score]      recap: {len(ranges)} moments, {entry['seconds']:.0f}s")
+    funnies = funny(work, model, system, info, lines, words_per_second, subs, words, norm)
+    # Added to whatever is in Review, nothing there touched: a film recapped before funny moments existed
+    # held only its recap, so a clip without the flag is that recap.
+    data = review.load(work)
+    for c in data["clips"]:
+        c.setdefault("recap", True)
+    names = {c["name"] for c in data["clips"]}
+    added = [f for f in funnies if f["name"] not in names]
+    if added:
+        data["clips"] += added
+        # Reopened only for something to render: an all-unticked batch would sit in Review with no way out.
+        if any(f["keep"] for f in added):
+            data["status"] = "awaiting"
+        review.save(work, data)
     return out
+
+
+def funny(work: Path, model: str, system: list, info: dict, lines: list[str], words_per_second: float, subs: str,
+          words: list[dict], norm: list[str]) -> list[dict]:
+    """A film's standalone laughs, as Review entries. Picks under 8, or the wrong length, show unticked; a
+    pick whose quotes aren't found is dropped (printed)."""
+    out = work / f"funny-{model}.json"
+    if out.exists():
+        picks = json.loads(out.read_text(encoding="utf-8"))
+    else:
+        client = anthropic.Anthropic(api_key=api_key())
+        messages = [{"role": "user", "content": funny_prompt(info, lines, words_per_second, subs)}]
+        text, usage = ask(client, model, system, messages, 1, FUNNY_SCHEMA)
+        picks = unique(json.loads(text))
+        wrong = [(c, p) for c in picks["clips"] if (p := funny_problem(c, words, norm))]
+        if wrong:
+            listed = "\n".join(f"- {c['name']}: {p}" for c, p in wrong)
+            messages += [{"role": "assistant", "content": text}, {"role": "user", "content": (
+                f"Measured from the word timestamps:\n{listed}\n\nFix each one: {FUNNY_LEN[0]}-{FUNNY_LEN[1]}s of "
+                f"speech, 1-{FUNNY_PIECES} pieces, quotes copied exactly. Drop a whole piece rather than trim inside "
+                "a joke; leave a clip out if it can't fit without losing its payoff. Return only these clips, "
+                "revised; `rejected` may be empty.")}]
+            text, retry = ask(client, model, system, messages, 1, FUNNY_SCHEMA)
+            # Replies can rename a clip: keep the ones that passed and take every revision as it comes.
+            picks["clips"] = [c for c in picks["clips"] if not funny_problem(c, words, norm)] + json.loads(text)["clips"]
+            picks = unique(picks)
+            usage = {key: usage[key] + retry[key] for key in usage}
+        picks["usage"] = usage
+        out.write_text(json.dumps(picks, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    entries = []
+    for c in picks["clips"]:
+        ranges, problem = place_moments(c, words, norm, (1, FUNNY_PIECES), FUNNY_WORDS)
+        if not ranges:
+            print(f"[score]      funny: dropped {c['name']}: {problem}")
+            continue
+        problem = funny_problem(c, words, norm)
+        e = review.entry(words, c["name"], c["score"], ranges[0][0], ranges[-1][1], model, c["payoff"],
+                         (f"Dropped by code: {problem}. " if problem else "") + c["reason"],
+                         description=c["description"], cuts=as_cuts(ranges))
+        e["keep"] = not problem and c["score"] >= 8
+        e["recap"] = False
+        entries.append(e)
+    print(f"[score]      funny: {len(entries)} moments, {sum(e['keep'] for e in entries)} ticked")
+    return entries
+
+
+def unique(picks: dict) -> dict:
+    # Two clips with one name would render to one file stem.
+    seen: dict[str, int] = {}
+    for c in picks["clips"]:
+        seen[c["name"]] = seen.get(c["name"], 0) + 1
+        if seen[c["name"]] > 1:
+            c["name"] += f"-{seen[c['name']]}"
+    return picks
+
+
+def funny_problem(clip: dict, words: list[dict], norm: list[str]) -> str | None:
+    ranges, problem = place_moments(clip, words, norm, (1, FUNNY_PIECES), FUNNY_WORDS)
+    if problem:
+        return problem
+    length = splice.seconds(words, ranges[0][0], ranges[-1][1], as_cuts(ranges))
+    return None if FUNNY_LEN[0] <= length <= FUNNY_LEN[1] else f"{length:.0f}s of speech, outside {FUNNY_LEN[0]}-{FUNNY_LEN[1]}s"
 
 
 def score(work: Path, model: str = MODEL, examples: list[str] | None = None,

@@ -65,8 +65,8 @@ a shouting voice is split into several and caption colours flip). Not for friend
 screaming comes out as a few words or a loop ("A, A, A" ×100). **Tolerance:** as `comedian-podcast`.
 
 ## Theme: `movie-recap`
-A whole film or episode from a local file → **one recap short** telling the main story as a supercut of the film's
-own dialogue, in film order, ending included (references `UTBAKThAmI4`, `ZY4qS0KewuI`). Worked examples:
+A whole film or episode from a local file → **one recap short** plus its **funny moments** (below). The recap tells
+the main story as a supercut of the film's own dialogue, in film order, ending included (references `UTBAKThAmI4`, `ZY4qS0KewuI`). Worked examples:
 `clip_log\run-20-atlanta-s02e01-recap.md` (348, the reference: 16 short exchanges, 89s) and
 `run-21-curb-s12e03-recap.md` (7 whole scenes, 154s). Read the moment table before picking.
 
@@ -149,6 +149,20 @@ genre, #movie #movieclips. The clean-text rule applies.
 
 **Transcript traps:** Whisper drops lines spoken over a score and writes song lyrics as speech.
 **Tolerance:** films carry slurs and violence in context; captions are still masked. Score on the story.
+
+### Funny moments (besides the recap)
+Every film also gets standalone shorts of its best laughs (Tko, 2026-11-09), picked after the recap. Each is **one
+whole joke a stranger laughs at cold**: set-up, punchline, and the reply or topper.
+- **Side plots count here**, and a joke may also be in the recap.
+- **1–4 pieces, back to back in film order.** One when the scene stands alone. Add a piece only when the joke
+  needs it: who someone is, the line a callback points to, the set-up of a payoff minutes later. An extra piece is
+  that one line or exchange, not its whole scene. Never trim inside the joke.
+- **10–60s of speech.** The first 3s state the situation in words (not a greeting); stop at the first line after
+  the last laugh.
+- **Only 8+**, scored by Part B. Few is normal: a drama may have none, a sitcom episode 2–5. Never pad. Same joke
+  twice: keep the better cut.
+- **Off-theme:** a sight gag with no line, a callback whose set-up can't be spliced in, a reaction line alone.
+- **Quotes** as recap step 9. **Post text** as the recap's, its hook about this joke's situation, never the punchline.
 
 ## Writing a new theme profile
 Add the type to `review.KINDS`, then copy a block above and fill the same fields: content, audience, payoff (and

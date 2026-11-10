@@ -6,7 +6,8 @@
 `clipminer <url-or-file>` turns a long comedian podcast or a stream into every clip worth posting (variable count,
 scored 1–10), each 10–35s, 9:16, burned-in captions, in the layouts its type calls for, with a one-line reason per
 clip. Tko picks the type (Podcast / Streaming / Movie) before pasting the link. A **movie** is a local film file in →
-**one recap short** that tells the main story as a supercut of whole jokes (style of `UTBAKThAmI4`, `ZY4qS0KewuI`).
+**one recap short** that tells the main story as a supercut of whole jokes (style of `UTBAKThAmI4`, `ZY4qS0KewuI`),
+plus **funny moments**: standalone shorts of single jokes, 1–4 spliced pieces each, only 8+ (none is fine).
 Scoring moves from GURT-by-hand → Claude API → small local model.
 
 ## Constraints
@@ -51,7 +52,8 @@ render, use `--render <slug>` as a background task.
 **for GURT** ("Send to Sonnet" hands one to the API). When Tko says "pick it": write the reading file fresh from
 `score.reading_lines(work)`, read it (+ `subs_sdh.srt` for a film) and the theme profile in `skill.md`; write the
 picks as the Sonnet cache (`parts-claude-sonnet-5-5/<begin>.json` per `score.chunks(...)` piece, or
-`recap-claude-sonnet-5-5.json` for a movie); run `score(work, kind=...)`; set each clip's `by`/`model` to
+`recap-claude-sonnet-5-5.json` **and** `funny-claude-sonnet-5-5.json` for a movie, `{"clips": [], "rejected": []}`
+if none, or the API is called); run `score(work, kind=...)`; set each clip's `by`/`model` to
 `gurt-by-hand`. The app moves the job to Review. Edits: `review.entry(...)`, check `review.off_limits`, approve.
 **Movies:** follow `skill.md` movie-recap "How to build a recap" step by step. Worked examples:
 `clip_log\run-20-atlanta-s02e01-recap.md` (348, the reference) and `run-21-curb-s12e03-recap.md`. The retell gate
@@ -65,6 +67,8 @@ needs a fresh reader given the full spoken text of each moment; the picker passe
 - [x] App: queue, review, clips by type/show, accounts, auto-post schedules, YouTube tab closes and records itself
 - [x] Movie type: recap from a local file, SDH subtitles saved, BAND follows the speaker. Atlanta 348: "really good"
 - [x] Recap rules after Curb v4 was rejected: a moment is a whole joke, cap 155s of speech, no source chapters
+- [x] Movie funny moments (`score.funny`, skill.md "Funny moments"): code done, dry-run on a copy of Curb
+- [ ] Funny moments picked, rendered and passed by Tko on a real episode
 - [ ] Auto-publish confirmed live (see Next step)
 - [ ] Curb recap v7 rendered and passed by Tko
 - [ ] A real film (not a TV episode) through the recap recipe
@@ -78,8 +82,12 @@ needs a fresh reader given the full spoken text of each moment; the picker passe
 ## Next step
 **Watch the first scheduled auto-publish:** `#done-button` clicked, tab closes itself, `posts.json` records it
 without the Posted? question. Stuck at "YouTube: publishing" = the button id changed.
-Then: Tko renders Curb v7 (in Review, 174.7s) and watches it; his verdict goes in run 21. 349 and 350 in
+Then: Tko watches Curb v7 (351); his verdict goes in run 21. 349 and 350 in
 `Finished_Clips\Movies\Curb.Your.Enthusiasm.S12E03\` are rejected cuts.
+**Funny moments, first real run:** when Tko says "pick it" on Curb S12E03, GURT writes
+`funny-claude-sonnet-5-5.json` by hand and runs `score(work, kind="movie")`: the picks are added to the existing
+review (8+ ticked), the rendered recap is untouched, and the job shows in Review again. Atlanta's source is gone
+(`info.json` points at a missing `Movies\Atlanta...mkv_`): it needs the file back before any funny-moments render.
 
 ## Open items
 **Tko's queue (nobody has listened to these; don't tick unwatched clips Ready):**

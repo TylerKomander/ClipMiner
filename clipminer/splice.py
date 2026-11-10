@@ -134,11 +134,13 @@ def frame_rate(video: Path) -> float:
     return int(num) / int(den)
 
 
-def build(video: Path, work: Path, words: list[dict], clip: dict, stem: str) -> tuple[Path, float, float, list[dict], list[float]]:
+def build(video: Path, work: Path, words: list[dict], clip: dict, stem: str, film: bool = False) -> tuple[Path, float, float, list[dict], list[float]]:
     """Source file, start, end, caption words (on that file's clock) and where one moment cuts to the next (recaps), for one clip."""
     first, last, cuts = clip["first"], clip["last"], clip.get("cuts", [])
     runs = kept_runs(first, last, cuts)
-    if words[last]["end"] - words[first]["start"] <= LONG_WINDOW:
+    # A film clip of several pieces always takes the per-piece path below, however close they sit: each piece
+    # needs its own beat of quiet, or a line runs chopped into the next piece (Tko on clip 347).
+    if (not film or len(runs) == 1) and words[last]["end"] - words[first]["start"] <= LONG_WINDOW:
         sound = envelope(video, max(words[first]["start"] - 1, 0), words[last]["end"] + 1)
         spans = stretches(words, first, last, cuts, sound)
         spans[-1] = (spans[-1][0], tail_end(video, words[last]["end"]))
