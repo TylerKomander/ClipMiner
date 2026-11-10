@@ -10,6 +10,28 @@ def slugify(text: str) -> str:
     return re.sub(r"[^A-Za-z0-9_-]+", "_", text).strip("_")[:60]
 
 
+def english_audio(local: Path, work: Path) -> Path:
+    """Tko's file as every stage hears it. Whisper, ffmpeg and the render all take the first audio track, so a file
+    whose first track is a dub or a narrated one is copied (no re-encode) into work/ with only its plain English
+    track: Rick and Morty S03E01's BDRip has Russian first, and its WEB copy only an audio-described English track.
+    The copy is ClipMiner's own and is deleted after rendering; Tko's file is never touched."""
+    tracks = json.loads(subprocess.run(["ffprobe", "-v", "error", "-select_streams", "a", "-show_entries",
+                                        "stream=index:stream_tags=language,title", "-of", "json", str(local)],
+                                       capture_output=True, text=True, check=True).stdout)["streams"]
+    plain = lambda t: (t.get("tags", {}).get("language") in ("eng", "en")
+                       and not re.search(r"descript|commentary|\bAD\b|\bDVS\b", t.get("tags", {}).get("title", ""), re.I))
+    pick = next((t for t in tracks if plain(t)), None)
+    if not tracks or pick is None or pick is tracks[0]:
+        return local
+    copy = work / "source.mkv"
+    if not copy.exists():
+        part = work / "source.part.mkv"
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(local), "-map", "0:v:0", "-map", f"0:{pick['index']}",
+                        "-map", "0:s?", "-c", "copy", str(part)], check=True)
+        part.replace(copy)
+    return copy
+
+
 def fetch(source: str, work_root: Path) -> tuple[Path, Path]:
     local = Path(source)
     if local.is_file():
@@ -22,7 +44,7 @@ def fetch(source: str, work_root: Path) -> tuple[Path, Path]:
             # `path` marks Tko's own file: the render reads it in place and never deletes it.
             meta.write_text(json.dumps({"id": work.name, "title": local.stem, "channel": "",
                                         "duration": float(duration), "path": str(local.resolve())}, indent=2), encoding="utf-8")
-        return work, local
+        return work, english_audio(local, work)
 
     with YoutubeDL({"quiet": True}) as ydl:
         info = ydl.extract_info(source, download=False)

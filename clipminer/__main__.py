@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 
 from . import review
-from .download import fetch
+from .download import english_audio, fetch
 from .score import score
 from .signals import loudness
 from .transcribe import transcribe
@@ -41,11 +41,13 @@ def finish(work: Path) -> list[Path]:
     review.to_render(review.load(work), work)
     if local and not video.exists():
         raise RuntimeError(f"{local} has moved or been deleted: put it back to render")
+    if local:
+        video = english_audio(video, work)
     if not video.exists():
         # A second batch after the source was deleted: fetch it again (info.json has the id).
         fetch(f"https://www.youtube.com/watch?v={info['id']}", ROOT / "work")
     clips = review.render_approved(work, video, FINISHED)
-    if not local:
+    if not local or video != Path(local):
         video.unlink()
     return clips
 
