@@ -90,6 +90,9 @@ the same recipe. Curb's source .mkv was deleted on Tko's word (2026-11-09): no m
 it needs the file back before any funny moments.
 Rick and Morty S03E01 (job 4, run 22): v2 is 372–379 (Tko: 373, 374 best; 377, 379 cropped badly). 377 and 379
 re-rendered as 382 and 383 with `"cartoon": true`. Next: Tko watches 382/383; the old 377/379 go only on his word.
+Tko is collecting reference shorts in `References\` (files, or URLs + notes in `links.txt`): measure them against ours
+(length, cut rate, where cuts land, crop moves, captions) and write the differences into `skill.md`. Not one by one: a few
+probes first.
 Its first audio track is Russian: `download.english_audio` copies the plain English track into `work/` first.
 
 ## Open items

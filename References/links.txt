@@ -1,0 +1,2 @@
+# One short per line: a URL, then (optional) what you like about it.
+# e.g. https://youtube.com/shorts/xxxx  cuts on every laugh, captions big
