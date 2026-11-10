@@ -21,7 +21,8 @@ audio track is a Russian dub, and the WEB copy Tko tried first only had an audio
   Caught at pick time now by a scratch check (not in the repo yet), which lists every stretch whose first or last shot is under 0.5s,
   before anything renders.
 
-Numbers used (never reuse):
+v1 numbers (deleted). v2 reused 372–379: Tko approved v2 right after the app restarted, before this list was
+written, so `next_number` didn't see it. Always write the deleted numbers to the log before reopening Review.
 - **372 · rick-szechuan-prison-break** · deleted (Tko, v1)
 - **373 · jerry-paid-in-pills** · deleted (Tko, v1)
 - **374 · rick-szechuan-sauce** · deleted (Tko, v1)
@@ -33,7 +34,16 @@ Numbers used (never reuse):
 - **380 · who-pays-me-to-yell** · deleted (Tko, v1)
 - **381 · jerry-foot-down** · deleted (Tko, v1)
 
-### v2 (in Review)
+### v2 · 372–379 · Tko: "some good ones and some not so good with weird cropping still but all in all better"
+- **372 · rick-szechuan-prison-break** · v2 recap
+- **373 · rick-wicker-furniture** · v2 · Ready
+- **374 · rick-szechuan-sauce** · v2 · Ready
+- **375 · bug-level-9-bathroom** · v2
+- **376 · summer-trial-morty-lawyer** · v2
+- **377 · morty-shoots-rick** · v2
+- **378 · who-pays-me-to-yell** · v2
+- **379 · jerry-foot-down** · v2
+
 - **Recap · 15 moments, 153s, one line:** cold-open fake escape → bugs probe his brain → the portal-gun memory →
   the Szechuan order → the formula, uploaded → the virus and fabricated-memory twist → the body swap → Rick-as-bug
   gets the Level 9 code → one to a zero ("who's paying me to yell at this guy?") → home → "him or me" → divorce →
