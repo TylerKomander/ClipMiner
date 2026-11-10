@@ -165,7 +165,7 @@ def render(video: Path, work: Path, out: Path, start: float, end: float,
     subprocess.run(
         [
             "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
-            "-ss", f"{start:.2f}", "-to", f"{end:.2f}", "-i", str(video.resolve()),
+            "-ss", f"{start:.6f}", "-t", f"{end - start:.6f}", "-i", str(video.resolve()),
             "-filter_complex", f"{video_filter},subtitles={ass.name}:fontsdir={Path(os.path.relpath(FONTS, work)).as_posix()}",
             "-map_chapters", "-1", "-c:v", "libx264", "-crf", "20", "-preset", "veryfast",
             "-c:a", "aac", "-b:a", "160k", "-ac", "2",

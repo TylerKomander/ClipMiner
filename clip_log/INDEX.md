@@ -34,6 +34,7 @@ per layout and platform once posted.
 | 19 | `run-19-matt-shane-636-sam-tallent.md` | Matt & Shane 636 (Sam Tallent) | 73m | 332–345 | Sonnet's 23 read directly, 14 kept; seats set |
 | 20 | `run-20-atlanta-s02e01-recap.md` | Atlanta S02E01 (`movie-recap`) | 35m | 346–348 | first recap; v3 (348) passed |
 | 21 | `run-21-curb-s12e03-recap.md` | Curb S12E03 (`movie-recap`) | 40m | 349–371 | 349 rejected (jokes cut); v7 351; funny moments 362–371 "possibly your best yet" |
+| 22 | `run-22-rick-and-morty-s03e01-recap.md` | Rick and Morty S03E01 (`movie-recap`) | 23m | 372–381 | v1 deleted ("all over the place", one-frame flashes: fixed in splice); v2 in Review |
 
 ## Shapes, most seen first
 Count · shape · best examples (clip numbers match the run files). 3+ are in `skill.md` "Proven shapes".

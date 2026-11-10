@@ -204,12 +204,13 @@ def build(video: Path, work: Path, words: list[dict], clip: dict, stem: str, fil
         spans = unsliver(video, spans, words, [i for a, b in runs for i in range(a, b + 1)])
         # A stretch moved onto a camera cut may start just after its first word's (early) start: keep the caption.
         kept = [next(({**w, "start": a} for a, b in spans if a - WORD_SLOP <= w["start"] < a < w["end"]), w) for w in kept]
+    fps = frame_rate(video)
     if len(spans) == 1:
-        return video, spans[0][0], spans[0][1], kept, []
+        first, last = round(spans[0][0] * fps), round(spans[0][1] * fps)
+        return video, (first - 0.5) / fps, (last - 1) / fps, kept, []
 
     offset, shifted, inputs, filters, labels, joins = 0.0, [], [], [], [], []
     sdr = TO_SDR if is_hdr(video) else ""
-    fps = frame_rate(video)
     for n, (a, b) in enumerate(spans):
         # Whole frames only: a stretch ends on a frame, so a length in between came out up to a frame long
         # each time and the captions and BAND moves ran 0.37s early by the end of a 16-moment recap (348).
@@ -218,8 +219,10 @@ def build(video: Path, work: Path, words: list[dict], clip: dict, stem: str, fil
         shifted += [{**w, "start": w["start"] - a + offset, "end": w["end"] - a + offset}
                     for w in kept if a <= w["start"] < b]
         # One seek per stretch: ffmpeg decodes only the stretches, however far apart they are.
-        # Half a frame early, so the seek lands on frame `first` whatever the rounding.
-        inputs += ["-ss", f"{a - 0.5 / fps:.6f}", "-t", f"{length:.6f}", "-i", str(video.resolve())]
+        # Half a frame early, so the seek lands on frame `first` whatever the rounding. ffmpeg times `-t` from that
+        # frame, not the seek point: a full `length` let one more frame in, the next shot's when a stretch ended on
+        # a camera cut (one-frame flashes in 372, run 22).
+        inputs += ["-ss", f"{a - 0.5 / fps:.6f}", "-t", f"{length - 0.5 / fps:.6f}", "-i", str(video.resolve())]
         filters.append(f"[{n}:v:0]{sdr}setpts=PTS-STARTPTS[v{n}];"
                        f"[{n}:a:0]asetpts=PTS-STARTPTS,"
                        f"afade=t=in:d=0.012,afade=t=out:st={max(length - 0.012, 0):.3f}:d=0.012[a{n}]")
