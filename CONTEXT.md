@@ -227,8 +227,8 @@ Sonnet recap path may hit the same on R-rated films; untested. Round costs: ~455
 
 **Curb S12E03 (run 21):** v4 (349, 85s) rejected by Tko: "You cut early on some dialogue and jokes again, remember
 funny over everything." The cause was in the rules: a 90s cap, "3–12s" moments, and an 80-word matcher limit. Now a
-moment is a whole joke, weaker jokes drop whole, and the cap is 165s of speech (a Short must render under 3 min).
-That's in skill.md and `score.py`. v6 (350) rendered at 3:03.6, because the render runs ~12% over speech (the cap is now 155s of speech), and it carried the .mkv's chapter track, so the player showed 27 min (fixed: `-map_chapters -1`). v7 (174.7s rendered) is in Review; 349 and 350 in `Finished_Clips/Movies/Curb.Your.Enthusiasm.S12E03/` are rejected cuts. **Next:** Tko renders v7 and watches it. His verdict goes in run 21.
+moment is a whole joke, weaker jokes drop whole, and the cap is 155s of speech (a Short must render under 3 min, and the render runs ~12% over speech).
+That's in skill.md and `score.py`. v6 (350) rendered at 3:03.6, and it carried the .mkv's chapter track, so the player showed 27 min (fixed: `-map_chapters -1`). v7 (174.7s rendered) is in Review; 349 and 350 in `Finished_Clips/Movies/Curb.Your.Enthusiasm.S12E03/` are rejected cuts. **Next:** Tko renders v7 and watches it. His verdict goes in run 21.
 
 **Auto-post is done for YouTube (2026-11-09):** schedules per account and kind, click-through to Visibility, tab
 closes and records itself. Movies go to The-Theatre-Goer only; don't tick recaps 346/347 (rejected v1/v2) Ready. Only tick Ready on clips you've seen: runs 17–19 are still unwatched.
