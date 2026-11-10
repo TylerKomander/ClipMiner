@@ -76,7 +76,8 @@ words were corrected in `transcript.json` (original kept in GURT's scratchpad) s
 ### Funny moments (first batch of the new type, 2026-11-09)
 **Picked by:** GURT by hand, one pass over `reading.txt`. First cut ran 30-59s; Tko: "keep the clips a little
 shorter", so every clip was re-cut to 40s of speech (now the code cap) before rendering. Renders run ~8% over
-speech: 40s of speech came out 40.4s, Takahashi's 39.2s came out 43.0s. Nobody has watched these yet.
+speech: 40s of speech came out 40.4s, Takahashi's 39.2s came out 43.0s.
+**Tko on 362-371: "Really good possibly your best yet"** (2026-11-09). The reference for funny moments.
 - **362 · s9 · father-in-law-condolences · 28.4s · 2 pieces.** "my condolences aren't quite as deep as the average
   person's". Cut the "sorry means nothing" tangent after it.
 - **363 · s8 · lemons-are-a-fungible-citrus · 32.2s · 2 pieces.** Grapefruit on fish.

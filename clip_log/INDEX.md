@@ -33,7 +33,7 @@ per layout and platform once posted.
 | 18 | `run-18-jynxzi-i-hate-clips.md` | Jynxzi "I Hate Clips..." (stream, solo) | 46m | 322–331 | review budget; Sonnet 9 of 10 kept; `one_voice` |
 | 19 | `run-19-matt-shane-636-sam-tallent.md` | Matt & Shane 636 (Sam Tallent) | 73m | 332–345 | Sonnet's 23 read directly, 14 kept; seats set |
 | 20 | `run-20-atlanta-s02e01-recap.md` | Atlanta S02E01 (`movie-recap`) | 35m | 346–348 | first recap; v3 (348) passed |
-| 21 | `run-21-curb-s12e03-recap.md` | Curb S12E03 (`movie-recap`) | 40m | 349–350 | 349 rejected (jokes cut); v7 174.7s in Review |
+| 21 | `run-21-curb-s12e03-recap.md` | Curb S12E03 (`movie-recap`) | 40m | 349–371 | 349 rejected (jokes cut); v7 351; funny moments 362–371 "possibly your best yet" |
 
 ## Shapes, most seen first
 Count · shape · best examples (clip numbers match the run files). 3+ are in `skill.md` "Proven shapes".
@@ -117,6 +117,8 @@ half (1; send pieces).
 - (3) Clips/hour: two comedians ~8, three ~14–16, a legendary storyteller 26 before the cap, a solo streamer
   reviewing clips 13.
 - (2) movie-recap: funny beats the budget; a moment is a whole joke, drop whole weaker jokes (runs 20, 21). (in skill.md)
+- (1) movie funny moments: one joke, 1–4 pieces, ≤40s, cut on the camera's cuts (run 21: 362–371, Tko "possibly
+  your best yet"). (in skill.md)
 - (1) each, all in skill.md: movie-recap main thread only (run 20) · laughs tell the story, straight lines only
   where no laugh does (run 20) · every payoff set up, every scene change sent to (run 20) · a fresh reader with full
   moment text catches what the picker's own retell passes (run 21) · a payoff that states its own set-up needs none;
