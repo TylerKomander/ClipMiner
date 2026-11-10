@@ -86,7 +86,7 @@ without the Posted? question. Stuck at "YouTube: publishing" = the button id cha
 Then: Tko watches Curb v7 (351); his verdict goes in run 21. 349 and 350 in
 `Finished_Clips\Movies\Curb.Your.Enthusiasm.S12E03\` are rejected cuts.
 Curb's funny moments 362–371 passed; Tko cleared 368 (race) and 370 (crude) to post. Next movie gets
-the same recipe. Atlanta's source is gone (`info.json` points at a missing `Movies\Atlanta...mkv_`):
+the same recipe. Curb's source .mkv was deleted on Tko's word (2026-11-09): no more Curb renders. Atlanta's source is gone (`info.json` points at a missing `Movies\Atlanta...mkv_`):
 it needs the file back before any funny moments.
 
 ## Open items
