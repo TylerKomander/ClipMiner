@@ -53,8 +53,11 @@ RECAP_SCHEMA = _object({
         "why": {"type": "string", "description": "which beat of the story this carries"},
     })},
 })
-RECAP_LEN = (50, 90)
-RECAP_MOMENTS = (14, 24)
+# Run 21: a 90s cap made jokes lose their replies (Tko: "funny over everything"). A Short must render under 3
+# minutes, and the render runs ~12% over speech (pauses, holds): 164s of speech came out 183.6s.
+RECAP_LEN = (50, 155)
+RECAP_MOMENTS = (8, 24)
+MOMENT_WORDS = 160
 
 
 def hms(t: float) -> str:
@@ -250,12 +253,14 @@ def recap_prompt(info: dict, lines: list[str], words_per_second: float, subs: st
         "who the main character is and what they want, the conflict, the turn, and how it ends. Follow the "
         "movie-recap profile's step-by-step method and write down each step before the next: the main thread only, "
         "funny lines carry the story, every scene change and every pay-off set up, a cold-stranger retell before you "
-        f"submit. Pick {RECAP_MOMENTS[0]}-{RECAP_MOMENTS[1]} moments, each one whole exchange (a line and its reply, about 3-12s). The "
+        f"submit. Pick {RECAP_MOMENTS[0]}-{RECAP_MOMENTS[1]} moments, each one a whole joke: its set-up, the punchline and the "
+        "reply or topper after it, however long that runs. Never trim inside a joke to save time; drop a whole weaker "
+        f"joke instead. A moment over {MOMENT_WORDS} words splits into two back to back, which play as one. The "
         "ending may be spoiled. "
         f"Together they must run {RECAP_LEN[0]}-{RECAP_LEN[1]}s of speech: about "
         f"{RECAP_LEN[0] * words_per_second:.0f}-{RECAP_LEN[1] * words_per_second:.0f} words at this film's pace. "
         "Count before you submit. first_words and last_words must be copied exactly from the text; a moment never "
-        "runs past the reading line after the one it starts in.\n\n"
+        "ends before its joke's reply.\n\n"
         f"Reading file: one line per ~{LINE_SECONDS}s as `h:mm:ss text`.\n\n" + "\n".join(lines)
         + (f"\n\nThe film's own subtitles, for names and who speaks only (quote from the reading file):\n\n{subs}" if subs else "")
     )
@@ -268,7 +273,7 @@ def place_moments(picks: dict, words: list[dict], norm: list[str]) -> tuple[list
         head = re.findall(r"[a-z0-9']+", m["first_words"].lower())[:4]
         tail = re.findall(r"[a-z0-9']+", m["last_words"].lower())[-4:]
         i = snap(words, norm, seconds(m["approx_start"]), head, 60)
-        j = None if i is None else first_after(norm, tail, i, min(i + 80, len(words) - len(tail)))
+        j = None if i is None else first_after(norm, tail, i, min(i + MOMENT_WORDS, len(words) - len(tail)))
         if j is None:
             return [], f"moment \"{m['first_words']}\" … \"{m['last_words']}\" not found near {m['approx_start']}"
         ranges.append([i, j + len(tail) - 1])

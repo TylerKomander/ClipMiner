@@ -172,9 +172,12 @@ not done: fix it or swap the moment.**
    before if yours answers or points back to it (opens with "No", "Yeah", "You don't…", or "that/this" for something
    not yet said); take the one after if it's the reply, the punchline, or names something used later. A moment that
    opens on an answer without its question, or stops a sentence before the joke, is broken.
-   **A moment is one whole exchange that lands its beat:** a set-up and its punchline, or a line and its reply,
-   usually 2–4 sentences and 3–12s. Never split one speaker's continuous speech into two moments; two picks less
-   than 10s apart in one scene are one moment. **Take the reply:** a line that states a beat is often followed by
+   **A moment is one whole joke, however long it runs:** its set-up, the punchline, and the reply or topper after
+   it. When the next line tops the joke, take it too; stop at the first line after the last laugh. **Funny beats the
+   budget: never trim inside a joke to save seconds; drop a whole weaker joke instead (Tko, run 21: "You cut early on
+   some dialogue and jokes again, remember funny over everything." v4 trimmed 14 exchanges to fit 90s; v6 kept 6
+   whole scenes in 164s).** A rambling answer is often the joke itself (the fish-dream defence): keep all of it. Two
+   picks less than 10s apart in one scene are one moment. **Take the reply:** a line that states a beat is often followed by
    the reply that makes it funny (an accusation, then the joke denial). Read 30s either side of every beat and take
    the reply, or the line and its reply together. A straight S-only moment is allowed only for the hook, a set-up
    that pays off later, a who-is-who line or one stakes line **(run 20: 4 of 16 moments straight)**.
@@ -183,7 +186,12 @@ not done: fix it or swap the moment.**
    third of the recap, search the reading file for the first time it appears or changes hands (the noun, and "take
    it", "here", "this"). That line must be in the recap, earlier than the payoff. A line that explains it after it
    appeared ("X gave it to me") is a payoff, never a set-up. Note each pair as `set-up <time> → payoff <time>`
-   **(run 20: the gun had no set-up until "You're gonna need this… Take it." was added)**.
+   **(run 20: the gun had no set-up until "You're gonna need this… Take it." was added)**. Exception: a payoff
+   that states its own set-up ("you hit him with a golf ball, then with a bagel") needs none; let the retell decide.
+   A set-up far before the main thread starts costs the hook: drop it if the payoff stands alone **(run 21: the
+   cold-open bagel opened the recap with no stakes; the reader got the payoff without it)**. A punchline that points
+   back to an earlier scene ("then I hear Jimmy… vertical drop") gets the one line from the same speech that names
+   that scene ("and I'm sitting on the bench"), spliced in.
 7. **Cold-stranger retell, a gate:** using only facts your quotes state, retell in three sentences: who, what
    happened, how it ended. Then write, for each moment, the question a stranger would ask (who is speaking? who is X
    to Y? where are we? where did that come from?): an earlier moment or that one must answer it. **Fail** if by
@@ -194,11 +202,15 @@ not done: fix it or swap the moment.**
    reader (a new agent) given the **full spoken text** of every moment, numbered, with no times, notes or speakers,
    never just first and last words. Every question it asks is a fix. **Never hand in notes that say fail, "known gap"
    or "can't fix within budget".**
-8. **Budget:** 14–24 moments, 50–90s of speech. Dialogue runs about 2.5–3 words a second (348: 254 words in 89s), so
-   that's roughly 130–260 quoted words; the prompt gives this film's own pace, measured over speech only. Too long:
-   drop a whole S-only moment, never an L while an S-only one is left, and side beats before main ones. Too short:
-   grow each moment into its full exchange first, then add the next-best L on the main thread. At least two thirds
-   of the moments carry an L.
+8. **Budget:** 50–155s of speech; 8–24 moments. A Short must render under 3 minutes, and the render runs ~12% over
+   the speech count (pauses inside moments, the hold after each): run 21's 164s of speech rendered at 3:03.6. Atlanta's
+   348 was 16 short exchanges in 89s; Curb's was 7 whole stretches in 154s (174.7s rendered); both shapes are fine
+   when every joke is whole. To get there, trim filler around the jokes: an opener the next line makes clear ("You
+   are in big trouble"), a repeated dare, a scene-ending line after the laugh. The prompt gives this film's own pace, measured over speech only. Too long: drop a whole joke, weakest
+   first: an S-only moment before any L, side beats before main ones, and when two scenes tell the same joke keep the
+   funnier (run 21: Takahashi's "Wave means what? Hello, goodbye" over the earlier "fore" argument). Never shorten a
+   joke to fit. Too short: add the next-best whole L on the main thread. At least two thirds of the moments carry an
+   L. A moment over 160 words splits into two back to back (the next starts on the word after); they play as one.
 9. **Quote exactly**: copy `first_words`/`last_words` word for word from the reading file (the code matches the
    words, not punctuation; a word that isn't there drops the moment). `first_words` opens a sentence and
    `last_words` closes one. Reading-file rows wrap mid-sentence: if your `last_words` reach the end of a row, read
@@ -211,7 +223,7 @@ not done: fix it or swap the moment.**
 
 **Post text:** the hook is a teaser question or a quote twist on the film ("An offer he can't refuse?", "His savage
 reply to all the doubters!"), never the ending. Credit: "From <Film> (<year>)." Hashtags: the film, its stars, the
-genre, #movie #movieclips #filmtok. The clean-text rule applies as everywhere.
+genre, #movie #movieclips. A TV episode credits the show and its year. The clean-text rule applies as everywhere.
 
 **Transcript traps:** music and effects under the dialogue; Whisper drops lines spoken over a score and writes song
 lyrics as speech. A moment whose quote isn't found is dropped in code, so quote exactly.

@@ -180,7 +180,9 @@ def build(video: Path, work: Path, words: list[dict], clip: dict, stem: str) -> 
     subprocess.run(
         ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", *inputs,
          "-filter_complex", ";".join(filters) + ";" + "".join(labels) + f"concat=n={len(spans)}:v=1:a=1[v][a]",
-         "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-crf", "14", "-preset", "veryfast",
+         # ffmpeg copies the source's chapters by default: a recap cut from an .mkv carried the film's 38-minute
+         # chapter track, and the player showed 27 minutes (Tko, run 21).
+         "-map", "[v]", "-map", "[a]", "-map_chapters", "-1", "-c:v", "libx264", "-crf", "14", "-preset", "veryfast",
          "-c:a", "aac", "-b:a", "192k", str(cut.resolve())],
         check=True)
     return cut, 0.0, offset, shifted, [t for t in joins if t < offset]

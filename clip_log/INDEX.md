@@ -47,6 +47,7 @@ universal) and note "(in skill.md)" here.
 | 18 | `run-18-jynxzi-i-hate-clips.md` | Jynxzi "I Hate Clips..." (stream, solo, Siege clip review) | 46m | 322–331 | second `streamer` run, first on the review budget; Sonnet 10 picks, 9 kept (5 recut), missed 1; cut-out webcam set by hand; `one_voice` |
 | 19 | `run-19-matt-shane-636-sam-tallent.md` | Matt & Shane Ep 636 (Sam Tallent) | 73m | 332–345 | budget review of a repeat show: no blind pass, Sonnet's 23 read directly, 14 kept; seats set before approving, right in 13 of 14 |
 | 20 | `run-20-atlanta-s02e01-recap.md` | Atlanta S02E01 "Alligator Man" (TV episode, `movie-recap`) | 35m | 346–348 | first recap; three versions by GURT by hand, v3 (348) passed: main thread only, funny lines carry it, every pay-off set up |
+| 21 | `run-21-curb-s12e03-recap.md` | Curb Your Enthusiasm S12E03 (TV episode, `movie-recap`) | 40m | 349–350 | 349 (v4, 85s) rejected: jokes cut to fit 90s; 350 (v6) rendered 3:03.6 + an .mkv chapter track; v7 = 174.7s, in Review |
 
 ## Shapes (universal), most seen first
 Format: tally · shape · clips (score). Clip numbers match `Finished_Clips\` and the run files.
@@ -98,6 +99,9 @@ quotable. Duo shows (Shane/Steve) run on "friend exposes the other"; one-guest s
 - `[.]` `[theme]` movie-recap: let the laughs tell the story; a straight line only where no laugh tells that beat (run 20: 4 of 16 straight). (in skill.md)
 - `[.]` `[theme]` movie-recap: every pay-off needs a set-up moment and every scene change a line that sends us there; a cold-stranger retell catches both (run 20: the gun). (in skill.md)
 - `[.]` `[universal]` A film's SDH subtitle track names who speaks; Whisper gives exact words and times (run 20). (in skill.md, `download.subtitles`)
+- `[..]` `[theme]` movie-recap: funny beats the budget; a moment is a whole joke, drop whole weaker jokes, never trim inside one (run 21: 349 rejected, Tko's second time). (in skill.md, `score.py`)
+- `[.]` `[theme]` movie-recap: a fresh reader with the full moment text catches what the picker's own retell passes (run 21: no hook, an unexplained callback). (in skill.md)
+- `[.]` `[theme]` movie-recap: a payoff that states its own set-up needs no set-up moment; one before the main thread starts costs the hook (run 21: the bagel). (in skill.md)
 - `[..........]` `[universal]` Clips with zero signal support are as good as signalled ones (runs 1–10). (in skill.md)
 - `[............]` `[universal]` Whisper drops to lowercase with no punctuation (runs 2–4, 6–10). (in skill.md) Run 12: 47% of the lines. Run 13: 41:55–53:35. Run 14: most of the episode. Run 16: 0:00–44:09, with whole lines lost. **Fix found (run 16, one episode):** `condition_on_previous_text=False` plus a cased, punctuated style hint (`hotwords`): cased all the way, 234 curses instead of 104, no loops. In `transcribe.py`.
 - `[............]` `[scorer]` Model scores the best clips one point low (runs 3–10, every run). Calibration added after run 9; run 10 still low (two 9s given 7–8). (in skill.md) Run 12 (first stream): with 7 = reject it submitted 3 clips; GURT found 17, and Sonnet's reject list named 7 of them as "a 7". Run 13: six strong one-liners it named were rejected as 7s or "light banter"; GURT kept all six. Run 15: of the 10 final 9s it had, 9 were 8s on its list. Run 16: 12 of its 13 were 8s; eight of the ten kept finished at 9.
