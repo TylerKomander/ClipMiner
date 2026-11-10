@@ -633,7 +633,8 @@ class ClipsPage(Page):
         self.copied.config(text="Copied.")
         self.launch(profile, base, layout, description, [platform])
 
-    def launch(self, profile: dict, base: Path, layout: str, description: str, platforms: list[str]) -> None:
+    def launch(self, profile: dict, base: Path, layout: str, description: str, platforms: list[str],
+               publish: bool = False) -> None:
         folder = ROOT / profile["folder"]
         video = base.with_name(f"{base.name}_{layout}.mp4")
         self.app.clipboard_clear()
@@ -647,7 +648,7 @@ class ClipsPage(Page):
         def run() -> None:
             published = set()
             try:
-                published = post.prepare(folder, [(p, video, description) for p in platforms], step)
+                published = post.prepare(folder, [(p, video, description) for p in platforms], step, publish)
                 self.status_text = f"{profile['name']}: browser closed."
             except Exception as e:
                 self.status_text = (f"{profile['name']}: stopped ({type(e).__name__}: {str(e).splitlines()[0][:160]}). "
@@ -758,9 +759,9 @@ class ClipsPage(Page):
                 skipped.append(f"{schedule['account']} (nothing Ready left of its kinds)")
                 continue
             base, layout, description, due_on = pick
-            self.launch(profile, base, layout, description, due_on)
+            self.launch(profile, base, layout, description, due_on, publish=True)
             opened.append(f"{number_of(base)} on {', '.join(due_on)} as {schedule['account']}")
-        text = f"{now}: opened " + "; ".join(opened) + ". Check each tab and click Post." if opened else f"{now}: nothing opened."
+        text = f"{now}: opened " + "; ".join(opened) + ". YouTube publishes itself; check any other tab and click Post." if opened else f"{now}: nothing opened."
         self.note(text + (" Passed over: " + "; ".join(skipped) + "." if skipped else ""))
 
     def pick(self, profile: dict, platforms: list[str], kinds: list[str],

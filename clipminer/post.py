@@ -1,4 +1,5 @@
-"""Fill in a platform's upload page in the account's own browser and stop before Post: Tko clicks it."""
+"""Fill in a platform's upload page in the account's own browser. It stops before Post for Tko, except an
+auto-post of a clip he ticked Ready, which YouTube publishes itself."""
 import re
 import subprocess
 from pathlib import Path
@@ -134,6 +135,14 @@ def facebook(page: Page, video: Path, hook: str, body: str, step: Callable[[str]
 FILLERS = {"TikTok": tiktok, "YouTube": youtube, "Instagram": instagram, "Facebook": facebook}
 
 
+def youtube_publish(page: Page) -> None:
+    # Publish stays disabled until the upload finishes; click waits for it to enable.
+    page.locator("#done-button").click(timeout=WAIT)
+
+
+PUBLISHERS = {"YouTube": youtube_publish}
+
+
 def youtube_published(page: Page) -> bool:
     # Publish clicked before processing ends shows "Video processing" (it goes live when done), after shows
     # "Video published". Neither box exists until Publish is clicked.
@@ -146,7 +155,7 @@ def youtube_published(page: Page) -> bool:
 PUBLISHED = {"YouTube": youtube_published}
 
 
-def prepare(folder: Path, posts: list[tuple[str, Path, str]], step: Callable[[str], None]) -> set[str]:
+def prepare(folder: Path, posts: list[tuple[str, Path, str]], step: Callable[[str], None], publish: bool = False) -> set[str]:
     """Fills one tab per (platform, video, description), all in this account's browser: Chrome locks a
     profile folder, so one session per account. A tab whose fill fails stays open where it stopped, so
     that post can be finished by hand. A tab closes itself once its platform shows the post went through;
@@ -162,7 +171,11 @@ def prepare(folder: Path, posts: list[tuple[str, Path, str]], step: Callable[[st
             hook, _, body = description.strip().partition("\n")
             try:
                 FILLERS[platform](page, video, hook, body.strip(), lambda text, pl=platform: step(f"{pl}: {text}"))
-                step(f"{platform}: ready: check it and click Post")
+                if publish and platform in PUBLISHERS:
+                    step(f"{platform}: publishing")
+                    PUBLISHERS[platform](page)
+                else:
+                    step(f"{platform}: ready: check it and click Post")
             except Exception:
                 step(f"{platform}: stopped: finish by hand (Copy description in the app has the caption)")
         published = set()

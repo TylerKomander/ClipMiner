@@ -26,8 +26,9 @@ A **movie** is different: a local film file in → **one ~60s recap short** that
   job and in `review.json`): `podcast` → theme `comedian-podcast`, `stream` → theme `streamer` (added
   2026-10-04, all guesses until runs are logged). The type sets the theme profile the scorer uses, the
   layouts, and the clips folder. A new type = one line in `KINDS` + a profile in `skill.md` Part A.
-  Posting: the app fills the upload page, Tko clicks Post (never auto-publish). **Auto-post** (Tko, 2026-11-09) only
-  opens and fills on a timer: opt-in per clip (Ready tick, `ready.json`), only while the app is open, off at every start.
+  Posting: the app fills the upload page, Tko clicks Post. **Auto-post** (Tko, 2026-11-09) opens, fills and, on
+  YouTube, **clicks Publish** on a timer, Movies included: the Ready tick (`ready.json`) is Tko's OK after watching the
+  clip. Only while the app is open, schedules off at every start. A manual Post still stops before Publish.
 - **Movies post to a separate channel, never Comedian-House-TV** (Tko, 2026-11-05; replaces "no movie clips").
   Studios run Content ID: expect claims on most recaps. The arc edit is the change to the footage. The movie
   channel is **The-Theatre-Goer** (2026-11-09): Movies clips only post to an account ticked "Movie channel" on the
@@ -201,6 +202,9 @@ fal.ai/ElevenLabs, FastAPI dashboard. Their picker is transcript-only (no heatma
   the rest is the manual recipe above)
 
 ## Next step
+**Watch the first scheduled auto-publish (2026-11-09 change):** confirm `#done-button` gets clicked, the tab closes
+itself and `posts.json` records it without the Posted? question. If it stops at "publishing", the button id changed.
+
 **GURT picks by hand now (Tko 2026-11-09: "I want you to handle all of that").** Queue default is "Picks by
 GURT": the job downloads, transcribes, measures loudness and parks as **for GURT**. No Sonnet call. "Send to Sonnet"
 in the Queue hands one over. **Recipe when Tko says "pick it":** read `work/<slug>/transcript.json` (+ `subs_sdh.srt`
@@ -220,6 +224,11 @@ the model passes its own gates. **Plan for a small model:** draft → a fresh re
 of each moment (its questions are the fixes) → repair; never one call. Code now flags moments that stop
 mid-sentence. **Sonnet 5.5 refused both blind drafts** (safeguards flagged the episode's language): the app's
 Sonnet recap path may hit the same on R-rated films; untested. Round costs: ~455k and ~390k subagent tokens.
+
+**Curb S12E03 (run 21):** v4 (349, 85s) rejected by Tko: "You cut early on some dialogue and jokes again, remember
+funny over everything." The cause was in the rules: a 90s cap, "3–12s" moments, and an 80-word matcher limit. Now a
+moment is a whole joke, weaker jokes drop whole, and the cap is 165s of speech (a Short must render under 3 min).
+That's in skill.md and `score.py`. v6 (350) rendered at 3:03.6, because the render runs ~12% over speech (the cap is now 155s of speech), and it carried the .mkv's chapter track, so the player showed 27 min (fixed: `-map_chapters -1`). v7 (174.7s rendered) is in Review; 349 and 350 in `Finished_Clips/Movies/Curb.Your.Enthusiasm.S12E03/` are rejected cuts. **Next:** Tko renders v7 and watches it. His verdict goes in run 21.
 
 **Auto-post is done for YouTube (2026-11-09):** schedules per account and kind, click-through to Visibility, tab
 closes and records itself. Movies go to The-Theatre-Goer only; don't tick recaps 346/347 (rejected v1/v2) Ready. Only tick Ready on clips you've seen: runs 17–19 are still unwatched.
@@ -291,6 +300,8 @@ Also still to ask Tko: the white "unsure" lines (he has now a real run to look a
 **Restart the app before the next job**: it is still running the old `transcribe.py`.
 **Tko starts the app himself** (`.\.venv\Scripts\python.exe -m clipminer.gui`): a render inside an app GURT launched
 from its own shell was killed mid-file (run 14). If GURT must render, use `--render <slug>` as a background task.
+When Tko asks GURT to open it (2026-11-09): start `.venv\Scripts\pythonw.exe -m clipminer.gui` through
+`Invoke-CimMethod Win32_Process Create` (CurrentDirectory = project root) so it isn't a child of GURT's shell.
 
 **Style C is built (2026-10-06), Tko's pick from six samples** (`Finished_Clips\_style_tests\`, sample C). Why:
 YouTube's Shorts recommendation change (announced 2026-10-01: channels that mostly re-upload others' videos
