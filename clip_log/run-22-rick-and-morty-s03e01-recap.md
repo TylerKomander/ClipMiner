@@ -71,6 +71,8 @@ written, so `next_number` didn't see it. Always write the deleted numbers to the
 - **Tko's pick (A/B/Mix test in `Finished_Clips\_style_tests\cartoon\`): Mix.** `"cartoon": true` in review.json shows
   the whole picture when characters share a shot, and a crop only when one face is found and the motion is on it.
   373 and 374 come out unchanged. 377 and 379 were re-rendered as 382 and 383.
+- **382 · morty-shoots-rick** · v3 cartoon framing
+- **383 · jerry-foot-down** · v3 cartoon framing
 
 ### Lessons
 - **A text-only reader can't see who is speaking.** Count a retell that gets the story right as a pass, even when it
