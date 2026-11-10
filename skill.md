@@ -309,6 +309,9 @@ follows the voice with no shot over 4.5s, Tko's Shorts-editing rule). What GURT 
   numbers from `speakers.json` on lines whose speaker is certain, positions from one wide frame.
 - **Streams:** look at `work\<slug>\facecam.jpg` before approving; fix a wrong box with `"facecam"`.
 - **Movies:** `"crop_x"` (0 left, 1 right) pins a fixed BAND crop when the speaker-following fails.
+- **Cartoons:** set `"cartoon": true` before approving. The face finder misses non-human faces (Rick), so the
+  speaker-following framed whoever stood beside him. With it: the whole picture when characters share a shot, a
+  crop only on one alone (Tko's pick, run 22; his favourites 373 and 374 were whole-picture throughout).
 - **Look at a frame strip of every rendered TRACK, GAME and BAND file**, not one frame, and read the render line's
   shot count and longest shot. Add slipped curse words to `render.CURSE`.
 - Delete `work\<slug>\source.mp4` after rendering.

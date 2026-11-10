@@ -345,13 +345,13 @@ def plan(video: Path, start: float, end: float, solo: bool = False, said: list[t
         faces = [f for f in faces if not any(abs(f[0] - o[0]) < 1.5 * o[2] and f[1] - o[1] > 1.5 * o[2] for o in faces)]
         shots.append(faces)
         fits = group and faces and max(cx + w for cx, _, w in faces) - min(cx - w for cx, _, w in faces) <= group
-        # A cartoon's found faces are the ones that look human: whoever was missed may be the one talking.
         if cartoon:
-            # No mouth to follow (a pan, a still): the found faces' middle, else the frame's, which is where a pan
-            # keeps its subject. Never FIT: Tko read the small blurred picture as weird cropping (377, run 22).
-            rest = int(statistics.mean(cx for cx, _, _ in faces)) if faces else W // 2
-            for t, x in _moving(video, start + a, start + b):
-                segments.append((a + t, (rest if x is None else x, H // 2, int(MOVING_W * W))))
+            # Tko's pick (run 22): the whole picture when characters share a shot, a crop only on one alone. Found
+            # faces are only the human-looking ones, so a lone face counts as alone only if the motion is on it:
+            # movement elsewhere is a missed character talking.
+            alone = len(faces) == 1 and all(x is None or abs(x - faces[0][0]) < faces[0][2]
+                                            for _, x in _moving(video, start + a, start + b))
+            segments.append((a, faces[0] if alone else None))
         elif not faces:
             segments.append((a, None))
         elif len(faces) == 1:

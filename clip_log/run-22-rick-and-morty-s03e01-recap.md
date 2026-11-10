@@ -61,6 +61,17 @@ written, so `next_number` didn't see it. Always write the deleted numbers to the
 - **Every edge is clean** except the rant's opening: Rick's freak-out changes picture every frame in the episode
   itself.
 
+### Cropping · Tko: "377 and 379 had the weird cropping", "374 and 373 were best"
+- **Cause:** YuNet never finds Rick (grey skin, spiky hair). In a shot of Rick with others it found only them, and
+  jaw tracking (a human-face landmark model, noise on a cartoon) picked one of them: the light-beer and "privacy"
+  lines framed Jerry and Beth while Rick talked. 373 and 374 found no faces at all, so they played whole-picture
+  (scaled, blurred fill), and those were Tko's favourites.
+- **Tried:** following the moving mouth (the talker is the only thing redrawn in limited animation). It found the
+  talker in every shot checked, but it gave the liked clips 11-12 moves and cut the listener's reactions.
+- **Tko's pick (A/B/Mix test in `Finished_Clips\_style_tests\cartoon\`): Mix.** `"cartoon": true` in review.json shows
+  the whole picture when characters share a shot, and a crop only when one face is found and the motion is on it.
+  373 and 374 come out unchanged. 377 and 379 were re-rendered as 382 and 383.
+
 ### Lessons
 - **A text-only reader can't see who is speaking.** Count a retell that gets the story right as a pass, even when it
   asks "who is Beth". Fix the gaps it names in the story, not the speaker labels.

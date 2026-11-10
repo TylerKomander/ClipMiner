@@ -173,7 +173,7 @@ def render_approved(work: Path, video: Path, out_dir: Path) -> list[Path]:
                 band = band_filter(clip["crop_x"])
             else:
                 sw, sh = reframe.frame_size(source)
-                # `cartoon` in review.json: frame on the moving mouth, not on faces YuNet only finds when they look human.
+                # `cartoon` in review.json: the whole picture unless one character is alone in the shot.
                 band, moves = reframe.band_track_filter(reframe.plan(source, start, end, film=True, joins=joins, group=sh * 1080 // BAND_H,
                                                                      cartoon=review.get("cartoon", False))[0], sw, sh, end - start, BAND_H)
                 edits = f", follows the speaker: {moves} moves"
